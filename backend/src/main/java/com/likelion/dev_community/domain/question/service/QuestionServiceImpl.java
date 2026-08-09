@@ -10,6 +10,7 @@ import com.likelion.dev_community.domain.answer.repository.QuestionAnswerCount;
 import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
+import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
@@ -61,14 +62,14 @@ public class QuestionServiceImpl implements QuestionService {
 
         List<String> tagNames = attachTags(question, request.getTags());
 
-        return QuestionResponse.from(question, Collections.emptyList());
+        return QuestionResponse.from(question, tagNames);
     }
 
     // F-07
     @Override
     @Transactional(readOnly = true)
-    public Page<QuestionSummaryResponse> readQuestions(int page, int size, String sort, String keyword, String tag) {
-
+    public Page<QuestionSummaryResponse> readQuestions(int page, int size, String sort, String keyword, String tag, String status
+    ) {
         if (page < 0) {
             throw new CustomException(ErrorCode.INVALID_INPUT, "page는 0 이상이어야 합니다.");
         }
@@ -77,28 +78,27 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         Pageable pageable = PageRequest.of(page, size);
+        QuestionSortType sortType = QuestionSortType.from(sort);
 
-        // F-17, F-18
-        Page<Question> questions;
-
+        // F-18
+        Long tagId = null;
         if (tag != null && !tag.isBlank()) {
             String normalizedTag = tag.trim().toLowerCase();
-
             Tag foundTag = tagRepository.findByName(normalizedTag)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "존재하지 않는 태그"));
-
-            questions = questionRepository.searchTag(foundTag.getId(), pageable);
-
-        } else if (keyword != null && !keyword.isBlank()) {
-            questions = questionRepository.searchKeyword(keyword.trim(), pageable);
-        } else {
-            QuestionSortType sortType = QuestionSortType.from(sort);
-            questions = switch (sortType) {
-                case LIKE -> questionRepository.findAllByOrderByLikeCountDesc(pageable);
-                case UNRESOLVED -> questionRepository.findAllOrderByUnresolvedFirst(pageable);
-                case LATEST -> questionRepository.findAllByOrderByCreatedAtDesc(pageable);
-            };
+            tagId = foundTag.getId();
         }
+
+        // F-19
+        QuestionStatus questionStatus = statusFilter(status);
+
+        Page<Question> questions = questionRepository.searchQuestions(
+                keyword != null ? keyword.trim() : null,
+                tagId,
+                questionStatus,
+                sortType,
+                pageable
+        );
 
         if (questions.isEmpty()) {
             return Page.empty(pageable);
@@ -125,6 +125,18 @@ public class QuestionServiceImpl implements QuestionService {
                 Math.toIntExact(answerCountMap.getOrDefault(question.getId(), 0L)),
                 tagMap.getOrDefault(question.getId(), Collections.emptyList())
         ));
+    }
+
+    // F-19
+    private QuestionStatus statusFilter(String status) {
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        return switch (status.toUpperCase()) {
+            case "RESOLVED" -> QuestionStatus.RESOLVED;
+            case "UNRESOLVED" -> QuestionStatus.OPEN;
+            default -> throw new CustomException(ErrorCode.INVALID_INPUT, "RESOLVED 또는 UNRESOLVED만 가능");
+        };
     }
 
     // F-08
@@ -161,7 +173,7 @@ public class QuestionServiceImpl implements QuestionService {
         question.deleteTags();
         List<String> tagNames = attachTags(question, request.getTags());
 
-        return QuestionResponse.from(question, Collections.emptyList());
+        return QuestionResponse.from(question, tagNames);
     }
 
     // F-09 (삭제)
