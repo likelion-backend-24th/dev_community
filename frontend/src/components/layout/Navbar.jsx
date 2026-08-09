@@ -1,14 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../hooks/useAuth'
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { logout as logoutApi } from "../../api/authApi";
 
 function Navbar() {
-  const { isAuthenticated, logout } = useAuth()
-  const navigate = useNavigate()
+  const { isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-  }
+  const handleLogout = async () => {
+    try {
+      await logoutApi();
+    } catch {
+    } finally {
+      logout();
+      navigate("/");
+    }
+  };
 
   return (
     <nav>
@@ -28,7 +34,7 @@ function Navbar() {
         </>
       )}
     </nav>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

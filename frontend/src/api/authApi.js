@@ -27,3 +27,7 @@ export async function checkNickname(nickname) {
   })
   return res.data
 }
+
+export async function logout() {
+  await client.post('/api/auth/logout')
+}
