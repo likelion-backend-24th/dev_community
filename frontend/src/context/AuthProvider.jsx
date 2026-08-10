@@ -39,12 +39,16 @@ export function AuthProvider({ children }) {
         const isAuthEndpoint =
           url.includes("/api/auth/login") || url.includes("/api/auth/reissue");
 
+        if (isAuthEndpoint) {
+          return Promise.reject(error);
+        }
+
         if (status === 403) {
           navigate("/403");
           return Promise.reject(error);
         }
 
-        if (status !== 401 || isAuthEndpoint) {
+        if (status !== 401) {
           return Promise.reject(error);
         }
 
