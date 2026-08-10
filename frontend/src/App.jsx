@@ -8,6 +8,7 @@ import QuestionDetailPage from "./pages/question/QuestionDetailPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
 import MyPage from "./pages/mypage/MyPage";
 import ForbiddenPage from "./pages/error/ForbiddenPage";
+import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
           <Route path="/mypage" element={<MyPage />} />
         </Route>
 
+        <Route path="/401" element={<UnauthorizedPage />} />
         <Route path="/403" element={<ForbiddenPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
