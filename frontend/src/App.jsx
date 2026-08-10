@@ -16,7 +16,8 @@ function App() {
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<QuestionListPage />} />
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/questions" element={<QuestionListPage />} />
         <Route path="/questions/:id" element={<QuestionDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />

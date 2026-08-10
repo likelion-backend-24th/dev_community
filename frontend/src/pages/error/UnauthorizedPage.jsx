@@ -9,7 +9,7 @@ function UnauthorizedPage() {
       <h1>401 - 로그인이 필요합니다</h1>
       <p>{message}</p>
       <Link to="/login">로그인하기</Link>
-      <Link to="/">목록으로</Link>
+      <Link to="/questions">목록으로</Link>
     </div>
   )
 }

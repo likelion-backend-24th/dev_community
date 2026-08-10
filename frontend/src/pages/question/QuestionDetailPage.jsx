@@ -67,7 +67,7 @@ function QuestionDetailPage() {
       return;
     try {
       await deleteQuestion(id);
-      navigate("/");
+      navigate("/questions");
     } catch (err) {
       setError(err.response?.data?.message ?? "질문 삭제에 실패했습니다.");
     }
@@ -129,7 +129,7 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <Link to="/">목록으로</Link>
+      <Link to="/questions">목록으로</Link>
 
       <h2>답변 {answers.length}개</h2>
       <ul>

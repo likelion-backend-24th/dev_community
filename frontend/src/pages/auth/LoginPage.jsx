@@ -24,7 +24,7 @@ function LoginPage() {
     try {
       const { accessToken } = await login(form);
       setAuth(accessToken);
-      navigate("/");
+      navigate("/questions");
     } catch (err) {
       setError(err.response?.data?.message ?? "로그인에 실패했습니다.");
     } finally {
@@ -66,7 +66,7 @@ function LoginPage() {
         계정이 없으신가요? <Link to="/signup">회원가입</Link>
       </p>
       <p>
-        <Link to="/">로그인 없이 둘러보기 ⭢ </Link>
+        <Link to="/questions">로그인 없이 둘러보기 ⭢ </Link>
       </p>
     </div>
   );
