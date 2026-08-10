@@ -13,6 +13,7 @@ import com.likelion.dev_community.domain.question.repository.QuestionTagReposito
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoRequest;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserPwRequest;
+import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
 import com.likelion.dev_community.domain.user.repository.RefreshTokenRepository;
@@ -112,6 +113,9 @@ public class UserService {
     @Transactional
     public UserInfoResponse userSuspension(Long userId){
         User user = findUserById(userId);
+
+        if(user.getRole() == Role.ADMIN)
+            throw new CustomException(ErrorCode.FORBIDDEN, "관리자 계정은 정지할 수 없습니다.");
 
         if(user.getStatus().equals(UserStatus.SUSPENDED))
             throw new CustomException(ErrorCode.ALREADY_SUSPENDED_USER);
