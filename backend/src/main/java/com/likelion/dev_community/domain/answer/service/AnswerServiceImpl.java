@@ -39,12 +39,12 @@ public class AnswerServiceImpl implements AnswerService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
 
-        String content = xssSanitizer.sanitize(request.getContent());
-
+        // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
+        // String content = xssSanitizer.sanitize(request.getContent());
         Answer answer = Answer.builder()
                 .question(question)
                 .author(author)
-                .content(content)
+                .content(request.getContent())
                 .build();
 
         answerRepository.save(answer);
@@ -86,8 +86,8 @@ public class AnswerServiceImpl implements AnswerService {
 
         AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 수정할 수 있습니다.");
 
-        String content = xssSanitizer.sanitize(request.getContent());
-        answer.update(content);
+        // String content = xssSanitizer.sanitize(request.getContent());
+        answer.update(request.getContent());
 
         return AnswerResponse.from(answer);
     }

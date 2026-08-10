@@ -50,8 +50,11 @@ public class QuestionServiceImpl implements QuestionService {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 사용자 정보"));
 
-        String title = xssSanitizer.sanitize(request.getTitle());
-        String content = xssSanitizer.sanitize(request.getContent());
+        // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
+        // String title = xssSanitizer.sanitize(request.getTitle());
+        // String content = xssSanitizer.sanitize(request.getContent());
+        String title = request.getTitle();
+        String content = request.getContent();
 
         Question question = Question.builder()
                 .author(author)
@@ -167,9 +170,9 @@ public class QuestionServiceImpl implements QuestionService {
 
         checkUpdate(question, userId, isAdmin);
 
-        String title = xssSanitizer.sanitize(request.getTitle());
-        String content = xssSanitizer.sanitize(request.getContent());
-        question.update(title, content);
+        // String title = xssSanitizer.sanitize(request.getTitle());
+        // String content = xssSanitizer.sanitize(request.getContent());
+        question.update(request.getTitle(), request.getContent());
 
         List<String> tagNames = syncTags(question, request.getTags());
 
