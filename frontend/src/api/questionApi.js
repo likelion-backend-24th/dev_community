@@ -15,3 +15,13 @@ export async function getQuestion(id) {
 export async function deleteQuestion(id) {
   await client.delete(`/api/questions/${id}`)
 }
+
+export async function createQuestion(payload) {
+  const res = await client.post('/api/questions', payload)
+  return res.data.data
+}
+
+export async function updateQuestion(id, payload) {
+  const res = await client.put(`/api/questions/${id}`, payload)
+  return res.data.data
+}
