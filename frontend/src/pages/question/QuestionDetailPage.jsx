@@ -76,6 +76,10 @@ function QuestionDetailPage() {
 
   const handleAnswerSubmit = async (e) => {
     e.preventDefault();
+    if (isOwner) {
+      window.alert("본인의 글에는 답변을 등록할 수 없습니다.");
+      return;
+    }
     setAnswerSubmitting(true);
     setAnswerError("");
     try {
