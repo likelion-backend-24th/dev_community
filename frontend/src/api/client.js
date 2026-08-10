@@ -1,15 +1,16 @@
-import axios from 'axios'
+import axios from "axios";
 
 const client = axios.create({
-  baseURL: 'http://localhost:8080',
-})
+  baseURL: "http://localhost:8080",
+  withCredentials: true,
+});
 
 client.interceptors.request.use((config) => {
-  const accessToken = localStorage.getItem('accessToken')
+  const accessToken = localStorage.getItem("accessToken");
   if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
-  return config
-})
+  return config;
+});
 
-export default client
+export default client;
