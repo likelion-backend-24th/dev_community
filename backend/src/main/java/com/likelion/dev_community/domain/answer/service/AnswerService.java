@@ -10,7 +10,7 @@ public interface AnswerService {
     // F-12
     AnswerResponse createAnswer(Long userId, Long questionId, AnswerRequest request);
 
-    //
+    // 답변 목록 조회
     List<AnswerResponse> readAnswers(Long questionId);
 
     // F-13

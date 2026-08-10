@@ -33,7 +33,7 @@ public class AnswerController {
                 .body(ApiResponse.success("답변 등록 완료", response));
     }
 
-    //
+    // 답변 목록 조회
     @GetMapping("/api/questions/{questionId}/answers")
     public ResponseEntity<ApiResponse<List<AnswerResponse>>> readAnswers(
             @PathVariable Long questionId

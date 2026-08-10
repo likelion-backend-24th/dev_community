@@ -52,7 +52,7 @@ public class AnswerServiceImpl implements AnswerService {
         return AnswerResponse.from(answer);
     }
 
-    //
+    // 답변 목록 조회
     @Override
     @Transactional(readOnly = true)
     public List<AnswerResponse> readAnswers(Long questionId) {

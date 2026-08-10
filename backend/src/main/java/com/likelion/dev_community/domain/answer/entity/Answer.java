@@ -64,6 +64,7 @@ public class Answer extends BaseTimeEntity {
         this.deletedAt = LocalDateTime.now();
     }
 
+    // 질문 삭제에 연쇄되는 삭제라 채택 여부와 무관하게 허용 (softDelete()와 달리 예외를 던지지 않음)
     public void cascadeSoftDelete() {
         this.deletedAt = LocalDateTime.now();
     }
