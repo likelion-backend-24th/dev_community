@@ -50,7 +50,9 @@ public class AnswerController {
             @PathVariable Long answerId,
             @Valid @RequestBody AnswerRequest request
     ) {
-        AnswerResponse response = answerService.updateAnswer(userDetails.getId(), answerId, request);
+        boolean isAdmin = isAdmin(userDetails);
+
+        AnswerResponse response = answerService.updateAnswer(userDetails.getId(), answerId, isAdmin, request);
 
         return ResponseEntity.ok(ApiResponse.success("답변 수정 완료", response));
     }
@@ -61,7 +63,9 @@ public class AnswerController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long answerId
     ) {
-        answerService.deleteAnswer(userDetails.getId(), answerId);
+        boolean isAdmin = isAdmin(userDetails);
+
+        answerService.deleteAnswer(userDetails.getId(), answerId, isAdmin);
 
         return ResponseEntity.ok(ApiResponse.success("답변 삭제 완료", null));
     }
@@ -86,5 +90,11 @@ public class AnswerController {
         AnswerResponse response = answerService.cancelAdoption(userDetails.getId(), answerId);
 
         return ResponseEntity.ok(ApiResponse.success("답변 채택 취소 완료", response));
+    }
+
+    // 토큰 권한에 ROLE_ADMIN 있는지 확인
+    private boolean isAdmin(CustomUserDetails userDetails) {
+        return userDetails.getAuthorities().stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

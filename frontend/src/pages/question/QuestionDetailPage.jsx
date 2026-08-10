@@ -138,6 +138,7 @@ function QuestionDetailPage() {
             key={answer.id}
             answer={answer}
             currentUser={user}
+            isAdmin={isAdmin}
             isQuestionOwner={isOwner}
             questionResolved={question.status === "RESOLVED"}
             onChanged={reload}

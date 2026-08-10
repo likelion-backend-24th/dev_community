@@ -67,14 +67,12 @@ public class AnswerServiceImpl implements AnswerService {
 
     // F-13
     @Override
-    public AnswerResponse updateAnswer(Long userId, Long answerId, AnswerRequest request) {
+    public AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        if (!answer.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 수정할 수 있습니다.");
-        }
+        checkUpdate(answer, userId, isAdmin);
 
         String content = xssSanitizer.sanitize(request.getContent());
         answer.update(content);
@@ -84,16 +82,26 @@ public class AnswerServiceImpl implements AnswerService {
 
     // F-13
     @Override
-    public void deleteAnswer(Long userId, Long answerId) {
+    public void deleteAnswer(Long userId, Long answerId, boolean isAdmin) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        if (!answer.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 삭제할 수 있습니다.");
-        }
+        checkDelete(answer, userId, isAdmin);
 
         answer.softDelete();
+    }
+
+    private void checkUpdate(Answer answer, Long userId, boolean isAdmin) {
+        if (!answer.getAuthor().getId().equals(userId) && !isAdmin) {
+            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 수정할 수 있습니다.");
+        }
+    }
+
+    private void checkDelete(Answer answer, Long userId, boolean isAdmin) {
+        if (!answer.getAuthor().getId().equals(userId) && !isAdmin) {
+            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 삭제할 수 있습니다.");
+        }
     }
 
     // F-14 채택

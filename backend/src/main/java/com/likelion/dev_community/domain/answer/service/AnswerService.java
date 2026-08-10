@@ -14,10 +14,10 @@ public interface AnswerService {
     List<AnswerResponse> readAnswers(Long questionId);
 
     // F-13
-    AnswerResponse updateAnswer(Long userId, Long answerId, AnswerRequest request);
+    AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request);
 
     // F-13
-    void deleteAnswer(Long userId, Long answerId);
+    void deleteAnswer(Long userId, Long answerId, boolean isAdmin);
 
     // F-14 채택
     AnswerResponse adoptAnswer(Long userId, Long answerId);
