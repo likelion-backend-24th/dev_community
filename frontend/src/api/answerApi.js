@@ -5,6 +5,11 @@ export async function getAnswers(questionId) {
   return res.data.data
 }
 
+export async function getAnswer(answerId) {
+  const res = await client.get(`/api/answers/${answerId}`)
+  return res.data.data
+}
+
 export async function createAnswer(questionId, content) {
   const res = await client.post(`/api/questions/${questionId}/answers`, {
     content,
