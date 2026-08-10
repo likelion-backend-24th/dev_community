@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
-
-const STATUS_LABEL = {
-  OPEN: "미해결",
-  RESOLVED: "해결",
-};
+import { STATUS_LABEL } from "../../constants/questionStatus";
 
 const PAGE_SIZE = 10;
 
@@ -47,7 +43,7 @@ function QuestionListPage() {
       } catch (err) {
         if (cancelled) return;
         if (err.response?.status === 404) {
-          // 존재하지 않는 태그로 필터링한 경우 (백엔드가 404를 반환)
+          // 존재하지 않는 태그로 필터링한 경우 (백엔드에서 404 반환)
           setQuestions([]);
           setMeta({ page: 0, totalPages: 0, totalElements: 0 });
         } else {
