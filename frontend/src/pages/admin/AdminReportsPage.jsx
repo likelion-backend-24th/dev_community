@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { getReports, processReport } from '../../api/adminApi'
+import { getAnswer } from '../../api/answerApi'
 
 const STATUS_LABEL = {
   PENDING: '대기중',
@@ -31,8 +33,21 @@ function AdminReportsPage() {
           page,
           size: PAGE_SIZE,
         })
+        const withLinks = await Promise.all(
+          content.map(async (r) => {
+            if (r.targetType === 'QUESTION') {
+              return { ...r, linkQuestionId: r.targetId }
+            }
+            try {
+              const answer = await getAnswer(r.targetId)
+              return { ...r, linkQuestionId: answer.questionId }
+            } catch {
+              return { ...r, linkQuestionId: null }
+            }
+          }),
+        )
         if (cancelled) return
-        setReports(content)
+        setReports(withLinks)
         setMeta(resMeta)
       } catch (err) {
         if (cancelled) return
@@ -104,7 +119,15 @@ function AdminReportsPage() {
             {reports.map((r) => (
               <tr key={r.id}>
                 <td>
-                  {r.targetType} #{r.targetId}
+                  {r.linkQuestionId ? (
+                    <Link to={`/questions/${r.linkQuestionId}`}>
+                      {r.targetType} #{r.targetId}
+                    </Link>
+                  ) : (
+                    <>
+                      {r.targetType} #{r.targetId}
+                    </>
+                  )}
                 </td>
                 <td>{r.reporterNickname}</td>
                 <td>{r.targetUserNickname}</td>
