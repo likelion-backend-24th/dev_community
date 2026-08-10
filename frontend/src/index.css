@@ -1,0 +1,115 @@
+:root {
+  /* Product surfaces (dark, default) */
+  --surface-tertiary: #1e1f22;
+  --surface-secondary: #2b2d31;
+  --surface-primary: #313338;
+  --surface-floating: #111214;
+  --surface-hover: rgba(78, 80, 88, 0.3);
+  --surface-selected: rgba(78, 80, 88, 0.6);
+
+  /* Text */
+  --text-normal: #dbdee1;
+  --text-header: #f2f3f5;
+  --text-muted: #949ba4;
+  --text-link: #00a8fc;
+  --interactive-normal: #b5bac1;
+  --interactive-hover: #dbdee1;
+  --placeholder: #87898c;
+
+  /* Brand */
+  --blurple: #5865f2;
+  --blurple-hover: #4752c4;
+  --blurple-active: #3c45a5;
+
+  /* Status */
+  --green: #23a55a;
+  --green-strong: #57f287;
+  --yellow: #f0b232;
+  --red: #f23f43;
+  --red-soft: #fa777c;
+  --grey: #80848e;
+
+  /* Borders / inputs */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --input-bg: #1e1f22;
+  --secondary-btn-bg: #4e5058;
+  --secondary-btn-hover: #6d6f78;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-base: 16px;
+  --space-lg: 20px;
+  --space-xl: 24px;
+  --space-xxl: 32px;
+  --space-section: 40px;
+
+  /* Elevation */
+  --shadow-floating: 0 4px 8px rgba(0, 0, 0, 0.24);
+  --shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.24);
+  --shadow-high: 0 12px 32px rgba(0, 0, 0, 0.36);
+
+  /* Motion */
+  --motion-fast: 100ms;
+  --motion-standard: 200ms;
+  --motion-emphasis: 300ms;
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Typography */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Noto Sans KR", sans-serif;
+  --font-mono: "JetBrains Mono", Consolas, "Andale Mono", Menlo, Monaco, monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--surface-primary);
+  color: var(--text-normal);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

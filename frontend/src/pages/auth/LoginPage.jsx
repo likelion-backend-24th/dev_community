@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { login } from "../../api/authApi";
 import AuthHeader from "../../components/layout/AuthHeader";
+import "../../styles/auth.css";
 
 function LoginPage() {
   const { login: setAuth } = useAuth();
@@ -34,41 +35,68 @@ function LoginPage() {
   };
 
   return (
-    <div>
+    <div className="auth-page">
       <AuthHeader />
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">아이디</label>
-          <input
-            id="username"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
+
+      <main className="auth-main">
+        <div className="auth-card">
+          <h1 className="auth-card__title">다시 만나서 반가워요</h1>
+          <p className="auth-card__subtitle">
+            질문하고, 답변하고, 채택받으세요.
+          </p>
+
+          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <div className="field">
+              <label className="field__label" htmlFor="username">
+                아이디
+              </label>
+              <input
+                id="username"
+                name="username"
+                className="field__input"
+                value={form.username}
+                onChange={handleChange}
+                autoComplete="username"
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label className="field__label" htmlFor="password">
+                비밀번호
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                className="field__input"
+                value={form.password}
+                onChange={handleChange}
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="auth-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            <button className="auth-submit" type="submit" disabled={submitting}>
+              {submitting ? "로그인 중..." : "로그인"}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <p className="auth-links__muted">
+              계정이 없으신가요?
+              <Link to="/signup">회원가입</Link>
+            </p>
+            <Link to="/questions">로그인 없이 둘러보기 ⭢</Link>
+          </div>
         </div>
-        <div>
-          <label htmlFor="password">비밀번호</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        {error && <p role="alert">{error}</p>}
-        <button type="submit" disabled={submitting}>
-          {submitting ? "로그인 중..." : "로그인"}
-        </button>
-      </form>
-      <p>
-        계정이 없으신가요? <Link to="/signup">회원가입</Link>
-      </p>
-      <p>
-        <Link to="/questions">로그인 없이 둘러보기 ⭢ </Link>
-      </p>
+      </main>
     </div>
   );
 }

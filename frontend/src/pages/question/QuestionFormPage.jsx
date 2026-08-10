@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createQuestion, getQuestion, updateQuestion } from "../../api/questionApi";
+import "../../styles/question-form.css";
 
 const MAX_TAG_COUNT = 5;
 
@@ -100,30 +101,34 @@ function QuestionFormPage() {
   };
 
   if (loading) {
-    return <div>불러오는 중...</div>;
+    return <p className="state-text">불러오는 중...</p>;
   }
 
   return (
-    <div>
-      <h1>{isEditMode ? "질문 수정하기" : "질문 작성하기"}</h1>
+    <div className="page">
+      <div className="page__header">
+        <h1 className="page__title">{isEditMode ? "질문 수정하기" : "질문 작성하기"}</h1>
+      </div>
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="title">제목</label><br></br>
+      <form className="question-form" onSubmit={handleSubmit}>
+        <div className="form-field">
+          <label htmlFor="title">제목</label>
           <input
             id="title"
             name="title"
+            className="input"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="질문 제목을 입력하세요"
           />
         </div>
 
-        <div>
-          <label htmlFor="content">본문</label><br></br>
+        <div className="form-field">
+          <label htmlFor="content">본문</label>
           <textarea
             id="content"
             name="content"
+            className="textarea question-form__content"
             rows={12}
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -131,19 +136,25 @@ function QuestionFormPage() {
           />
         </div>
 
-        <div>
+        <div className="form-field">
           <label htmlFor="tagInput">태그 (최대 {MAX_TAG_COUNT}개)</label>
-          <div>
+          <div className="tag-input">
             {tags.map((tag) => (
-              <span key={tag}>
+              <span key={tag} className="tag-chip tag-chip--removable">
                 #{tag}
-                <button type="button" onClick={() => handleRemoveTag(tag)} aria-label={`${tag} 태그 삭제`}>
+                <button
+                  type="button"
+                  className="tag-chip__remove"
+                  onClick={() => handleRemoveTag(tag)}
+                  aria-label={`${tag} 태그 삭제`}
+                >
                   ×
                 </button>
               </span>
             ))}
             <input
               id="tagInput"
+              className="tag-input__field"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleTagKeyDown}
@@ -153,13 +164,17 @@ function QuestionFormPage() {
           </div>
         </div>
 
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <p className="inline-error" role="alert">
+            {error}
+          </p>
+        )}
 
-        <div>
-          <button type="button" onClick={handleCancel}>
+        <div className="question-form__actions">
+          <button type="button" className="btn btn-ghost" onClick={handleCancel}>
             취소
           </button>
-          <button type="submit" disabled={submitting}>
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
             {submitting ? "처리 중..." : isEditMode ? "수정완료" : "등록하기"}
           </button>
         </div>

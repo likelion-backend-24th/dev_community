@@ -7,6 +7,7 @@ import {
 } from '../../api/answerApi'
 import { toggleAnswerLike } from '../../api/likeApi'
 import ReportButton from './ReportButton'
+import '../../styles/question.css'
 
 function AnswerItem({
   answer,
@@ -59,68 +60,79 @@ function AnswerItem({
     runAction(() => toggleAnswerLike(answer.id), '추천 처리에 실패했습니다.')
 
   return (
-    <li>
+    <li className={`answer-card${answer.adopted ? ' is-adopted' : ''}`}>
+      {answer.adopted && <span className="badge badge-resolved">채택됨</span>}
+
       {editing ? (
         <form onSubmit={handleUpdate}>
           <textarea
+            className="textarea"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             required
           />
-          <button type="submit" disabled={busy}>
-            저장
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setEditing(false)
-              setContent(answer.content)
-            }}
-          >
-            취소
-          </button>
+          <div className="answer-card__actions">
+            <button type="submit" className="btn btn-primary btn-sm" disabled={busy}>
+              저장
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => {
+                setEditing(false)
+                setContent(answer.content)
+              }}
+            >
+              취소
+            </button>
+          </div>
         </form>
       ) : (
-        <p>{answer.content}</p>
+        <p className="answer-card__body">{answer.content}</p>
       )}
 
-      {answer.adopted && <strong> [채택된 답변] </strong>}
-      <div>
+      <div className="answer-card__meta">
         <span>{answer.authorNickname}</span>
-        <span> · 추천 {answer.likeCount}</span>
-        <span> · {new Date(answer.createdAt).toLocaleString()}</span>
+        <span>추천 {answer.likeCount}</span>
+        <span>{new Date(answer.createdAt).toLocaleString()}</span>
       </div>
 
-      <div>
-        <button type="button" onClick={handleLike} disabled={busy}>
-          추천
-        </button>
-        {canEdit && !editing && (
-          <button type="button" onClick={() => setEditing(true)}>
-            수정
+      {!editing && (
+        <div className="answer-card__actions">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={handleLike} disabled={busy}>
+            추천
           </button>
-        )}
-        {canDelete && (
-          <button type="button" onClick={handleDelete} disabled={busy}>
-            삭제
-          </button>
-        )}
-        {isQuestionOwner && !questionResolved && !answer.adopted && (
-          <button type="button" onClick={handleAdopt} disabled={busy}>
-            채택
-          </button>
-        )}
-        {isQuestionOwner && answer.adopted && (
-          <button type="button" onClick={handleCancelAdoption} disabled={busy}>
-            채택 취소
-          </button>
-        )}
-        {currentUser && !isAuthor && (
-          <ReportButton targetType="ANSWER" targetId={answer.id} />
-        )}
-      </div>
+          {canEdit && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditing(true)}>
+              수정
+            </button>
+          )}
+          {canDelete && (
+            <button type="button" className="btn btn-destructive btn-sm" onClick={handleDelete} disabled={busy}>
+              삭제
+            </button>
+          )}
+          {isQuestionOwner && !questionResolved && !answer.adopted && (
+            <button type="button" className="btn btn-primary btn-sm" onClick={handleAdopt} disabled={busy}>
+              채택
+            </button>
+          )}
+          {isQuestionOwner && answer.adopted && (
+            <button type="button" className="btn btn-secondary btn-sm" onClick={handleCancelAdoption} disabled={busy}>
+              채택 취소
+            </button>
+          )}
+          {currentUser && !isAuthor && (
+            <ReportButton targetType="ANSWER" targetId={answer.id} />
+          )}
+        </div>
+      )}
 
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
     </li>
   )
 }

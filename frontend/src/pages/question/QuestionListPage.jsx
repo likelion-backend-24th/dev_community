@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
+import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
 
@@ -70,94 +71,138 @@ function QuestionListPage() {
   };
 
   return (
-    <div>
-      <h1>질문 목록</h1>
+    <div className="page">
+      <div className="page__header">
+        <h1 className="page__title">질문 목록</h1>
+      </div>
 
-      <form onSubmit={handleSearchSubmit}>
+      <form className="filter-bar" onSubmit={handleSearchSubmit}>
         <input
           type="text"
+          className="input"
           placeholder="검색어"
           value={keywordInput}
           onChange={(e) => setKeywordInput(e.target.value)}
         />
         <input
           type="text"
+          className="input"
           placeholder="태그"
           value={tagInput}
           onChange={(e) => setTagInput(e.target.value)}
         />
-        <button type="submit">검색</button>
+        <button type="submit" className="btn btn-secondary">
+          검색
+        </button>
       </form>
 
-      <div>
-        <label htmlFor="status">상태</label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => {
-            setPage(0);
-            setStatus(e.target.value);
-          }}
-        >
-          <option value="">전체</option>
-          <option value="UNRESOLVED">미해결</option>
-          <option value="RESOLVED">해결</option>
-        </select>
+      <div className="filter-row">
+        <div className="select-group">
+          <label htmlFor="status">상태</label>
+          <select
+            id="status"
+            className="select"
+            value={status}
+            onChange={(e) => {
+              setPage(0);
+              setStatus(e.target.value);
+            }}
+          >
+            <option value="">전체</option>
+            <option value="UNRESOLVED">미해결</option>
+            <option value="RESOLVED">해결</option>
+          </select>
+        </div>
 
-        <label htmlFor="sort">정렬</label>
-        <select
-          id="sort"
-          value={sort}
-          onChange={(e) => {
-            setPage(0);
-            setSort(e.target.value);
-          }}
-        >
-          <option value="">최신순</option>
-          <option value="LIKE">추천순</option>
-          <option value="UNRESOLVED">미해결 우선</option>
-        </select>
+        <div className="select-group">
+          <label htmlFor="sort">정렬</label>
+          <select
+            id="sort"
+            className="select"
+            value={sort}
+            onChange={(e) => {
+              setPage(0);
+              setSort(e.target.value);
+            }}
+          >
+            <option value="">최신순</option>
+            <option value="LIKE">추천순</option>
+            <option value="UNRESOLVED">미해결 우선</option>
+          </select>
+        </div>
       </div>
 
-      {loading && <p>불러오는 중...</p>}
-      {error && <p role="alert">{error}</p>}
+      {loading && <p className="state-text">불러오는 중...</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
 
-      {!loading && !error && questions.length === 0 && <p>질문이 없습니다.</p>}
+      {!loading && !error && questions.length === 0 && (
+        <div className="empty-state">
+          <p>아직 질문이 없어요. 첫 질문을 남겨보세요.</p>
+          <Link to="/questions/new" className="btn btn-primary">
+            질문하기
+          </Link>
+        </div>
+      )}
 
       {!loading && !error && questions.length > 0 && (
-        <ul>
+        <ul className="question-list">
           {questions.map((q) => (
-            <li key={q.id}>
-              <Link to={`/questions/${q.id}`}>{q.title}</Link>
-              <span> [{STATUS_LABEL[q.status] ?? q.status}]</span>
-              <span> · {q.authorNickname}</span>
-              <span>
-                {" "}
-                · 태그: {q.tags.length > 0 ? q.tags.join(", ") : "없음"}
-              </span>
-              <span> · 조회 {q.viewCount}</span>
-              <span> · 추천 {q.likeCount}</span>
-              <span> · 답변 {q.answerCount}</span>
-              <span> · {new Date(q.createdAt).toLocaleString()}</span>
+            <li key={q.id} className="question-card">
+              <div className="question-card__top">
+                <Link to={`/questions/${q.id}`} className="question-card__title">
+                  {q.title}
+                </Link>
+                <span
+                  className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
+                >
+                  {STATUS_LABEL[q.status] ?? q.status}
+                </span>
+              </div>
+
+              <div className="question-card__tags">
+                {q.tags.length > 0 ? (
+                  q.tags.map((tag) => (
+                    <span key={tag} className="tag-chip">
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="question-card__meta">태그 없음</span>
+                )}
+              </div>
+
+              <div className="question-card__meta">
+                <span>{q.authorNickname}</span>
+                <span>조회 {q.viewCount}</span>
+                <span>추천 {q.likeCount}</span>
+                <span>답변 {q.answerCount}</span>
+                <span>{new Date(q.createdAt).toLocaleString()}</span>
+              </div>
             </li>
           ))}
         </ul>
       )}
 
       {meta.totalPages > 0 && (
-        <div>
+        <div className="pagination">
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
           >
             이전
           </button>
-          <span>
+          <span className="pagination__info">
             {page + 1} / {meta.totalPages}
           </span>
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
             onClick={() => setPage((p) => Math.min(meta.totalPages - 1, p + 1))}
             disabled={page >= meta.totalPages - 1}
           >

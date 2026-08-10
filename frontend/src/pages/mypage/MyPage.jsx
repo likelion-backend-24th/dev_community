@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
   getMyInfo,
@@ -10,6 +10,7 @@ import {
   withdraw,
 } from "../../api/userApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
+import "../../styles/mypage.css";
 
 function MyPage() {
   const navigate = useNavigate();
@@ -64,33 +65,48 @@ function MyPage() {
     navigate(`/questions/${questionId}`);
   };
 
-  if (loading) return <div>불러오는 중...</div>;
-  if (error) return <div role="alert">{error}</div>;
+  if (loading) return <p className="state-text">불러오는 중...</p>;
+  if (error)
+    return (
+      <div className="page">
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      </div>
+    );
 
   return (
-    <div>
-      <h1>마이페이지</h1>
+    <div className="page">
+      <div className="page__header">
+        <h1 className="page__title">마이페이지</h1>
+      </div>
 
-      <section>
-        <div></div>
-        <p>{profile.nickname}</p>
-        <p>{profile.username}</p>
-        <p>가입일 {profile.createdAt.slice(0, 10)}</p>
-
-        <button type="button" onClick={() => setEditInfoOpen(true)}>
-          내 정보 수정
-        </button>
-        <button type="button" onClick={() => setPasswordModalOpen(true)}>
-          비밀번호 변경
-        </button>
-        <button type="button" onClick={() => setWithdrawModalOpen(true)}>
-          회원 탈퇴
-        </button>
+      <section className="profile-card card">
+        <div className="profile-card__avatar">{profile.nickname[0]}</div>
+        <div className="profile-card__info">
+          <p className="profile-card__nickname">{profile.nickname}</p>
+          <p className="profile-card__username">@{profile.username}</p>
+          <p className="profile-card__joined">
+            가입일 {profile.createdAt.slice(0, 10)}
+          </p>
+        </div>
+        <div className="profile-card__actions">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditInfoOpen(true)}>
+            내 정보 수정
+          </button>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setPasswordModalOpen(true)}>
+            비밀번호 변경
+          </button>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setWithdrawModalOpen(true)}>
+            회원 탈퇴
+          </button>
+        </div>
       </section>
 
-      <nav>
+      <nav className="tabs">
         <button
           type="button"
+          className="tab"
           onClick={() => handleTabClick("questions")}
           disabled={activeTab === "questions"}
         >
@@ -98,6 +114,7 @@ function MyPage() {
         </button>
         <button
           type="button"
+          className="tab"
           onClick={() => handleTabClick("answers")}
           disabled={activeTab === "answers"}
         >
@@ -106,28 +123,40 @@ function MyPage() {
       </nav>
 
       {activeTab === "questions" ? (
-        <ul>
-          {questions.map((q) => (
-            <li key={q.id} onClick={() => handleItemClick(q.id)}>
-              <span>{STATUS_LABEL[q.status] ?? q.status}</span>
-              <span>{q.title}</span>
-              <span>{q.createdAt}</span>
-            </li>
-          ))}
-        </ul>
+        questions.length === 0 ? (
+          <div className="empty-state">
+            <p>아직 작성한 질문이 없어요.</p>
+          </div>
+        ) : (
+          <ul className="mypage-list">
+            {questions.map((q) => (
+              <li key={q.id} className="mypage-list__item" onClick={() => handleItemClick(q.id)}>
+                <span className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}>
+                  {STATUS_LABEL[q.status] ?? q.status}
+                </span>
+                <span className="mypage-list__title">{q.title}</span>
+                <span className="mypage-list__date">{new Date(q.createdAt).toLocaleString()}</span>
+              </li>
+            ))}
+          </ul>
+        )
+      ) : answers.length === 0 ? (
+        <div className="empty-state">
+          <p>아직 작성한 답변이 없어요.</p>
+        </div>
       ) : (
-        <ul>
+        <ul className="mypage-list">
           {answers.map((a) => (
-            <li key={a.id} onClick={() => handleItemClick(a.questionId)}>
-              {a.adopted && <span>채택됨</span>}
-              <span>{a.questionTitle}</span>
-              <span>{a.createdAt}</span>
+            <li key={a.id} className="mypage-list__item" onClick={() => handleItemClick(a.questionId)}>
+              {a.isAdopted && <span className="badge badge-resolved">채택됨</span>}
+              <span className="mypage-list__title">{a.content}</span>
+              <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
             </li>
           ))}
         </ul>
       )}
 
-      {toast && <p role="status">{toast}</p>}
+      {toast && <div className="toast" role="status">{toast}</div>}
 
       {editInfoOpen && (
         <EditInfoModal
@@ -187,20 +216,36 @@ function EditInfoModal({ initialNickname, onClose, onSaved }) {
   };
 
   return (
-    <div role="dialog" aria-label="내 정보 수정">
-      <label htmlFor="nickname">변경할 닉네임 입력</label>
-      <input
-        id="nickname"
-        value={nickname}
-        onChange={(e) => setNickname(e.target.value)}
-      />
-      {error && <p role="alert">{error}</p>}
-      <button type="button" onClick={onClose}>
-        취소
-      </button>
-      <button type="button" onClick={handleSave} disabled={submitting}>
-        {submitting ? "저장 중..." : "수정"}
-      </button>
+    <div className="modal-overlay">
+      <div className="modal" role="dialog" aria-label="내 정보 수정">
+        <div className="modal__header">
+          <h2 className="modal__title">내 정보 수정</h2>
+        </div>
+        <div className="modal__body">
+          <div className="form-field">
+            <label htmlFor="nickname">변경할 닉네임 입력</label>
+            <input
+              id="nickname"
+              className="input"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+          </div>
+          {error && (
+            <p className="inline-error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+        <div className="modal__footer">
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            취소
+          </button>
+          <button type="button" className="btn btn-primary" onClick={handleSave} disabled={submitting}>
+            {submitting ? "저장 중..." : "수정"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -228,28 +273,47 @@ function PasswordModal({ onClose, onSaved }) {
   };
 
   return (
-    <div role="dialog" aria-label="비밀번호 변경">
-      <label htmlFor="currentPassword">현재 비밀번호</label>
-      <input
-        id="currentPassword"
-        type="password"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-      />
-      <label htmlFor="newPassword">새 비밀번호</label>
-      <input
-        id="newPassword"
-        type="password"
-        value={newPassword}
-        onChange={(e) => setNewPassword(e.target.value)}
-      />
-      {error && <p role="alert">{error}</p>}
-      <button type="button" onClick={onClose}>
-        취소
-      </button>
-      <button type="button" onClick={handleSave} disabled={submitting}>
-        {submitting ? "저장 중..." : "저장"}
-      </button>
+    <div className="modal-overlay">
+      <div className="modal" role="dialog" aria-label="비밀번호 변경">
+        <div className="modal__header">
+          <h2 className="modal__title">비밀번호 변경</h2>
+        </div>
+        <div className="modal__body">
+          <div className="form-field">
+            <label htmlFor="currentPassword">현재 비밀번호</label>
+            <input
+              id="currentPassword"
+              type="password"
+              className="input"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          <div className="form-field">
+            <label htmlFor="newPassword">새 비밀번호</label>
+            <input
+              id="newPassword"
+              type="password"
+              className="input"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+          {error && (
+            <p className="inline-error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+        <div className="modal__footer">
+          <button type="button" className="btn btn-ghost" onClick={onClose}>
+            취소
+          </button>
+          <button type="button" className="btn btn-primary" onClick={handleSave} disabled={submitting}>
+            {submitting ? "저장 중..." : "저장"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -274,22 +338,41 @@ function WithdrawModal({ onClose, onConfirmed }) {
   };
 
   return (
-    <div role="dialog" aria-label="회원 탈퇴 확인">
-      <p>정말 탈퇴하시겠습니까?</p>
-      <label htmlFor="withdrawPassword">비밀번호 확인</label>
-      <input
-        id="withdrawPassword"
-        type="password"
-        value={currentPassword}
-        onChange={(e) => setCurrentPassword(e.target.value)}
-      />
-      {error && <p role="alert">{error}</p>}
-      <button type="button" onClick={onClose} disabled={submitting}>
-        취소
-      </button>
-      <button type="button" onClick={handleConfirm} disabled={submitting}>
-        {submitting ? "처리 중..." : "탈퇴"}
-      </button>
+    <div className="modal-overlay">
+      <div className="modal" role="dialog" aria-label="회원 탈퇴 확인">
+        <div className="modal__header">
+          <h2 className="modal__title">회원 탈퇴</h2>
+        </div>
+        <div className="modal__body">
+          <p className="modal__desc">
+            탈퇴하면 로그인할 수 없게 됩니다. 작성한 질문과 답변은 삭제되지
+            않고 "탈퇴한 사용자"로 표시되어 남습니다.
+          </p>
+          <div className="form-field">
+            <label htmlFor="withdrawPassword">비밀번호 확인</label>
+            <input
+              id="withdrawPassword"
+              type="password"
+              className="input"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          {error && (
+            <p className="inline-error" role="alert">
+              {error}
+            </p>
+          )}
+        </div>
+        <div className="modal__footer">
+          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
+            취소
+          </button>
+          <button type="button" className="btn btn-destructive" onClick={handleConfirm} disabled={submitting}>
+            {submitting ? "처리 중..." : "탈퇴"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

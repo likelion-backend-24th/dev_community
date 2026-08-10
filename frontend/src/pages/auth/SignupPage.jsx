@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signup, checkUsername, checkNickname } from '../../api/authApi'
 import AuthHeader from '../../components/layout/AuthHeader'
+import '../../styles/auth.css'
 
 const IDLE = { status: 'idle', message: '' }
 
@@ -79,86 +80,136 @@ function SignupPage() {
   }
 
   return (
-    <div>
+    <div className="auth-page">
       <AuthHeader />
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="username">아이디</label>
-          <input
-            id="username"
-            name="username"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
-          <button
-            type="button"
-            onClick={handleCheckUsername}
-            disabled={usernameCheck.status === 'checking'}
-          >
-            중복 확인
-          </button>
-          {usernameCheck.message && <p>{usernameCheck.message}</p>}
-        </div>
 
-        <div>
-          <label htmlFor="nickname">닉네임</label>
-          <input
-            id="nickname"
-            name="nickname"
-            value={form.nickname}
-            onChange={handleChange}
-            required
-          />
-          <button
-            type="button"
-            onClick={handleCheckNickname}
-            disabled={nicknameCheck.status === 'checking'}
-          >
-            중복 확인
-          </button>
-          {nicknameCheck.message && <p>{nicknameCheck.message}</p>}
-        </div>
+      <main className="auth-main">
+        <div className="auth-card">
+          <h1 className="auth-card__title">Dev_Community에 합류하기</h1>
+          <p className="auth-card__subtitle">
+            질문하고 답변하며 함께 성장하는 커뮤니티예요.
+          </p>
 
-        <div>
-          <label htmlFor="password">비밀번호</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-        </div>
+          <form className="auth-form" onSubmit={handleSubmit} noValidate>
+            <div className="field">
+              <label className="field__label" htmlFor="username">
+                아이디
+              </label>
+              <div className="field__row">
+                <input
+                  id="username"
+                  name="username"
+                  className={`field__input${usernameCheck.status === 'unavailable' ? ' is-error' : ''}`}
+                  value={form.username}
+                  onChange={handleChange}
+                  autoComplete="username"
+                  required
+                />
+                <button
+                  type="button"
+                  className="field__check-btn"
+                  onClick={handleCheckUsername}
+                  disabled={usernameCheck.status === 'checking'}
+                >
+                  중복 확인
+                </button>
+              </div>
+              {usernameCheck.message && (
+                <p className={`field__hint is-${usernameCheck.status}`}>
+                  {usernameCheck.message}
+                </p>
+              )}
+            </div>
 
-        <div>
-          <label htmlFor="passwordConfirm">비밀번호 확인</label>
-          <input
-            id="passwordConfirm"
-            name="passwordConfirm"
-            type="password"
-            value={form.passwordConfirm}
-            onChange={handleChange}
-            required
-          />
-        </div>
+            <div className="field">
+              <label className="field__label" htmlFor="nickname">
+                닉네임
+              </label>
+              <div className="field__row">
+                <input
+                  id="nickname"
+                  name="nickname"
+                  className={`field__input${nicknameCheck.status === 'unavailable' ? ' is-error' : ''}`}
+                  value={form.nickname}
+                  onChange={handleChange}
+                  autoComplete="nickname"
+                  required
+                />
+                <button
+                  type="button"
+                  className="field__check-btn"
+                  onClick={handleCheckNickname}
+                  disabled={nicknameCheck.status === 'checking'}
+                >
+                  중복 확인
+                </button>
+              </div>
+              {nicknameCheck.message && (
+                <p className={`field__hint is-${nicknameCheck.status}`}>
+                  {nicknameCheck.message}
+                </p>
+              )}
+            </div>
 
-        {error && <p role="alert">{error}</p>}
-        <button
-          type="submit"
-          disabled={
-            submitting ||
-            usernameCheck.status !== 'available' ||
-            nicknameCheck.status !== 'available'
-          }
-        >
-          {submitting ? '가입 중...' : '회원가입'}
-        </button>
-      </form>
-      <p>
-        이미 계정이 있으신가요? <Link to="/login">로그인</Link>
-      </p>
+            <div className="field">
+              <label className="field__label" htmlFor="password">
+                비밀번호
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                className="field__input"
+                value={form.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+
+            <div className="field">
+              <label className="field__label" htmlFor="passwordConfirm">
+                비밀번호 확인
+              </label>
+              <input
+                id="passwordConfirm"
+                name="passwordConfirm"
+                type="password"
+                className="field__input"
+                value={form.passwordConfirm}
+                onChange={handleChange}
+                autoComplete="new-password"
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="auth-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            <button
+              className="auth-submit"
+              type="submit"
+              disabled={
+                submitting ||
+                usernameCheck.status !== 'available' ||
+                nicknameCheck.status !== 'available'
+              }
+            >
+              {submitting ? '가입 중...' : '회원가입'}
+            </button>
+          </form>
+
+          <div className="auth-links">
+            <p className="auth-links__muted">
+              이미 계정이 있으신가요?
+              <Link to="/login">로그인</Link>
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
   )
 }

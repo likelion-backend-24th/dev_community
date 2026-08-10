@@ -7,6 +7,7 @@ import { toggleQuestionLike } from "../../api/likeApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
+import "../../styles/question.css";
 
 function QuestionDetailPage() {
   const { id } = useParams();
@@ -90,8 +91,15 @@ function QuestionDetailPage() {
     }
   };
 
-  if (loading) return <p>불러오는 중...</p>;
-  if (error) return <p role="alert">{error}</p>;
+  if (loading) return <p className="state-text">불러오는 중...</p>;
+  if (error)
+    return (
+      <div className="page">
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      </div>
+    );
   if (!question) return null;
 
   const isOwner = user?.id === question.authorId;
@@ -99,35 +107,56 @@ function QuestionDetailPage() {
   const canDelete = isOwner || isAdmin;
 
   return (
-    <div>
-      <h1>{question.title}</h1>
-      <p>
+    <div className="page">
+      <Link to="/questions" className="back-link">
+        ← 목록으로
+      </Link>
+
+      <div className="question-detail__title-row">
+        <h1 className="question-detail__title">{question.title}</h1>
+        <span
+          className={`badge ${question.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
+        >
+          {STATUS_LABEL[question.status] ?? question.status}
+        </span>
+      </div>
+
+      <div className="question-detail__meta">
         <span>{question.authorNickname}</span>
-        <span> · [{STATUS_LABEL[question.status] ?? question.status}]</span>
-        <span> · 조회 {question.viewCount}</span>
-        <span> · 추천 {question.likeCount}</span>
-        <span> · {new Date(question.createdAt).toLocaleString()}</span>
-      </p>
-      <p>
-        태그: {question.tags.length > 0 ? question.tags.join(", ") : "없음"}
-      </p>
+        <span>조회 {question.viewCount}</span>
+        <span>추천 {question.likeCount}</span>
+        <span>{new Date(question.createdAt).toLocaleString()}</span>
+      </div>
 
-      <p>{question.content}</p>
+      <div className="question-detail__tags">
+        {question.tags.length > 0 ? (
+          question.tags.map((tag) => (
+            <span key={tag} className="tag-chip">
+              {tag}
+            </span>
+          ))
+        ) : (
+          <span className="question-card__meta">태그 없음</span>
+        )}
+      </div>
 
-      <div>
-        <button type="button" onClick={handleLikeQuestion}>
+      <p className="question-detail__body">{question.content}</p>
+
+      <div className="question-detail__actions">
+        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLikeQuestion}>
           추천
         </button>
         {canEdit && (
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
             onClick={() => navigate(`/questions/${id}/edit`)}
           >
             수정
           </button>
         )}
         {canDelete && (
-          <button type="button" onClick={handleDeleteQuestion}>
+          <button type="button" className="btn btn-destructive btn-sm" onClick={handleDeleteQuestion}>
             삭제
           </button>
         )}
@@ -136,10 +165,8 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <Link to="/questions">목록으로</Link>
-
-      <h2>답변 {answers.length}개</h2>
-      <ul>
+      <h2 className="answers-heading">답변 {answers.length}개</h2>
+      <ul className="answer-list">
         {answers.map((answer) => (
           <AnswerItem
             key={answer.id}
@@ -154,20 +181,25 @@ function QuestionDetailPage() {
       </ul>
 
       {user ? (
-        <form onSubmit={handleAnswerSubmit}>
+        <form className="answer-form" onSubmit={handleAnswerSubmit}>
           <textarea
+            className="textarea"
             value={answerContent}
             onChange={(e) => setAnswerContent(e.target.value)}
             placeholder="답변을 입력하세요"
             required
           />
-          {answerError && <p role="alert">{answerError}</p>}
-          <button type="submit" disabled={answerSubmitting}>
+          {answerError && (
+            <p className="inline-error" role="alert">
+              {answerError}
+            </p>
+          )}
+          <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
             {answerSubmitting ? "등록 중..." : "답변 등록"}
           </button>
         </form>
       ) : (
-        <p>
+        <p className="answer-form__prompt">
           <Link to="/login">로그인</Link> 후 답변을 작성할 수 있습니다.
         </p>
       )}

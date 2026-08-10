@@ -1,0 +1,63 @@
+/* Admin (신고 관리 / 회원 관리) (관리자: 테이블형 리스트 + 확인 모달) */
+
+.admin-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-xl);
+}
+
+.table-wrap {
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: var(--space-sm) var(--space-base);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: var(--surface-tertiary);
+}
+
+.table td {
+  color: var(--text-normal);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.table tbody tr {
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.table tbody tr:hover {
+  background: var(--surface-hover);
+}
+
+.table a {
+  color: var(--text-link);
+}
+
+.table__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.table__empty-cell {
+  color: var(--text-muted);
+}

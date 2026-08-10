@@ -1,0 +1,66 @@
+/* App chrome */
+
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+  height: 64px;
+  padding: 0 var(--space-xxl);
+  background: var(--surface-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.navbar__brand {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-header);
+}
+
+.navbar__links,
+.navbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.navbar a:not(.btn) {
+  color: var(--interactive-normal);
+  font-size: 14px;
+  font-weight: 500;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.navbar a:not(.btn):hover {
+  color: var(--text-header);
+}
+
+.navbar .btn-ghost {
+  color: var(--interactive-normal);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.page {
+  max-width: 840px;
+  margin: 0 auto;
+  padding: var(--space-xxl) var(--space-base) var(--space-section);
+}
+
+.page__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-base);
+  margin-bottom: var(--space-xl);
+}
+
+.page__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-header);
+}
