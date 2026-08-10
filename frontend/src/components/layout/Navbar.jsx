@@ -9,10 +9,12 @@ function Navbar() {
   const handleLogout = async () => {
     try {
       await logoutApi();
-    } catch {
-    } finally {
       logout();
       navigate("/");
+    } catch (err) {
+      // 401이면 AuthProvider의 인터셉터가 미리 /login으로 리다이렉트 처리
+      console.error("로그아웃 요청 실패", err);
+      logout();
     }
   };
 
