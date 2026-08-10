@@ -2,11 +2,18 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getReports, processReport } from '../../api/adminApi'
 import { getAnswer } from '../../api/answerApi'
+import '../../styles/admin.css'
 
 const STATUS_LABEL = {
   PENDING: '대기중',
   RESOLVED: '정당함',
   REJECTED: '부당함',
+}
+
+const STATUS_BADGE = {
+  PENDING: 'badge-pending',
+  RESOLVED: 'badge-danger',
+  REJECTED: 'badge-open',
 }
 
 const PAGE_SIZE = 10
@@ -77,105 +84,128 @@ function AdminReportsPage() {
   }
 
   return (
-    <div>
-      <h1>신고 관리</h1>
-
-      <div>
-        <label htmlFor="status">상태</label>
-        <select
-          id="status"
-          value={status}
-          onChange={(e) => {
-            setPage(0)
-            setStatus(e.target.value)
-          }}
-        >
-          <option value="">전체</option>
-          <option value="PENDING">대기중</option>
-          <option value="RESOLVED">정당함</option>
-          <option value="REJECTED">부당함</option>
-        </select>
+    <div className="page">
+      <div className="page__header">
+        <h1 className="page__title">신고 관리</h1>
       </div>
 
-      {loading && <p>불러오는 중...</p>}
-      {error && <p role="alert">{error}</p>}
+      <div className="admin-toolbar">
+        <div className="select-group">
+          <label htmlFor="status">상태</label>
+          <select
+            id="status"
+            className="select"
+            value={status}
+            onChange={(e) => {
+              setPage(0)
+              setStatus(e.target.value)
+            }}
+          >
+            <option value="">전체</option>
+            <option value="PENDING">대기중</option>
+            <option value="RESOLVED">정당함</option>
+            <option value="REJECTED">부당함</option>
+          </select>
+        </div>
+      </div>
 
-      {!loading && !error && reports.length === 0 && <p>신고가 없습니다.</p>}
+      {loading && <p className="state-text">불러오는 중...</p>}
+      {error && (
+        <p className="inline-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      {!loading && !error && reports.length === 0 && (
+        <div className="empty-state">
+          <p>신고가 없어요.</p>
+        </div>
+      )}
 
       {!loading && !error && reports.length > 0 && (
-        <table>
-          <thead>
-            <tr>
-              <th>대상</th>
-              <th>신고자</th>
-              <th>피신고자</th>
-              <th>사유</th>
-              <th>상태</th>
-              <th>신고일</th>
-              <th>처리</th>
-            </tr>
-          </thead>
-          <tbody>
-            {reports.map((r) => (
-              <tr key={r.id}>
-                <td>
-                  {r.linkQuestionId ? (
-                    <Link to={`/questions/${r.linkQuestionId}`}>
-                      {r.targetType} #{r.targetId}
-                    </Link>
-                  ) : (
-                    <>
-                      {r.targetType} #{r.targetId}
-                    </>
-                  )}
-                </td>
-                <td>{r.reporterNickname}</td>
-                <td>{r.targetUserNickname}</td>
-                <td>{r.reason}</td>
-                <td>{STATUS_LABEL[r.status] ?? r.status}</td>
-                <td>{new Date(r.createdAt).toLocaleString()}</td>
-                <td>
-                  {r.status === 'PENDING' ? (
-                    <>
-                      <button
-                        type="button"
-                        disabled={processingId === r.id}
-                        onClick={() => handleProcess(r.id, 'RESOLVED')}
-                      >
-                        정당함
-                      </button>
-                      <button
-                        type="button"
-                        disabled={processingId === r.id}
-                        onClick={() => handleProcess(r.id, 'REJECTED')}
-                      >
-                        부당함
-                      </button>
-                    </>
-                  ) : (
-                    '-'
-                  )}
-                </td>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>대상</th>
+                <th>신고자</th>
+                <th>피신고자</th>
+                <th>사유</th>
+                <th>상태</th>
+                <th>신고일</th>
+                <th>처리</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {reports.map((r) => (
+                <tr key={r.id}>
+                  <td>
+                    {r.linkQuestionId ? (
+                      <Link to={`/questions/${r.linkQuestionId}`}>
+                        {r.targetType} #{r.targetId}
+                      </Link>
+                    ) : (
+                      <>
+                        {r.targetType} #{r.targetId}
+                      </>
+                    )}
+                  </td>
+                  <td>{r.reporterNickname}</td>
+                  <td>{r.targetUserNickname}</td>
+                  <td>{r.reason}</td>
+                  <td>
+                    <span className={`badge ${STATUS_BADGE[r.status] ?? 'badge-open'}`}>
+                      {STATUS_LABEL[r.status] ?? r.status}
+                    </span>
+                  </td>
+                  <td>{new Date(r.createdAt).toLocaleString()}</td>
+                  <td>
+                    {r.status === 'PENDING' ? (
+                      <div className="table__actions">
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={processingId === r.id}
+                          onClick={() => handleProcess(r.id, 'RESOLVED')}
+                        >
+                          정당함
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          disabled={processingId === r.id}
+                          onClick={() => handleProcess(r.id, 'REJECTED')}
+                        >
+                          부당함
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="table__empty-cell">-</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {meta.totalPages > 0 && (
-        <div>
+        <div className="pagination">
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
             onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
           >
             이전
           </button>
-          <span>
+          <span className="pagination__info">
             {page + 1} / {meta.totalPages}
           </span>
           <button
             type="button"
+            className="btn btn-secondary btn-sm"
             onClick={() => setPage((p) => Math.min(meta.totalPages - 1, p + 1))}
             disabled={page >= meta.totalPages - 1}
           >

@@ -1,0 +1,39 @@
+/* Error pages (401/403/404) */
+
+.error-page {
+  min-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xxl) var(--space-base);
+  text-align: center;
+}
+
+.error-page__code {
+  margin: 0;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-muted);
+}
+
+.error-page__title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-header);
+}
+
+.error-page__desc {
+  margin: 0 0 var(--space-base);
+  font-size: 14px;
+  color: var(--text-muted);
+  max-width: 360px;
+}
+
+.error-page__actions {
+  display: flex;
+  gap: var(--space-sm);
+}

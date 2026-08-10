@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createReport } from '../../api/reportApi'
+import '../../styles/question.css'
 
 function ReportButton({ targetType, targetId }) {
   const [open, setOpen] = useState(false)
@@ -24,34 +25,41 @@ function ReportButton({ targetType, targetId }) {
   }
 
   if (done) {
-    return <span>신고 접수됨</span>
+    return <span className="report-widget__done">신고 접수됨</span>
   }
 
   if (!open) {
     return (
-      <button type="button" onClick={() => setOpen(true)}>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(true)}>
         신고
       </button>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="신고 사유"
-        value={reason}
-        onChange={(e) => setReason(e.target.value)}
-        required
-      />
-      <button type="submit" disabled={submitting}>
-        제출
-      </button>
-      <button type="button" onClick={() => setOpen(false)}>
-        취소
-      </button>
-      {error && <span role="alert">{error}</span>}
-    </form>
+    <span className="report-widget">
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          className="input"
+          placeholder="신고 사유"
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          required
+        />
+        <button type="submit" className="btn btn-destructive btn-sm" disabled={submitting}>
+          제출
+        </button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>
+          취소
+        </button>
+      </form>
+      {error && (
+        <span className="inline-error" role="alert">
+          {error}
+        </span>
+      )}
+    </span>
   )
 }
 

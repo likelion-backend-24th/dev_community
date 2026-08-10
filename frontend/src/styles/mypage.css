@@ -1,0 +1,129 @@
+/* Mypage */
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.profile-card__avatar {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-pill);
+  background: var(--blurple);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.profile-card__info {
+  flex: 1;
+  min-width: 160px;
+}
+
+.profile-card__nickname {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-header);
+}
+
+.profile-card__username {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.profile-card__joined {
+  margin: var(--space-xs) 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.profile-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.tabs {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-base);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tab {
+  background: transparent;
+  border: none;
+  padding: var(--space-sm) var(--space-base);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color var(--motion-fast) var(--ease-standard),
+    border-color var(--motion-fast) var(--ease-standard);
+}
+
+.tab:hover:not(:disabled) {
+  color: var(--text-normal);
+}
+
+.tab:disabled {
+  color: var(--text-header);
+  border-bottom-color: var(--blurple);
+  cursor: default;
+  opacity: 1;
+}
+
+.mypage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.mypage-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-base);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.mypage-list__item:hover {
+  border-color: rgba(88, 101, 242, 0.4);
+}
+
+.mypage-list__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--text-normal);
+}
+
+.mypage-list__date {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}

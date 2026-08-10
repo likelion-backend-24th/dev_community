@@ -1,0 +1,76 @@
+/* Question write/edit form */
+
+.question-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.question-form__content {
+  min-height: 240px;
+}
+
+.tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  background: var(--input-bg);
+  border: 1px solid var(--input-bg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm) var(--space-md);
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.tag-input:focus-within {
+  border-color: var(--blurple);
+}
+
+.tag-input__field {
+  flex: 1;
+  min-width: 120px;
+  background: transparent;
+  border: none;
+  color: var(--text-normal);
+  font-family: inherit;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.tag-input__field:focus {
+  outline: none;
+}
+
+.tag-input__field::placeholder {
+  color: var(--placeholder);
+}
+
+.tag-input__field:disabled {
+  opacity: 0.5;
+}
+
+.tag-chip--removable {
+  gap: var(--space-xs);
+  padding-right: 6px;
+}
+
+.tag-chip__remove {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--motion-fast) var(--ease-standard);
+}
+
+.tag-chip__remove:hover {
+  color: var(--red-soft);
+}
+
+.question-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+}
