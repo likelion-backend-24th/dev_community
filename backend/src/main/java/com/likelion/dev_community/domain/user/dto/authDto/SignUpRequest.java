@@ -9,6 +9,7 @@ import lombok.Getter;
 @Getter
 public class SignUpRequest {
     @NotBlank(message = "아이디를 입력해주세요.")
+    @Size(max = 50, message = "아이디는 50자 이하여야 합니다.")
     private final String username;
 
     @NotBlank
@@ -16,5 +17,6 @@ public class SignUpRequest {
     private final String password;
 
     @NotBlank
+    @Size(max = 30, message = "닉네임은 30자 이하여야 합니다.")
     private final String nickname;
 }

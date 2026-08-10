@@ -1,7 +1,8 @@
 package com.likelion.dev_community.domain.answer.entity;
 
 import com.likelion.dev_community.common.entity.BaseTimeEntity;
-import com.likelion.dev_community.domain.answer.exception.AdoptedAnswerDeletionException;
+import com.likelion.dev_community.common.exception.CustomException;
+import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.user.entity.User;
 import jakarta.persistence.*;
@@ -58,11 +59,12 @@ public class Answer extends BaseTimeEntity {
 
     public void softDelete() {
         if (this.isAdopted) {
-            throw new AdoptedAnswerDeletionException();
+            throw new CustomException(ErrorCode.ADOPTED_ANSWER_DELETE_FORBIDDEN);
         }
         this.deletedAt = LocalDateTime.now();
     }
 
+    // 질문 삭제에 연쇄되는 삭제라 채택 여부와 무관하게 허용 (softDelete()와 달리 예외를 던지지 않음)
     public void cascadeSoftDelete() {
         this.deletedAt = LocalDateTime.now();
     }

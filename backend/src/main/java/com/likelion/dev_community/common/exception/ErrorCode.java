@@ -19,6 +19,7 @@ public enum ErrorCode {
     EXPIRED_REFRESH_TOKEN(HttpStatus.FORBIDDEN,"EXPIRED_REFRESH_TOKEN","만료된 토큰"),
     QUESTION_ALREADY_RESOLVED(HttpStatus.CONFLICT, "QUESTION_ALREADY_RESOLVED", "이미 채택된 답변이 존재하는 질문입니다."),
     ANSWER_NOT_ADOPTED(HttpStatus.CONFLICT, "ANSWER_NOT_ADOPTED", "채택되지 않은 답변입니다."),
+    ADOPTED_ANSWER_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "ADOPTED_ANSWER_DELETE_FORBIDDEN", "접근 권한이 없습니다. 채택된 답변은 삭제할 수 없습니다. 먼저 채택을 취소해주세요."),
 
     SELF_REPORT_NOT_ALLOWED(HttpStatus.FORBIDDEN,"SELF_REPORT_NOT_ALLOWED", "자신의 게시물, 답변은 신고할 수 없습니다."),
     ALREADY_PROCESSED_REPORT(HttpStatus.CONFLICT, "ALREADY_PROCESSED_REPORT", "이미 처리된 신고입니다."),

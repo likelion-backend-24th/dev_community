@@ -203,7 +203,7 @@ class AnswerServiceImplTest {
 
         assertThatThrownBy(() -> answerService.deleteAnswer(1L, 100L))
                 .isInstanceOf(CustomException.class)
-                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.ADOPTED_ANSWER_DELETE_FORBIDDEN));
         assertThat(answer.getDeletedAt()).isNull();
     }
 

@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.answer.service;
 
+import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.xss.XssSanitizer;
@@ -51,7 +52,7 @@ public class AnswerServiceImpl implements AnswerService {
         return AnswerResponse.from(answer);
     }
 
-    //
+    // 답변 목록 조회
     @Override
     @Transactional(readOnly = true)
     public List<AnswerResponse> readAnswers(Long questionId) {
@@ -72,9 +73,7 @@ public class AnswerServiceImpl implements AnswerService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        if (!answer.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 수정할 수 있습니다.");
-        }
+        AuthorizationValidator.validateAuthor(answer.getAuthor().getId(), userId, "본인이 작성한 답변만 수정할 수 있습니다.");
 
         String content = xssSanitizer.sanitize(request.getContent());
         answer.update(content);
@@ -89,9 +88,7 @@ public class AnswerServiceImpl implements AnswerService {
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        if (!answer.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 답변만 삭제할 수 있습니다.");
-        }
+        AuthorizationValidator.validateAuthor(answer.getAuthor().getId(), userId, "본인이 작성한 답변만 삭제할 수 있습니다.");
 
         answer.softDelete();
     }
@@ -105,9 +102,7 @@ public class AnswerServiceImpl implements AnswerService {
 
         Question question = answer.getQuestion();
 
-        if (!question.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "질문 작성자만 답변을 채택할 수 있습니다.");
-        }
+        AuthorizationValidator.validateAuthor(question.getAuthor().getId(), userId, "질문 작성자만 답변을 채택할 수 있습니다.");
 
         if (question.getStatus() == QuestionStatus.RESOLVED) {
             throw new CustomException(ErrorCode.QUESTION_ALREADY_RESOLVED);
@@ -128,9 +123,7 @@ public class AnswerServiceImpl implements AnswerService {
 
         Question question = answer.getQuestion();
 
-        if (!question.getAuthor().getId().equals(userId)) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "질문 작성자만 답변 채택을 취소할 수 있습니다.");
-        }
+        AuthorizationValidator.validateAuthor(question.getAuthor().getId(), userId, "질문 작성자만 답변 채택을 취소할 수 있습니다.");
 
         if (!answer.isAdopted()) {
             throw new CustomException(ErrorCode.ANSWER_NOT_ADOPTED);

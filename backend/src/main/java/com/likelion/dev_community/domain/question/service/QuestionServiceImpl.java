@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.question.service;
 
+import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
@@ -192,15 +193,11 @@ public class QuestionServiceImpl implements QuestionService {
     }
 
     private void checkUpdate(Question question, Long userId, boolean isAdmin) {
-        if (!question.getAuthor().getId().equals(userId) && !isAdmin) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 질문만 수정 가능");
-        }
+        AuthorizationValidator.validateAuthorOrAdmin(question.getAuthor().getId(), userId, isAdmin, "본인이 작성한 질문만 수정 가능");
     }
 
     private void checkDelete(Question question, Long userId, boolean isAdmin) {
-        if (!question.getAuthor().getId().equals(userId) && !isAdmin) {
-            throw new CustomException(ErrorCode.FORBIDDEN, "본인이 작성한 질문만 삭제 가능");
-        }
+        AuthorizationValidator.validateAuthorOrAdmin(question.getAuthor().getId(), userId, isAdmin, "본인이 작성한 질문만 삭제 가능");
     }
 
     // F-10
