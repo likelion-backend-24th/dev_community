@@ -68,12 +68,12 @@ public class AnswerServiceImpl implements AnswerService {
 
     // F-13
     @Override
-    public AnswerResponse updateAnswer(Long userId, Long answerId, AnswerRequest request) {
+    public AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        AuthorizationValidator.validateAuthor(answer.getAuthor().getId(), userId, "본인이 작성한 답변만 수정할 수 있습니다.");
+        AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 수정할 수 있습니다.");
 
         String content = xssSanitizer.sanitize(request.getContent());
         answer.update(content);
@@ -83,12 +83,12 @@ public class AnswerServiceImpl implements AnswerService {
 
     // F-13
     @Override
-    public void deleteAnswer(Long userId, Long answerId) {
+    public void deleteAnswer(Long userId, Long answerId, boolean isAdmin) {
 
         Answer answer = answerRepository.findById(answerId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
 
-        AuthorizationValidator.validateAuthor(answer.getAuthor().getId(), userId, "본인이 작성한 답변만 삭제할 수 있습니다.");
+        AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 삭제할 수 있습니다.");
 
         answer.softDelete();
     }
