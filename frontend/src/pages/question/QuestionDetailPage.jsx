@@ -7,6 +7,7 @@ import { toggleQuestionLike } from "../../api/likeApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
+import AlertModal from "../../components/common/AlertModal";
 import "../../styles/question.css";
 
 function QuestionDetailPage() {
@@ -22,6 +23,7 @@ function QuestionDetailPage() {
   const [answerContent, setAnswerContent] = useState("");
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
   const [answerError, setAnswerError] = useState("");
+  const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
@@ -76,6 +78,10 @@ function QuestionDetailPage() {
 
   const handleAnswerSubmit = async (e) => {
     e.preventDefault();
+    if (isOwner) {
+      setSelfAnswerAlertOpen(true);
+      return;
+    }
     setAnswerSubmitting(true);
     setAnswerError("");
     try {
@@ -202,6 +208,13 @@ function QuestionDetailPage() {
         <p className="answer-form__prompt">
           <Link to="/login">로그인</Link> 후 답변을 작성할 수 있습니다.
         </p>
+      )}
+
+      {selfAnswerAlertOpen && (
+        <AlertModal
+          message="본인의 글에는 답변을 등록할 수 없습니다."
+          onClose={() => setSelfAnswerAlertOpen(false)}
+        />
       )}
     </div>
   );

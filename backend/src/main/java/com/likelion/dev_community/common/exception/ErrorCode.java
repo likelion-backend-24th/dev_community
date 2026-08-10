@@ -22,6 +22,7 @@ public enum ErrorCode {
     ADOPTED_ANSWER_DELETE_FORBIDDEN(HttpStatus.FORBIDDEN, "ADOPTED_ANSWER_DELETE_FORBIDDEN", "접근 권한이 없습니다. 채택된 답변은 삭제할 수 없습니다. 먼저 채택을 취소해주세요."),
 
     SELF_REPORT_NOT_ALLOWED(HttpStatus.FORBIDDEN,"SELF_REPORT_NOT_ALLOWED", "자신의 게시물, 답변은 신고할 수 없습니다."),
+    SELF_ANSWER_NOT_ALLOWED(HttpStatus.FORBIDDEN, "SELF_ANSWER_NOT_ALLOWED", "본인의 글에는 답변을 등록할 수 없습니다."),
     ALREADY_PROCESSED_REPORT(HttpStatus.CONFLICT, "ALREADY_PROCESSED_REPORT", "이미 처리된 신고입니다."),
 
     ALREADY_SUSPENDED_USER(HttpStatus.CONFLICT, "ALREADY_SUSPENDED_USER", "이미 정지 처리된 사용자입니다."),

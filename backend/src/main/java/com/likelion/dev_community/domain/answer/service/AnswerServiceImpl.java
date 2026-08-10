@@ -39,6 +39,10 @@ public class AnswerServiceImpl implements AnswerService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
 
+        if (question.getAuthor().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.SELF_ANSWER_NOT_ALLOWED);
+        }
+
         // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
         // String content = xssSanitizer.sanitize(request.getContent());
         Answer answer = Answer.builder()
