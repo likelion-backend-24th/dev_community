@@ -156,24 +156,28 @@
   left: 0;
   margin-top: 4px;
   z-index: 10;
+  padding: 4px;
   background: var(--surface-primary);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-modal);
   white-space: nowrap;
 }
 
 .tag-search-popover__btn {
   border: none;
-  background: none;
+  border-radius: var(--radius-sm);
+  background: var(--secondary-btn-bg);
   padding: 6px 10px;
   font-size: 12px;
-  color: var(--text-link);
+  font-weight: 500;
+  color: #ffffff;
   cursor: pointer;
   white-space: nowrap;
+  transition: background var(--motion-fast) var(--ease-standard);
 }
 
 .tag-search-popover__btn:hover {
-  text-decoration: underline;
+  background: var(--secondary-btn-hover);
 }
 
 .question-detail__body {
