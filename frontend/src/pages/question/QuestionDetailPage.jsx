@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getQuestion, deleteQuestion } from "../../api/questionApi";
@@ -27,6 +27,20 @@ function QuestionDetailPage() {
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
+
+  const [openTag, setOpenTag] = useState(null);
+  const tagsRef = useRef(null);
+
+  useEffect(() => {
+    if (!openTag) return;
+    const handleClickOutside = (e) => {
+      if (tagsRef.current && !tagsRef.current.contains(e.target)) {
+        setOpenTag(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openTag]);
 
   useEffect(() => {
     let cancelled = false;
@@ -134,11 +148,28 @@ function QuestionDetailPage() {
         <span>{new Date(question.createdAt).toLocaleString()}</span>
       </div>
 
-      <div className="question-detail__tags">
+      <div className="question-detail__tags" ref={tagsRef}>
         {question.tags.length > 0 ? (
           question.tags.map((tag) => (
-            <span key={tag} className="tag-chip">
-              {tag}
+            <span key={tag} className="tag-chip-wrapper">
+              <button
+                type="button"
+                className="tag-chip tag-chip--clickable"
+                onClick={() => setOpenTag((prev) => (prev === tag ? null : tag))}
+              >
+                {tag}
+              </button>
+              {openTag === tag && (
+                <div className="tag-search-popover">
+                  <button
+                    type="button"
+                    className="tag-search-popover__btn"
+                    onClick={() => navigate(`/questions?tag=${encodeURIComponent(tag)}`)}
+                  >
+                    [{tag}] 검색하기
+                  </button>
+                </div>
+              )}
             </span>
           ))
         ) : (

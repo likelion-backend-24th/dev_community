@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import "../../styles/question.css";
@@ -7,6 +7,9 @@ import "../../styles/question.css";
 const PAGE_SIZE = 10;
 
 function QuestionListPage() {
+  const [searchParams] = useSearchParams();
+  const initialTag = searchParams.get("tag") ?? "";
+
   const [questions, setQuestions] = useState([]);
   const [meta, setMeta] = useState({
     page: 0,
@@ -17,9 +20,9 @@ function QuestionListPage() {
   const [sort, setSort] = useState("");
   const [status, setStatus] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
-  const [appliedTag, setAppliedTag] = useState("");
+  const [appliedTag, setAppliedTag] = useState(initialTag);
   const [keywordInput, setKeywordInput] = useState("");
-  const [tagInput, setTagInput] = useState("");
+  const [tagInput, setTagInput] = useState(initialTag);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
