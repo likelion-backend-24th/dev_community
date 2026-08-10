@@ -74,7 +74,7 @@ public class UserService {
         User user = findUserById(userId);
 
         if(!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword()))
-            throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
 
         user.updatePassword(passwordEncoder.encode(request.getNewPassword()));
 
