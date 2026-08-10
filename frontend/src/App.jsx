@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -14,10 +14,15 @@ import ForbiddenPage from "./pages/error/ForbiddenPage";
 import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
 
+const NO_NAVBAR_PATHS = ["/", "/login", "/signup"];
+
 function App() {
+  const location = useLocation();
+  const showNavbar = !NO_NAVBAR_PATHS.includes(location.pathname);
+
   return (
     <>
-      <Navbar />
+      {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<LoginPage />} />
         <Route path="/questions" element={<QuestionListPage />} />

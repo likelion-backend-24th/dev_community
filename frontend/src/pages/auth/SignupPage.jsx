@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signup, checkUsername, checkNickname } from '../../api/authApi'
+import AuthHeader from '../../components/layout/AuthHeader'
 
 const IDLE = { status: 'idle', message: '' }
 
@@ -79,7 +80,7 @@ function SignupPage() {
 
   return (
     <div>
-      <h1>회원가입</h1>
+      <AuthHeader />
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">아이디</label>

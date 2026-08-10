@@ -171,8 +171,7 @@ public class QuestionServiceImpl implements QuestionService {
         String content = xssSanitizer.sanitize(request.getContent());
         question.update(title, content);
 
-        question.deleteTags();
-        List<String> tagNames = attachTags(question, request.getTags());
+        List<String> tagNames = syncTags(question, request.getTags());
 
         return QuestionResponse.from(question, tagNames);
     }
@@ -202,8 +201,46 @@ public class QuestionServiceImpl implements QuestionService {
 
     // F-10
     private List<String> attachTags(Question question, List<String> tags) {
+        Set<String> normalizedNames = normalizeAndValidateTagNames(tags);
+
+        List<String> result = new ArrayList<>();
+        for (String name : normalizedNames) {
+            Tag tag = tagRepository.findByName(name)
+                    .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));
+
+            question.createTag(tag);
+            result.add(tag.getName());
+        }
+
+        return result;
+    }
+
+    // F-09 (수정) - 기존에 없던 태그만 추가하고 더 이상 없는 태그만 제거.
+    private List<String> syncTags(Question question, List<String> tags) {
+        Set<String> normalizedNames = normalizeAndValidateTagNames(tags);
+
+        Set<String> existingNames = question.getQuestionTags().stream()
+                .map(qt -> qt.getTag().getName())
+                .collect(Collectors.toSet());
+
+        question.getQuestionTags().removeIf(qt -> !normalizedNames.contains(qt.getTag().getName()));
+
+        List<String> result = new ArrayList<>();
+        for (String name : normalizedNames) {
+            if (!existingNames.contains(name)) {
+                Tag tag = tagRepository.findByName(name)
+                        .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));
+                question.createTag(tag);
+            }
+            result.add(name);
+        }
+
+        return result;
+    }
+
+    private Set<String> normalizeAndValidateTagNames(List<String> tags) {
         if (tags == null || tags.isEmpty()) {
-            return Collections.emptyList();
+            return Collections.emptySet();
         }
 
         if (tags.size() > MAX_TAG_COUNT) {
@@ -215,21 +252,13 @@ public class QuestionServiceImpl implements QuestionService {
                 .filter(name -> !name.isEmpty())
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        List<String> result = new ArrayList<>();
-
         for (String name : normalizedNames) {
             if (name.length() > MAX_TAG_LENGTH) {
                 throw new CustomException(ErrorCode.INVALID_INPUT, "태그의 최대 길이는 30자");
             }
-
-            Tag tag = tagRepository.findByName(name)
-                    .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));
-
-            question.createTag(tag);
-            result.add(tag.getName());
         }
 
-        return result;
+        return normalizedNames;
     }
 
     // trim + 소문자 정규화

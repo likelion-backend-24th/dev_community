@@ -118,7 +118,14 @@ function QuestionDetailPage() {
         <button type="button" onClick={handleLikeQuestion}>
           추천
         </button>
-        {canEdit && <Link to={`/questions/${id}/edit`}>수정</Link>}
+        {canEdit && (
+          <button
+            type="button"
+            onClick={() => navigate(`/questions/${id}/edit`)}
+          >
+            수정
+          </button>
+        )}
         {canDelete && (
           <button type="button" onClick={handleDeleteQuestion}>
             삭제
