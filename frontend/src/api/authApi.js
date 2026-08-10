@@ -31,3 +31,8 @@ export async function checkNickname(nickname) {
 export async function logout() {
   await client.post('/api/auth/logout')
 }
+
+export async function reissue() {
+  const res = await client.post('/api/auth/reissue')
+  return res.data.data
+}

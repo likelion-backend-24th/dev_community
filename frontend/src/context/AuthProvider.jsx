@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthContext from './AuthContext'
 import client from '../api/client'
+import { reissue } from '../api/authApi'
 import { decodeToken } from '../utils/jwt'
 
 export function AuthProvider({ children }) {
@@ -10,10 +11,10 @@ export function AuthProvider({ children }) {
   )
   const navigate = useNavigate()
 
-  const login = (token) => {
+  const login = useCallback((token) => {
     localStorage.setItem('accessToken', token)
     setAccessToken(token)
-  }
+  }, [])
 
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken')
@@ -21,27 +22,58 @@ export function AuthProvider({ children }) {
   }, [])
 
   useEffect(() => {
+    let refreshPromise = null
+
+    const redirectToLogin = () => {
+      logout()
+      navigate('/401', {
+        state: { message: '로그인이 필요합니다. 다시 로그인해주세요.' },
+      })
+    }
+
     const interceptorId = client.interceptors.response.use(
       (response) => response,
-      (error) => {
+      async (error) => {
         const status = error.response?.status
         const url = error.config?.url ?? ''
+        const isAuthEndpoint =
+          url.includes('/api/auth/login') || url.includes('/api/auth/reissue')
 
-        if (status === 401 && !url.includes('/api/auth/login')) {
-          logout()
-          navigate('/401', {
-            state: { message: '로그인이 필요합니다. 다시 로그인해주세요.' },
-          })
-        } else if (status === 403) {
+        if (status === 403) {
           navigate('/403')
+          return Promise.reject(error)
         }
 
+        if (status !== 401 || isAuthEndpoint) {
+          return Promise.reject(error)
+        }
+
+        // accessToken 만료로 401이 온 첫 시도에만 재발급을 시도하고, 재발급한 토큰으로도
+        // 401이면(리프레시까지 만료 등) 바로 재로그인시킨다. 동시에 여러 요청이 401나면
+        // reissue는 한 번만 호출해서 그 결과를 같이 기다린다.
+        if (!error.config._retry) {
+          error.config._retry = true
+          try {
+            if (!refreshPromise) {
+              refreshPromise = reissue().finally(() => {
+                refreshPromise = null
+              })
+            }
+            const { accessToken: newAccessToken } = await refreshPromise
+            login(newAccessToken)
+            return client(error.config)
+          } catch {
+            // 재발급 실패 -> 아래 로그아웃 처리로 진행
+          }
+        }
+
+        redirectToLogin()
         return Promise.reject(error)
       },
     )
 
     return () => client.interceptors.response.eject(interceptorId)
-  }, [logout, navigate])
+  }, [login, logout, navigate])
 
   const user = useMemo(() => {
     const claims = decodeToken(accessToken)
