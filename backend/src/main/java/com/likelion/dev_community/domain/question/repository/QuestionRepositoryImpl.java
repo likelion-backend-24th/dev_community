@@ -59,6 +59,7 @@ public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
         Long total = queryFactory
                 .select(question.countDistinct())
                 .from(question)
+                .join(question.author, author)
                 .leftJoin(question.questionTags, questionTag)
                 .where(condition)
                 .fetchOne();

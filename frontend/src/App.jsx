@@ -25,7 +25,7 @@ function App() {
       {showNavbar && <Navbar />}
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/questions" element={<QuestionListPage />} />
+        <Route path="/questions" element={<QuestionListPage key={location.key} />} />
         <Route path="/questions/:id" element={<QuestionDetailPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
