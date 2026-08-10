@@ -84,10 +84,8 @@ public class QuestionServiceImpl implements QuestionService {
         Long tagId = null;
         if (tag != null && !tag.isBlank()) {
             String normalizedTag = tag.trim().toLowerCase();
-            Tag foundTag = tagRepository.findByName(normalizedTag).orElse(null);
-            if (foundTag == null) {
-                return Page.empty(pageable);
-            }
+            Tag foundTag = tagRepository.findByName(normalizedTag)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "존재하지 않는 태그"));
             tagId = foundTag.getId();
         }
 

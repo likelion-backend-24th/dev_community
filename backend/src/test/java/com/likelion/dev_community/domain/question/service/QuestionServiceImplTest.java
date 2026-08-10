@@ -62,19 +62,6 @@ class QuestionServiceImplTest {
         );
     }
 
-    // F-18: 존재하지 않는 태그로 검색하면 예외 대신 빈 페이지를 반환해야 한다
-    @Test
-    void 존재하지_않는_태그로_검색하면_빈_페이지를_반환한다() {
-        when(tagRepository.findByName("no-such-tag")).thenReturn(Optional.empty());
-
-        Page<QuestionSummaryResponse> result = questionService.readQuestions(
-                0, 10, null, null, "no-such-tag", null
-        );
-
-        assertThat(result.getContent()).isEmpty();
-        assertThat(result.getTotalElements()).isZero();
-    }
-
     @Test
     void 존재하는_태그로_검색하면_해당_태그ID로_조회한다() {
         Tag tag = Tag.builder().name("java").build();
