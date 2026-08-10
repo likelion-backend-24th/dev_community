@@ -181,6 +181,7 @@
   line-height: 1.375;
   color: var(--text-normal);
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   margin: 0 0 var(--space-lg);
 }
 
@@ -226,6 +227,7 @@
   line-height: 1.375;
   color: var(--text-normal);
   white-space: pre-wrap;
+  overflow-wrap: break-word;
   margin: 0 0 var(--space-sm);
 }
 
