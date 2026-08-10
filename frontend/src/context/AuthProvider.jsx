@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AuthContext from './AuthContext'
 import client from '../api/client'
+import { decodeToken } from '../utils/jwt'
 
 export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(() =>
@@ -42,9 +43,22 @@ export function AuthProvider({ children }) {
     return () => client.interceptors.response.eject(interceptorId)
   }, [logout, navigate])
 
+  const user = useMemo(() => {
+    const claims = decodeToken(accessToken)
+    if (!claims) return null
+    return {
+      id: Number(claims.sub),
+      username: claims.username,
+      nickname: claims.nickname,
+      roles: claims.roles ?? [],
+    }
+  }, [accessToken])
+
   const value = {
     accessToken,
     isAuthenticated: Boolean(accessToken),
+    user,
+    isAdmin: Boolean(user?.roles.includes('ADMIN')),
     login,
     logout,
   }
