@@ -6,3 +6,12 @@ export async function getQuestions({ page = 0, size = 10, sort, keyword, tag, st
   })
   return { content: res.data.data, meta: res.data.meta }
 }
+
+export async function getQuestion(id) {
+  const res = await client.get(`/api/questions/${id}`)
+  return res.data.data
+}
+
+export async function deleteQuestion(id) {
+  await client.delete(`/api/questions/${id}`)
+}
