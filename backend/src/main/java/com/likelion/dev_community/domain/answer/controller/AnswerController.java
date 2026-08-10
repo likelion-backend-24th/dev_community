@@ -43,6 +43,16 @@ public class AnswerController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 답변 단건 조회
+    @GetMapping("/api/answers/{answerId}")
+    public ResponseEntity<ApiResponse<AnswerResponse>> readAnswer(
+            @PathVariable Long answerId
+    ) {
+        AnswerResponse response = answerService.getAnswer(answerId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
     // F-13
     @PatchMapping("/api/answers/{answerId}")
     public ResponseEntity<ApiResponse<AnswerResponse>> updateAnswer(
