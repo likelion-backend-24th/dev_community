@@ -13,6 +13,9 @@ public interface AnswerService {
     // 답변 목록 조회
     List<AnswerResponse> readAnswers(Long questionId);
 
+    // 답변 단건 조회
+    AnswerResponse getAnswer(Long answerId);
+
     // F-13
     AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request);
 

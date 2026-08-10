@@ -66,6 +66,17 @@ public class AnswerServiceImpl implements AnswerService {
                 .toList();
     }
 
+    // 답변 단건 조회
+    @Override
+    @Transactional(readOnly = true)
+    public AnswerResponse getAnswer(Long answerId) {
+
+        Answer answer = answerRepository.findById(answerId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+
+        return AnswerResponse.from(answer);
+    }
+
     // F-13
     @Override
     public AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request) {
