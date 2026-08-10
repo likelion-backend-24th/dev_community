@@ -24,6 +24,6 @@ export async function updatePassword({ currentPassword, newPassword }) {
   await client.put('/api/members/me/password', { currentPassword, newPassword })
 }
 
-export async function withdraw() {
-  await client.delete('/api/members/me')
+export async function withdraw({ currentPassword }) {
+  await client.delete('/api/members/me', { data: { currentPassword } })
 }

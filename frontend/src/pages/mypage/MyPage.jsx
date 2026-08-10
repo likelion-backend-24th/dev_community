@@ -154,10 +154,10 @@ function MyPage() {
       {withdrawModalOpen && (
         <WithdrawModal
           onClose={() => setWithdrawModalOpen(false)}
-          onConfirmed={async () => {
-            await withdraw();
+          onConfirmed={async (currentPassword) => {
+            await withdraw({ currentPassword });
+            navigate("/login", { replace: true });
             logout();
-            navigate("/login");
           }}
         />
       )}
@@ -255,13 +255,18 @@ function PasswordModal({ onClose, onSaved }) {
 }
 
 function WithdrawModal({ onClose, onConfirmed }) {
+  const [currentPassword, setCurrentPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleConfirm = async () => {
+    if (!currentPassword) {
+      setError("비밀번호를 입력해주세요.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await onConfirmed();
+      await onConfirmed(currentPassword);
     } catch (err) {
       setError(err.response?.data?.message ?? "탈퇴 처리에 실패했습니다.");
       setSubmitting(false);
@@ -271,6 +276,13 @@ function WithdrawModal({ onClose, onConfirmed }) {
   return (
     <div role="dialog" aria-label="회원 탈퇴 확인">
       <p>정말 탈퇴하시겠습니까?</p>
+      <label htmlFor="withdrawPassword">비밀번호 확인</label>
+      <input
+        id="withdrawPassword"
+        type="password"
+        value={currentPassword}
+        onChange={(e) => setCurrentPassword(e.target.value)}
+      />
       {error && <p role="alert">{error}</p>}
       <button type="button" onClick={onClose} disabled={submitting}>
         취소

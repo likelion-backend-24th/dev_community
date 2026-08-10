@@ -7,11 +7,7 @@ function PrivateRoute() {
   return isAuthenticated ? (
     <Outlet />
   ) : (
-    <Navigate
-      to="/401"
-      replace
-      state={{ message: '로그인이 필요한 서비스입니다.' }}
-    />
+    <Navigate to="/login" replace />
   )
 }
 
