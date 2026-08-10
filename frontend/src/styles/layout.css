@@ -7,9 +7,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-lg);
-  height: 64px;
-  padding: 0 var(--space-xxl);
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  min-height: 64px;
+  padding: var(--space-sm) var(--space-xxl);
   background: var(--surface-tertiary);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -24,7 +25,8 @@
 .navbar__actions {
   display: flex;
   align-items: center;
-  gap: var(--space-lg);
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
 }
 
 .navbar a:not(.btn) {
@@ -63,4 +65,14 @@
   font-size: 24px;
   font-weight: 700;
   color: var(--text-header);
+}
+
+@media (max-width: 640px) {
+  .navbar {
+    padding: var(--space-sm) var(--space-base);
+  }
+
+  .page {
+    padding: var(--space-xl) var(--space-base) var(--space-xl);
+  }
 }

@@ -2,12 +2,13 @@
 
 .filter-bar {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-sm);
   margin-bottom: var(--space-base);
 }
 
 .filter-bar .input {
-  flex: 1;
+  flex: 1 1 160px;
 }
 
 .filter-row {
@@ -63,10 +64,12 @@
 }
 
 .question-card__title {
+  min-width: 0;
   font-size: 20px;
   font-weight: 600;
   line-height: 1.3;
   color: var(--text-header);
+  overflow-wrap: break-word;
 }
 
 .question-card__title:hover {
@@ -119,9 +122,11 @@
 
 .question-detail__title {
   margin: 0;
+  min-width: 0;
   font-size: 24px;
   font-weight: 700;
   color: var(--text-header);
+  overflow-wrap: break-word;
 }
 
 .question-detail__meta {
