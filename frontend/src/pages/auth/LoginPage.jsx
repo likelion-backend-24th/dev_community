@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { login } from "../../api/authApi";
+import AuthHeader from "../../components/layout/AuthHeader";
 
 function LoginPage() {
   const { login: setAuth } = useAuth();
@@ -34,7 +35,7 @@ function LoginPage() {
 
   return (
     <div>
-      <h1>로그인</h1>
+      <AuthHeader />
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">아이디</label>

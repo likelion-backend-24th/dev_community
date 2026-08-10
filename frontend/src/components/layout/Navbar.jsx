@@ -20,6 +20,7 @@ function Navbar() {
 
   return (
     <nav>
+      <Link to="/questions">Dev_Community</Link>
       <Link to="/questions">질문 목록</Link>
       {isAuthenticated ? (
         <>
