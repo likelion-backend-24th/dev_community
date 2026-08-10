@@ -3,7 +3,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { logout as logoutApi } from "../../api/authApi";
 
 function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -25,6 +25,12 @@ function Navbar() {
         <>
           <Link to="/questions/new">질문 작성</Link>
           <Link to="/mypage">마이페이지</Link>
+          {isAdmin && (
+            <>
+              <Link to="/admin/reports">신고 관리</Link>
+              <Link to="/admin/users">회원 관리</Link>
+            </>
+          )}
           <button type="button" onClick={handleLogout}>
             로그아웃
           </button>
