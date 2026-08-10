@@ -8,13 +8,22 @@ import {
 import { toggleAnswerLike } from '../../api/likeApi'
 import ReportButton from './ReportButton'
 
-function AnswerItem({ answer, currentUser, isQuestionOwner, questionResolved, onChanged }) {
+function AnswerItem({
+  answer,
+  currentUser,
+  isAdmin,
+  isQuestionOwner,
+  questionResolved,
+  onChanged,
+}) {
   const [editing, setEditing] = useState(false)
   const [content, setContent] = useState(answer.content)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
 
   const isAuthor = currentUser?.id === answer.authorId
+  const canEdit = isAuthor || isAdmin
+  const canDelete = isAuthor || isAdmin
 
   const runAction = async (action, failMessage) => {
     setBusy(true)
@@ -86,12 +95,12 @@ function AnswerItem({ answer, currentUser, isQuestionOwner, questionResolved, on
         <button type="button" onClick={handleLike} disabled={busy}>
           추천
         </button>
-        {isAuthor && !editing && (
+        {canEdit && !editing && (
           <button type="button" onClick={() => setEditing(true)}>
             수정
           </button>
         )}
-        {isAuthor && (
+        {canDelete && (
           <button type="button" onClick={handleDelete} disabled={busy}>
             삭제
           </button>

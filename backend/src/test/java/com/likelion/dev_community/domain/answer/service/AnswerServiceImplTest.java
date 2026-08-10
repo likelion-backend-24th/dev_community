@@ -126,7 +126,7 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
-        AnswerResponse response = answerService.updateAnswer(1L, 100L, request);
+        AnswerResponse response = answerService.updateAnswer(1L, 100L, false, request);
 
         assertThat(response.getContent()).isEqualTo("수정된 내용");
     }
@@ -140,9 +140,23 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
-        assertThatThrownBy(() -> answerService.updateAnswer(999L, 100L, request))
+        assertThatThrownBy(() -> answerService.updateAnswer(999L, 100L, false, request))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
+    }
+
+    @Test
+    void 관리자는_타인_답변도_수정할_수_있다() {
+        User author = createUser(1L, "answerer");
+        Question question = createQuestion(10L, createUser(2L, "asker"));
+        Answer answer = createAnswer(100L, question, author, "원래 내용");
+        AnswerRequest request = new AnswerRequest("관리자가 수정한 내용");
+
+        when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
+
+        AnswerResponse response = answerService.updateAnswer(999L, 100L, true, request);
+
+        assertThat(response.getContent()).isEqualTo("관리자가 수정한 내용");
     }
 
     @Test
@@ -151,7 +165,7 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> answerService.updateAnswer(1L, 999L, request))
+        assertThatThrownBy(() -> answerService.updateAnswer(1L, 999L, false, request))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND));
     }
@@ -164,7 +178,7 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
-        answerService.deleteAnswer(1L, 100L);
+        answerService.deleteAnswer(1L, 100L, false);
 
         assertThat(answer.getDeletedAt()).isNotNull();
     }
@@ -177,17 +191,30 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
-        assertThatThrownBy(() -> answerService.deleteAnswer(999L, 100L))
+        assertThatThrownBy(() -> answerService.deleteAnswer(999L, 100L, false))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
         assertThat(answer.getDeletedAt()).isNull();
     }
 
     @Test
+    void 관리자는_타인_답변도_삭제할_수_있다() {
+        User author = createUser(1L, "answerer");
+        Question question = createQuestion(10L, createUser(2L, "asker"));
+        Answer answer = createAnswer(100L, question, author, "내용");
+
+        when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
+
+        answerService.deleteAnswer(999L, 100L, true);
+
+        assertThat(answer.getDeletedAt()).isNotNull();
+    }
+
+    @Test
     void 존재하지_않는_답변_삭제시_예외가_발생한다() {
         when(answerRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> answerService.deleteAnswer(1L, 999L))
+        assertThatThrownBy(() -> answerService.deleteAnswer(1L, 999L, false))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND));
     }
@@ -201,7 +228,7 @@ class AnswerServiceImplTest {
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
-        assertThatThrownBy(() -> answerService.deleteAnswer(1L, 100L))
+        assertThatThrownBy(() -> answerService.deleteAnswer(1L, 100L, false))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.ADOPTED_ANSWER_DELETE_FORBIDDEN));
         assertThat(answer.getDeletedAt()).isNull();
