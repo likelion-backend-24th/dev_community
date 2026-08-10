@@ -31,7 +31,10 @@ function MyPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [info, myQuestions] = await Promise.all([getMyInfo(), getMyQuestions()]);
+        const [info, myQuestions] = await Promise.all([
+          getMyInfo(),
+          getMyQuestions(),
+        ]);
         setProfile(info);
         setQuestions(myQuestions);
         const myAnswers = await getMyAnswers();
@@ -72,7 +75,7 @@ function MyPage() {
         <div></div>
         <p>{profile.nickname}</p>
         <p>{profile.username}</p>
-        <p>가입일 {profile.joinedAt}</p>
+        <p>가입일 {profile.createdAt.slice(0, 10)}</p>
 
         <button type="button" onClick={() => setEditInfoOpen(true)}>
           내 정보 수정
@@ -86,10 +89,18 @@ function MyPage() {
       </section>
 
       <nav>
-        <button type="button" onClick={() => handleTabClick("questions")} disabled={activeTab === "questions"}>
+        <button
+          type="button"
+          onClick={() => handleTabClick("questions")}
+          disabled={activeTab === "questions"}
+        >
           내 질문
         </button>
-        <button type="button" onClick={() => handleTabClick("answers")} disabled={activeTab === "answers"}>
+        <button
+          type="button"
+          onClick={() => handleTabClick("answers")}
+          disabled={activeTab === "answers"}
+        >
           내 답변 ({answerCount})
         </button>
       </nav>
@@ -178,7 +189,11 @@ function EditInfoModal({ initialNickname, onClose, onSaved }) {
   return (
     <div role="dialog" aria-label="내 정보 수정">
       <label htmlFor="nickname">변경할 닉네임 입력</label>
-      <input id="nickname" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+      <input
+        id="nickname"
+        value={nickname}
+        onChange={(e) => setNickname(e.target.value)}
+      />
       {error && <p role="alert">{error}</p>}
       <button type="button" onClick={onClose}>
         취소
@@ -222,7 +237,12 @@ function PasswordModal({ onClose, onSaved }) {
         onChange={(e) => setCurrentPassword(e.target.value)}
       />
       <label htmlFor="newPassword">새 비밀번호</label>
-      <input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+      <input
+        id="newPassword"
+        type="password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+      />
       {error && <p role="alert">{error}</p>}
       <button type="button" onClick={onClose}>
         취소
