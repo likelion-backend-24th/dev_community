@@ -97,8 +97,4 @@ public class Question extends BaseTimeEntity {
                 .build();
         this.questionTags.add(questionTag);
     }
-
-    public void deleteTags() {
-        this.questionTags.clear();
-    }
 }
