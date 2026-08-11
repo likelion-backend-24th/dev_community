@@ -39,7 +39,17 @@ export function AuthProvider({ children }) {
         const isAuthEndpoint =
           url.includes("/api/auth/login") || url.includes("/api/auth/reissue");
 
-        if (isAuthEndpoint) {
+        // 비밀번호 변경/회원 탈퇴는 "현재 비밀번호가 틀림" 때문에도 401(INVALID_CREDENTIALS)이 내려옴.
+        // 이건 토큰 만료가 아니라 입력값 검증 실패라서 로그아웃시키면 안 되고,
+        // 각 화면(PasswordModal, WithdrawModal)의 인라인 에러 처리에 맡겨야 함.
+        const isPasswordCheckEndpoint =
+          (url.includes("/api/members/me/password") &&
+            error.config?.method === "put") ||
+          (url.includes("/api/members/me") &&
+            !url.includes("/password") &&
+            error.config?.method === "delete");
+
+        if (isAuthEndpoint || isPasswordCheckEndpoint) {
           return Promise.reject(error);
         }
 
