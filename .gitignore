@@ -4,4 +4,4 @@ build/
 .env
 dev-community-key.pem
 application-local.yml
-*.iml
+*.iml.DS_Store
