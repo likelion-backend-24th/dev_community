@@ -71,7 +71,7 @@ function SignupPage() {
     setSubmitting(true)
     try {
       await signup(form)
-      navigate('/login')
+      navigate('/login', { state: { signupSuccess: true } })
     } catch (err) {
       setError(err.response?.data?.message ?? '회원가입에 실패했습니다.')
     } finally {

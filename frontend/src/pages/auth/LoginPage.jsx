@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { login } from "../../api/authApi";
 import AuthHeader from "../../components/layout/AuthHeader";
@@ -8,10 +8,20 @@ import "../../styles/auth.css";
 function LoginPage() {
   const { login: setAuth } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [toast, setToast] = useState(
+    location.state?.signupSuccess ? "회원가입이 완료되었습니다." : "",
+  );
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -97,6 +107,8 @@ function LoginPage() {
           </div>
         </div>
       </main>
+
+      {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   );
 }

@@ -110,7 +110,7 @@ function MyPage() {
           onClick={() => handleTabClick("questions")}
           disabled={activeTab === "questions"}
         >
-          내 질문
+          내 질문 ({questions.length})
         </button>
         <button
           type="button"

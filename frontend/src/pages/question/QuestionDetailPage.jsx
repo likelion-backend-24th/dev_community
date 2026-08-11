@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getQuestion, deleteQuestion } from "../../api/questionApi";
@@ -9,6 +9,7 @@ import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
 import AlertModal from "../../components/common/AlertModal";
 import "../../styles/question.css";
+import "../../styles/error.css";
 
 function QuestionDetailPage() {
   const { id } = useParams();
@@ -19,6 +20,7 @@ function QuestionDetailPage() {
   const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   const [answerContent, setAnswerContent] = useState("");
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
@@ -28,12 +30,27 @@ function QuestionDetailPage() {
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
 
+  const [openTag, setOpenTag] = useState(null);
+  const tagsRef = useRef(null);
+
+  useEffect(() => {
+    if (!openTag) return;
+    const handleClickOutside = (e) => {
+      if (tagsRef.current && !tagsRef.current.contains(e.target)) {
+        setOpenTag(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [openTag]);
+
   useEffect(() => {
     let cancelled = false;
 
     const fetchData = async () => {
       setLoading(true);
       setError("");
+      setNotFound(false);
       try {
         const [questionData, answersData] = await Promise.all([
           getQuestion(id),
@@ -44,7 +61,11 @@ function QuestionDetailPage() {
         setAnswers(answersData);
       } catch (err) {
         if (cancelled) return;
-        setError(err.response?.data?.message ?? "질문을 불러오지 못했습니다.");
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setError(err.response?.data?.message ?? "질문을 불러오지 못했습니다.");
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -98,6 +119,19 @@ function QuestionDetailPage() {
   };
 
   if (loading) return <p className="state-text">불러오는 중...</p>;
+  if (notFound)
+    return (
+      <div className="error-page">
+        <p className="error-page__code">404</p>
+        <h1 className="error-page__title">질문을 찾을 수 없습니다</h1>
+        <p className="error-page__desc">삭제되었거나 존재하지 않는 질문이에요.</p>
+        <div className="error-page__actions">
+          <Link to="/questions" className="btn btn-primary">
+            질문 목록으로
+          </Link>
+        </div>
+      </div>
+    );
   if (error)
     return (
       <div className="page">
@@ -134,11 +168,28 @@ function QuestionDetailPage() {
         <span>{new Date(question.createdAt).toLocaleString()}</span>
       </div>
 
-      <div className="question-detail__tags">
+      <div className="question-detail__tags" ref={tagsRef}>
         {question.tags.length > 0 ? (
           question.tags.map((tag) => (
-            <span key={tag} className="tag-chip">
-              {tag}
+            <span key={tag} className="tag-chip-wrapper">
+              <button
+                type="button"
+                className="tag-chip tag-chip--clickable"
+                onClick={() => setOpenTag((prev) => (prev === tag ? null : tag))}
+              >
+                {tag}
+              </button>
+              {openTag === tag && (
+                <div className="tag-search-popover">
+                  <button
+                    type="button"
+                    className="tag-search-popover__btn"
+                    onClick={() => navigate(`/questions?tag=${encodeURIComponent(tag)}`)}
+                  >
+                    [{tag}] 검색하기
+                  </button>
+                </div>
+              )}
             </span>
           ))
         ) : (
