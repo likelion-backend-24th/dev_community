@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
   getMyInfo,
@@ -59,10 +59,6 @@ function MyPage() {
       const myQuestions = await getMyQuestions();
       setQuestions(myQuestions);
     }
-  };
-
-  const handleItemClick = (questionId) => {
-    navigate(`/questions/${questionId}`);
   };
 
   if (loading) return <p className="state-text">불러오는 중...</p>;
@@ -130,12 +126,14 @@ function MyPage() {
         ) : (
           <ul className="mypage-list">
             {questions.map((q) => (
-              <li key={q.id} className="mypage-list__item" onClick={() => handleItemClick(q.id)}>
-                <span className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}>
-                  {STATUS_LABEL[q.status] ?? q.status}
-                </span>
-                <span className="mypage-list__title">{q.title}</span>
-                <span className="mypage-list__date">{new Date(q.createdAt).toLocaleString()}</span>
+              <li key={q.id}>
+                <Link to={`/questions/${q.id}`} className="mypage-list__item">
+                  <span className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}>
+                    {STATUS_LABEL[q.status] ?? q.status}
+                  </span>
+                  <span className="mypage-list__title">{q.title}</span>
+                  <span className="mypage-list__date">{new Date(q.createdAt).toLocaleString()}</span>
+                </Link>
               </li>
             ))}
           </ul>
@@ -147,10 +145,12 @@ function MyPage() {
       ) : (
         <ul className="mypage-list">
           {answers.map((a) => (
-            <li key={a.id} className="mypage-list__item" onClick={() => handleItemClick(a.questionId)}>
-              {a.isAdopted && <span className="badge badge-resolved">채택됨</span>}
-              <span className="mypage-list__title">{a.content}</span>
-              <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
+            <li key={a.id}>
+              <Link to={`/questions/${a.questionId}`} className="mypage-list__item">
+                {a.isAdopted && <span className="badge badge-resolved">채택됨</span>}
+                <span className="mypage-list__title">{a.content}</span>
+                <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
+              </Link>
             </li>
           ))}
         </ul>
@@ -266,7 +266,11 @@ function PasswordModal({ onClose, onSaved }) {
       await updatePassword({ currentPassword, newPassword });
       onSaved();
     } catch (err) {
-      setError(err.response?.data?.message ?? "비밀번호 변경에 실패했습니다.");
+      if (err.response?.data?.code === "INVALID_CREDENTIALS") {
+        setError("비밀번호가 일치하지 않습니다.");
+      } else {
+        setError(err.response?.data?.message ?? "비밀번호 변경에 실패했습니다.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -332,7 +336,11 @@ function WithdrawModal({ onClose, onConfirmed }) {
     try {
       await onConfirmed(currentPassword);
     } catch (err) {
-      setError(err.response?.data?.message ?? "탈퇴 처리에 실패했습니다.");
+      if (err.response?.data?.code === "INVALID_CREDENTIALS") {
+        setError("비밀번호가 일치하지 않습니다.");
+      } else {
+        setError(err.response?.data?.message ?? "탈퇴 처리에 실패했습니다.");
+      }
       setSubmitting(false);
     }
   };
