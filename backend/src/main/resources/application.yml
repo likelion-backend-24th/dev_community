@@ -13,3 +13,8 @@ jwt:
 cookie:
   secure:
     false
+
+admin:
+  username: ${ADMIN_USERNAME:}
+  password: ${ADMIN_PASSWORD:}
+  nickname: ${ADMIN_NICKNAME:관리자}
