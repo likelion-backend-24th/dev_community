@@ -40,6 +40,9 @@ services:
       REDIS_PORT: 6379
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH: ${JWT_REFRESH}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_NICKNAME: ${ADMIN_NICKNAME}
     depends_on:
       mysql:
         condition: service_healthy
