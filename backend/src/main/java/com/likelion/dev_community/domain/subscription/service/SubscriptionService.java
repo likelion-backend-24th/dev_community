@@ -1,6 +1,9 @@
 package com.likelion.dev_community.domain.subscription.service;
 
+import com.likelion.dev_community.common.exception.CustomException;
+import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.subscription.dto.SubscriptionResponse;
+import com.likelion.dev_community.domain.subscription.entity.Subscription;
 import com.likelion.dev_community.domain.subscription.entity.SubscriptionStatus;
 import com.likelion.dev_community.domain.subscription.repository.SubscriptionRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,18 +19,35 @@ public class SubscriptionService {
     private final SubscriptionRepository subscriptionRepository;
 
     // 구독 여부 조회
-    @Transactional(readOnly = true)
+    @Transactional
     public SubscriptionResponse getMySubscription(Long userId){
         return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .filter(this::isStillActive)
                 .map(SubscriptionResponse::from)
-                .orElse(null); // 구독x
+                .orElse(null); // 구독x (만료된 경우도 포함)
     }
 
     // 구독 여부 판별
-    @Transactional(readOnly = true)
+    @Transactional
     public boolean isActiveSubscriber(Long userId){
         return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
-                .filter(subs -> subs.getExpiresAt().isAfter(LocalDateTime.now()))
+                .filter(this::isStillActive)
                 .isPresent();
+    }
+
+    // 구독자 전용 기능 접근 체크
+    @Transactional
+    public void requireActiveSubscriber(Long userId, boolean isAdmin){
+        if(!isAdmin && !isActiveSubscriber(userId))
+            throw new CustomException(ErrorCode.FORBIDDEN, "구독자 전용 기능입니다.");
+    }
+
+    // 만료일 지연 갱신
+    private boolean isStillActive(Subscription subscription) {
+        if (subscription.getExpiresAt().isAfter(LocalDateTime.now())) {
+            return true;
+        }
+        subscription.expire();
+        return false;
     }
 }

@@ -16,6 +16,7 @@ import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.question.repository.TagRepository;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
@@ -67,13 +68,16 @@ class QuestionServiceImplTest {
     @Mock
     private TagRepository tagRepository;
 
+    @Mock
+    private SubscriptionService subscriptionService;
+
     private QuestionServiceImpl questionService;
 
     @BeforeEach
     void setUp() {
         questionService = new QuestionServiceImpl(
                 questionRepository, questionTagRepository, answerRepository, userRepository,
-                new XssSanitizer(), viewCountService, tagRepository
+                new XssSanitizer(), viewCountService, tagRepository, subscriptionService
         );
     }
 
@@ -241,13 +245,13 @@ class QuestionServiceImplTest {
     @Test
     void 대소문자와_공백만_다른_태그는_하나로_정규화되어_저장된다() {
         User author = createUser(1L, "author");
-        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of("Java", " java ", "JAVA"));
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of("Java", " java ", "JAVA"), false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(tagRepository.findByName("java")).thenReturn(Optional.empty());
         when(tagRepository.save(any(Tag.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        QuestionResponse response = questionService.createQuestion(1L, request);
+        QuestionResponse response = questionService.createQuestion(1L, false, request);
 
         assertThat(response.getTags()).containsExactly("java");
         verify(tagRepository, times(1)).findByName("java");

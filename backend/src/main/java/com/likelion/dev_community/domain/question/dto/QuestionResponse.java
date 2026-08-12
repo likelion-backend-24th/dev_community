@@ -24,6 +24,7 @@ public class QuestionResponse {
 
     private final List<String> tags;
     private final LocalDateTime createdAt;
+    private final boolean isPremium;
 
     public static QuestionResponse from(Question question, List<String> tagNames) {
         return new QuestionResponse(
@@ -38,7 +39,8 @@ public class QuestionResponse {
                 question.getLikeCount(),
 
                 tagNames,
-                question.getCreatedAt()
+                question.getCreatedAt(),
+                question.isPremium()
         );
     }
 }

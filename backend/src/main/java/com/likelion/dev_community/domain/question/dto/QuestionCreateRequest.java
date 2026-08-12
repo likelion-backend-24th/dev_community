@@ -18,4 +18,6 @@ public class QuestionCreateRequest {
     private final String content;
 
     private final List<String> tags;
+
+    private final boolean isPremium;
 }

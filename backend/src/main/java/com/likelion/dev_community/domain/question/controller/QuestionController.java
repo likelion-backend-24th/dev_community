@@ -31,7 +31,9 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody QuestionCreateRequest request
     ) {
-        QuestionResponse response = questionService.createQuestion(userDetails.getId(), request);
+        boolean isAdmin = isAdmin(userDetails);
+
+        QuestionResponse response = questionService.createQuestion(userDetails.getId(), isAdmin, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("질문 등록 완료", response));
@@ -60,6 +62,32 @@ public class QuestionController {
         return ResponseEntity.ok(ApiResponse.success("질문 목록 조회", result.getContent(), meta));
     }
 
+    // F-32
+    @GetMapping("/premium")
+    public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readPremiumQuestions(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String status
+    ) {
+        Long userId = (userDetails != null) ? userDetails.getId() : null;
+        boolean isAdmin = (userDetails != null) && isAdmin(userDetails);
+
+        Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, userId, isAdmin);
+
+        Map<String, Object> meta = Map.of(
+                "page", result.getNumber(),
+                "size", result.getSize(),
+                "totalElements", result.getTotalElements(),
+                "totalPages", result.getTotalPages()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success("프리미엄 질문 목록 조회", result.getContent(), meta));
+    }
+
     // F-08
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionDetailResponse>> readDetailQuestion(
@@ -68,9 +96,10 @@ public class QuestionController {
             HttpServletRequest request
     ) {
         Long userId = (userDetails != null) ? userDetails.getId() : null;
+        boolean isAdmin = (userDetails != null) && isAdmin(userDetails);
         String viewerKey = viewerKeyResolver.resolve(userId, request);
 
-        QuestionDetailResponse response = questionService.readDetailQuestion(id, viewerKey);
+        QuestionDetailResponse response = questionService.readDetailQuestion(id, viewerKey, userId, isAdmin);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
