@@ -263,15 +263,6 @@
   gap: var(--space-sm);
 }
 
-.answer-form__prompt {
-  font-size: 14px;
-  color: var(--text-muted);
-}
-
-.answer-form__prompt a {
-  color: var(--text-link);
-}
-
 .report-widget form {
   display: inline-flex;
   align-items: center;
@@ -280,6 +271,45 @@
 
 .report-widget .input {
   min-width: 180px;
+}
+
+/* 비로그인 사용자용 답변 잠금 UI */
+
+.guest-lock {
+  position: relative;
+  margin-top: var(--space-lg);
+}
+
+.guest-lock__placeholder {
+  min-height: 220px;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+}
+
+.guest-lock__overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-base);
+  width: min(320px, 90%);
+  padding: var(--space-xl);
+  background: var(--surface-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-high);
+  text-align: center;
+}
+
+.guest-lock__message {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-header);
 }
 
 .report-widget__done {

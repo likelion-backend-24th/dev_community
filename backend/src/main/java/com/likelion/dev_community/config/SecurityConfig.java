@@ -43,6 +43,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**",
                                 "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
+                        // 답변 목록은 로그인한 사용자만 조회 가능 (비로그인 시 프론트에서 블러 처리와 함께 회원가입 유도)
+                        .requestMatchers(HttpMethod.GET, "/api/questions/*/answers").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/questions/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/answers/**").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
