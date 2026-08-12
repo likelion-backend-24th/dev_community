@@ -15,6 +15,7 @@ function AnswerItem({
   isAdmin,
   isQuestionOwner,
   questionResolved,
+  isLiked,
   onChanged,
 }) {
   const [editing, setEditing] = useState(false)
@@ -99,7 +100,12 @@ function AnswerItem({
 
       {!editing && (
         <div className="answer-card__actions">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={handleLike} disabled={busy}>
+          <button
+            type="button"
+            className={`btn btn-secondary btn-sm${isLiked ? " btn-liked" : ""}`}
+            onClick={handleLike}
+            disabled={busy}
+          >
             추천
           </button>
           {canEdit && (

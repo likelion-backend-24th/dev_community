@@ -10,6 +10,7 @@ import QuestionFormPage from "./pages/question/QuestionFormPage";
 import MyPage from "./pages/mypage/MyPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import ForbiddenPage from "./pages/error/ForbiddenPage";
 import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
@@ -39,6 +40,7 @@ function App() {
         <Route element={<AdminRoute />}>
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>
 
         <Route path="/401" element={<UnauthorizedPage />} />

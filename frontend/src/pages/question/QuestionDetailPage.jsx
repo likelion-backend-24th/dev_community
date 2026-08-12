@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getQuestion, deleteQuestion } from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
-import { toggleQuestionLike } from "../../api/likeApi";
+import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
@@ -18,6 +18,8 @@ function QuestionDetailPage() {
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [questionLiked, setQuestionLiked] = useState(false);
+  const [likedAnswerIds, setLikedAnswerIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -59,6 +61,16 @@ function QuestionDetailPage() {
         if (cancelled) return;
         setQuestion(questionData);
         setAnswers(answersData);
+
+        if (user) {
+          const likeStatus = await getLikeStatus(id, answersData.map((a) => a.id));
+          if (cancelled) return;
+          setQuestionLiked(likeStatus.questionLiked);
+          setLikedAnswerIds(likeStatus.likedAnswerIds);
+        } else {
+          setQuestionLiked(false);
+          setLikedAnswerIds([]);
+        }
       } catch (err) {
         if (cancelled) return;
         if (err.response?.status === 404) {
@@ -75,7 +87,7 @@ function QuestionDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, reloadKey]);
+  }, [id, reloadKey, user]);
 
   const handleLikeQuestion = async () => {
     try {
@@ -200,7 +212,11 @@ function QuestionDetailPage() {
       <p className="question-detail__body">{question.content}</p>
 
       <div className="question-detail__actions">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLikeQuestion}>
+        <button
+          type="button"
+          className={`btn btn-secondary btn-sm${questionLiked ? " btn-liked" : ""}`}
+          onClick={handleLikeQuestion}
+        >
           추천
         </button>
         {canEdit && (
@@ -232,6 +248,7 @@ function QuestionDetailPage() {
             isAdmin={isAdmin}
             isQuestionOwner={isOwner}
             questionResolved={question.status === "RESOLVED"}
+            isLiked={likedAnswerIds.includes(answer.id)}
             onChanged={reload}
           />
         ))}

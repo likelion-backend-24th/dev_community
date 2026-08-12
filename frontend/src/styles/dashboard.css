@@ -1,0 +1,73 @@
+/* Admin dashboard (통계 대시보드) */
+
+.stat-card {
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+}
+
+.stat-card__title {
+  margin: 0 0 var(--space-lg);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-header);
+}
+
+.resolution-rate {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.resolution-rate__center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.resolution-rate__percent {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-header);
+}
+
+.resolution-rate__desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.state-text--plain::before {
+  content: none;
+}
+
+.stat-card .recharts-bar-rectangle,
+.stat-card .recharts-bar-rectangle * {
+  cursor: default;
+}
+
+.stat-card .recharts-wrapper:focus,
+.stat-card .recharts-wrapper *:focus,
+.stat-card svg:focus {
+  outline: none;
+}
+
+.top-question-tick {
+  cursor: pointer;
+}
+
+.top-question-tick:hover {
+  fill: var(--text-link);
+  text-decoration: underline;
+}
+
+.stale-count {
+  margin: 0 0 var(--space-lg);
+  font-size: 40px;
+  font-weight: 700;
+  color: var(--yellow);
+}

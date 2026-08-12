@@ -14,7 +14,7 @@ import "../../styles/mypage.css";
 
 function MyPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("questions");
@@ -93,9 +93,16 @@ function MyPage() {
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setPasswordModalOpen(true)}>
             비밀번호 변경
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setWithdrawModalOpen(true)}>
-            회원 탈퇴
-          </button>
+          {!isAdmin && (
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setWithdrawModalOpen(true)}>
+              회원 탈퇴
+            </button>
+          )}
+          {isAdmin && (
+            <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
+              관리자 대시보드
+            </Link>
+          )}
         </div>
       </section>
 
