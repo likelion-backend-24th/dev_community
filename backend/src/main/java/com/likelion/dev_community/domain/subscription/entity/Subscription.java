@@ -47,6 +47,7 @@ public class Subscription extends BaseTimeEntity {
         this.status = SubscriptionStatus.ACTIVE;
     }
 
+    // 신규 구독 생성
     public static Subscription create(User user, PlanType planType, LocalDateTime startedAt, LocalDateTime expiresAt) {
         return Subscription.builder()
                 .user(user)
@@ -54,5 +55,21 @@ public class Subscription extends BaseTimeEntity {
                 .startedAt(startedAt)
                 .expiresAt(expiresAt)
                 .build();
+    }
+
+    // 기존 구독 갱신
+    public void activate(PlanType planType, LocalDateTime startedAt, LocalDateTime expiresAt) {
+        this.planType = planType;
+        this.startedAt = startedAt;
+        this.expiresAt = expiresAt;
+        this.status = SubscriptionStatus.ACTIVE;
+    }
+
+    public void expire() {
+        this.status = SubscriptionStatus.EXPIRED;
+    }
+
+    public void cancel() {
+        this.status = SubscriptionStatus.CANCELLED;
     }
 }
