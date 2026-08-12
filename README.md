@@ -1,67 +1,182 @@
-# 🧑‍💻 dev_community
+# Dev_community
 
-개발자를 위한 질문/답변(Q&A) 커뮤니티 플랫폼입니다. MVP1에서는 질문·답변 기반의 기본 커뮤니티 기능을 구현했으며, 이후 **유료 구독이 가능한 개발자 SNS 솔루션**으로 확장할 계획입니다.
+> 질문하고, 답변하고, 도움이 됐다면 채택까지 - 개발 학습자를 위한 Q&A 게시판입니다.
 
-## 📖 소개
+멋쟁이사자처럼 백엔드 24기 기초/응용 4조 팀 프로젝트입니다.
 
-회원가입/로그인부터 질문·답변 CRUD, 추천, 검색/필터링, 답변 채택까지 커뮤니티 운영에 필요한 핵심 기능을 갖추고 있으며, 이후 구독/결제, 소셜 로그인, 파일 첨부 등으로 확장할 예정입니다.
+## 팀원
 
-## ✨ 주요 기능
+| 이름   | GitHub                                                     | 역할 |
+| ------ | ---------------------------------------------------------- | ---- |
+| 김재혁 | [@kbsjh8870](https://github.com/kbsjh8870)                 | 팀장 |
+| 변재웅 | [@woong1116](https://github.com/woong1116)                 | 팀원 |
+| 조민규 | [@Noisywhitecat-dev](https://github.com/Noisywhitecat-dev) | 팀원 |
 
-- **회원/인증**: 회원가입, JWT 로그인/로그아웃/토큰 재발급(Refresh Token Redis 저장), 정보 수정, 탈퇴(soft delete), 권한 분리(USER/ADMIN)
-- **질문**: 작성/조회(페이지네이션, 정렬)/수정/삭제, 태그 연결, 검색·필터링, 삭제 시 하위 답변 비활성화
-- **답변**: 작성/수정/삭제, 채택/채택 취소(질문 상태 연동), 내 답변 목록 조회
-- **기타**: 추천(좋아요) 토글, XSS sanitize, 공통 응답 포맷(`ApiResponse<T>`) 및 예외 처리(`ErrorCode`) 컨벤션 통일
+## 주요 기능
 
-## 🛠 기술 스택
+- **회원**: 회원가입 / 로그인 / 로그아웃, JWT 기반 인증(Access/Refresh Token), 마이페이지(내 질문·내 답변 조회), 회원 탈퇴(soft delete)
+- **질문**: 질문 작성 / 수정 / 삭제, 태그를 통한 분류, 목록 조회(태그·상태·정렬 필터), 조회수 집계
+- **답변**: 답변 작성 / 수정 / 삭제, **답변 채택**(질문 상태를 해결/미해결로 전환)
+- **좋아요**: 질문·답변에 대한 좋아요 토글
+- **신고 / 관리자**: 질문·답변 신고, 관리자의 신고 목록 확인 및 회원 정지 처리
+- **API 문서**: Swagger(OpenAPI)로 API 명세 제공
 
-| 영역 | 스택 |
-| --- | --- |
-| Backend | Java 21, Spring Boot 4.1.0, Spring Security + JWT, Spring Data JPA, MySQL, Redis, JUnit/Mockito |
-| Frontend | React (Vite) |
-| Infra/DevOps | Docker, Docker Compose, Nginx, AWS EC2, GitHub Actions (CI/CD) |
+## 기술 스택
 
-## 🏗 아키텍처
+**Backend**
+
+- Java 21, Spring Boot 4.1
+- Spring Security, JWT (jjwt)
+- Spring Data JPA, QueryDSL
+- MySQL 8, Redis 7
+- Springdoc OpenAPI(Swagger)
+- Gradle
+
+**Frontend**
+
+- React 19, Vite
+- React Router
+- Axios
+
+**Infra / CI**
+
+- Docker, Docker Compose
+- GitHub Actions (테스트 자동화 CI)
+- Nginx (프론트엔드 서빙 / API 프록시)
+
+## 프로젝트 구조
 
 ```
-[Client] → [Nginx (EC2, :80)]
-                ├─ 정적 파일 서빙 (Frontend 빌드 결과물)
-                └─ /api → [Backend (:8080)] → MySQL / Redis
+dev_community/
+├── backend/                 # Spring Boot 백엔드
+│   ├── src/main/java/com/likelion/dev_community/
+│   │   ├── domain/          # user, question, answer, like, report, admin
+│   │   └── common/          # 공통 설정, 예외, 유틸(XSS, 조회수 등)
+│   ├── src/main/resources/  # application.yml (profile: local/prod/ci)
+│   ├── docker-compose.yml   # 로컬 개발용 MySQL/Redis
+│   └── build.gradle
+├── frontend/                 # React (Vite) 프론트엔드
+│   └── src/
+│       ├── api/              # axios 기반 API 클라이언트
+│       ├── pages/             # 라우트별 페이지 (auth, question, mypage, admin ...)
+│       ├── components/        # 공통/도메인 컴포넌트
+│       └── context, hooks, utils
+├── docker-compose.prod.yml   # 배포용(MySQL + Redis + backend + frontend)
+├── Dockerfile                 # 백엔드 이미지 빌드
+└── .github/workflows/         # CI(테스트), 배포
 ```
 
-로컬은 `docker-compose.yml`(MySQL, Redis), 운영은 `docker-compose.prod.yml`(MySQL, Redis, Backend, Frontend + Nginx)로 관리합니다.
+## API 개요
 
-## 👥 팀 구성
+전체 명세는 서버 실행 후 Swagger UI(`/swagger-ui/index.html`)에서 확인할 수 있습니다. 주요 엔드포인트는 다음과 같습니다.
 
-| 이름 | 역할 | 담당 |
-| --- | --- | --- |
-| 김재혁 | 부팀장 | 회원/인증/권한(F-01~F-05), Spring Security, CI/CD |
-| 변재웅 | 팀원 | 질문 CRUD(F-06~F-11), 검색/필터링(F-17~F-19) |
-| 조민규 | 팀원 | 답변 CRUD/채택(F-12~F-15), 추천(F-16), 인프라(Docker/EC2/Nginx) |
+**인증** (`/api/auth`)
 
-> MVP2 역할은 [로드맵](#-로드맵-mvp2) 참고
+| Method | Endpoint                   | 설명                |
+| ------ | -------------------------- | ------------------- |
+| POST   | `/api/auth/signup`         | 회원가입            |
+| POST   | `/api/auth/login`          | 로그인              |
+| POST   | `/api/auth/reissue`        | Access Token 재발급 |
+| POST   | `/api/auth/logout`         | 로그아웃            |
+| GET    | `/api/auth/check-username` | 아이디 중복 확인    |
+| GET    | `/api/auth/check-nickname` | 닉네임 중복 확인    |
 
+**회원** (`/api/members`)
 
-## 📦 배포
+| Method | Endpoint                    | 설명              |
+| ------ | --------------------------- | ----------------- |
+| GET    | `/api/members/me`           | 내 정보 조회      |
+| PUT    | `/api/members/me`           | 내 정보 수정      |
+| PUT    | `/api/members/me/password`  | 비밀번호 변경     |
+| DELETE | `/api/members/me`           | 회원 탈퇴         |
+| GET    | `/api/members/me/questions` | 내가 쓴 질문 목록 |
+| GET    | `/api/members/me/answers`   | 내가 쓴 답변 목록 |
 
-- **CI**: PR 생성 시 GitHub Actions가 MySQL/Redis 서비스 컨테이너 기반 `ci` 프로파일로 전체 테스트 실행 및 결과 게시
-- **CD**: main 병합 시 GitHub Actions가 EC2에 SSH 접속해 자동 배포
-- **운영**: EC2(Ubuntu)에서 `docker-compose.prod.yml`로 4개 컨테이너 실행, 컨테이너 내 Nginx가 정적 파일 서빙 + `/api` 프록시 담당
-- 운영 환경변수: `DB_HOST/PORT/USER/PASSWORD`, `REDIS_HOST/PORT`, `JWT_SECRET/REFRESH`, `SPRING_PROFILES_ACTIVE=prod`
+**질문** (`/api/questions`)
 
-## 🌿 브랜치 전략
+| Method | Endpoint              | 설명                                 |
+| ------ | --------------------- | ------------------------------------ |
+| POST   | `/api/questions`      | 질문 작성                            |
+| GET    | `/api/questions`      | 질문 목록 조회 (태그·상태·정렬 필터) |
+| GET    | `/api/questions/{id}` | 질문 상세 조회                       |
+| PUT    | `/api/questions/{id}` | 질문 수정                            |
+| DELETE | `/api/questions/{id}` | 질문 삭제                            |
 
-- `main`: 배포 가능한 안정 버전
-- `feature/*`: 기능 단위 개발 (최소 단위로 분리해 PR)
-- `fix/*`: 버그 수정
-- `ci/*`: CI/CD 설정
+**답변** (`/api/questions/{questionId}/answers`, `/api/answers`)
 
-여러 단계로 나뉘는 기능은 이전 단계 브랜치 위에서 다음 브랜치를 분기해 순차 병합합니다.
+| Method | Endpoint                              | 설명           |
+| ------ | ------------------------------------- | -------------- |
+| POST   | `/api/questions/{questionId}/answers` | 답변 작성      |
+| GET    | `/api/questions/{questionId}/answers` | 답변 목록 조회 |
+| GET    | `/api/answers/{answerId}`             | 답변 상세 조회 |
+| PATCH  | `/api/answers/{answerId}`             | 답변 수정      |
+| DELETE | `/api/answers/{answerId}`             | 답변 삭제      |
+| POST   | `/api/answers/{answerId}/adopt`       | 답변 채택      |
+| DELETE | `/api/answers/{answerId}/adopt`       | 답변 채택 취소 |
 
-## 🗺 로드맵 (MVP2)
+**좋아요**
 
-- 관리자 통계 대시보드, 마크다운 지원 및 코드 하이라이팅
-- Mock PG 결제 / 구독 등급·이력 / 프리미엄 게시판
-- GitHub·Google 소셜 로그인(OAuth2)
-- 사용자 평판 시스템, 파일 첨부, 외부 API 연동
-- *(최후순위)* AI 요약/태그 추천, 실시간 알림, 실시간 채팅
+| Method | Endpoint                   | 설명             |
+| ------ | -------------------------- | ---------------- |
+| POST   | `/api/questions/{id}/like` | 질문 좋아요 토글 |
+| POST   | `/api/answers/{id}/like`   | 답변 좋아요 토글 |
+
+**신고 / 관리자** (`/api/reports`, `/api/admin`)
+
+| Method | Endpoint                          | 설명                       |
+| ------ | --------------------------------- | -------------------------- |
+| POST   | `/api/reports`                    | 질문/답변 신고             |
+| GET    | `/api/admin/reports`              | 신고 목록 조회             |
+| PATCH  | `/api/admin/reports/{id}`         | 신고 처리                  |
+| GET    | `/api/admin/users`                | 회원 목록 조회             |
+| GET    | `/api/admin/users/{id}/reports`   | 특정 회원의 누적 신고 조회 |
+| PATCH  | `/api/admin/users/{id}/suspend`   | 회원 정지                  |
+| PATCH  | `/api/admin/users/{id}/unsuspend` | 회원 정지 해제             |
+
+## 로컬 실행 방법
+
+### 1. 저장소 클론
+
+```bash
+git clone https://github.com/likelion-backend-24th/dev_community.git
+cd dev_community
+```
+
+### 2. 백엔드 실행
+
+```bash
+cd backend
+cp .env.example .env   # 값 채워넣기 (DB_USER, DB_PASSWORD, JWT_SECRET 등)
+```
+
+MySQL / Redis를 Docker로 띄웁니다.
+
+```bash
+docker compose up -d
+```
+
+Gradle로 백엔드 서버를 실행합니다. (기본 profile: `local`, `http://localhost:8080`)
+
+```bash
+./gradlew bootRun
+```
+
+Swagger API 문서는 `http://localhost:8080/swagger-ui/index.html` 에서 확인할 수 있습니다.
+
+### 3. 프론트엔드 실행
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+기본적으로 `http://localhost:5173` 에서 실행되며, `.env.development`의 `VITE_API_BASE_URL`(기본값 `http://localhost:8080`)을 통해 백엔드 API를 호출합니다.
+
+### 4. 한 번에 실행 (Docker Compose)
+
+배포 환경과 동일하게 MySQL, Redis, 백엔드, 프론트엔드를 한 번에 띄우려면 저장소 루트에서:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --build
+```
