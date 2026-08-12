@@ -1,6 +1,7 @@
 package com.likelion.dev_community.domain.question.controller;
 
 import com.likelion.dev_community.common.ApiResponse;
+import com.likelion.dev_community.common.PageMetaMapper;
 import com.likelion.dev_community.common.viewcount.ViewerKeyResolver;
 import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.service.QuestionService;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -52,14 +52,7 @@ public class QuestionController {
     ) {
         Page<QuestionSummaryResponse> result = questionService.readQuestions(page, size, sort, keyword, tag, status);
 
-        Map<String, Object> meta = Map.of(
-                "page", result.getNumber(),
-                "size", result.getSize(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages()
-        );
-
-        return ResponseEntity.ok(ApiResponse.success("질문 목록 조회", result.getContent(), meta));
+        return ResponseEntity.ok(ApiResponse.success("질문 목록 조회", result.getContent(), PageMetaMapper.of(result)));
     }
 
     // F-32
@@ -78,14 +71,7 @@ public class QuestionController {
 
         Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, userId, isAdmin);
 
-        Map<String, Object> meta = Map.of(
-                "page", result.getNumber(),
-                "size", result.getSize(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages()
-        );
-
-        return ResponseEntity.ok(ApiResponse.success("프리미엄 질문 목록 조회", result.getContent(), meta));
+        return ResponseEntity.ok(ApiResponse.success("프리미엄 질문 목록 조회", result.getContent(), PageMetaMapper.of(result)));
     }
 
     // F-08
