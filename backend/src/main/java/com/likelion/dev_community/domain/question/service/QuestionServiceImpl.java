@@ -16,6 +16,7 @@ import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.question.repository.TagRepository;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -40,15 +41,20 @@ public class QuestionServiceImpl implements QuestionService {
     private final XssSanitizer xssSanitizer;
     private final ViewCountService viewCountService;
     private final TagRepository tagRepository;
+    private final SubscriptionService subscriptionService;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
 
     // F-06
     @Override
-    public QuestionResponse createQuestion(Long userId, QuestionCreateRequest request) {
+    public QuestionResponse createQuestion(Long userId, boolean isAdmin, QuestionCreateRequest request) {
 
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 사용자 정보"));
+
+        if (request.isPremium()) {
+            subscriptionService.requireActiveSubscriber(userId, isAdmin);
+        }
 
         // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
         // String title = xssSanitizer.sanitize(request.getTitle());
@@ -60,6 +66,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .author(author)
                 .title(title)
                 .content(content)
+                .isPremium(request.isPremium())
                 .build();
 
         questionRepository.save(question);
@@ -73,6 +80,20 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     @Transactional(readOnly = true)
     public Page<QuestionSummaryResponse> readQuestions(int page, int size, String sort, String keyword, String tag, String status
+    ) {
+        return searchQuestionSummaries(page, size, sort, keyword, tag, status, false);
+    }
+
+    // F-32
+    @Override
+    public Page<QuestionSummaryResponse> readPremiumQuestions(int page, int size, String sort, String keyword, String tag, String status, Long userId, boolean isAdmin
+    ) {
+        subscriptionService.requireActiveSubscriber(userId, isAdmin);
+
+        return searchQuestionSummaries(page, size, sort, keyword, tag, status, true);
+    }
+
+    private Page<QuestionSummaryResponse> searchQuestionSummaries(int page, int size, String sort, String keyword, String tag, String status, boolean isPremium
     ) {
         if (page < 0) {
             throw new CustomException(ErrorCode.INVALID_INPUT, "page는 0 이상이어야 합니다.");
@@ -96,13 +117,11 @@ public class QuestionServiceImpl implements QuestionService {
         // F-19
         QuestionStatus questionStatus = statusFilter(status);
 
-        Page<Question> questions = questionRepository.searchQuestions(
-                keyword != null ? keyword.trim() : null,
-                tagId,
-                questionStatus,
-                sortType,
-                pageable
-        );
+        String trimmedKeyword = keyword != null ? keyword.trim() : null;
+
+        Page<Question> questions = isPremium
+                ? questionRepository.searchPremiumQuestions(trimmedKeyword, tagId, questionStatus, sortType, pageable)
+                : questionRepository.searchQuestions(trimmedKeyword, tagId, questionStatus, sortType, pageable);
 
         if (questions.isEmpty()) {
             return Page.empty(pageable);
@@ -145,10 +164,14 @@ public class QuestionServiceImpl implements QuestionService {
 
     // F-08
     @Override
-    public QuestionDetailResponse readDetailQuestion(Long questionId, String viewerKey) {
+    public QuestionDetailResponse readDetailQuestion(Long questionId, String viewerKey, Long userId, boolean isAdmin) {
 
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+
+        if (question.isPremium()) {
+            subscriptionService.requireActiveSubscriber(userId, isAdmin);
+        }
 
         if (viewCountService.shouldIncrease(questionId, viewerKey)) {
             question.increaseViewCount();

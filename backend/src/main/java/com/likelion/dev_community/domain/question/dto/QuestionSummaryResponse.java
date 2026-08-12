@@ -23,6 +23,7 @@ public class QuestionSummaryResponse {
 
     private final List<String> tags;
     private final LocalDateTime createdAt;
+    private final boolean isPremium;
 
     public static QuestionSummaryResponse of(Question question, int answerCount, List<String> tags) {
         return new QuestionSummaryResponse(
@@ -34,7 +35,8 @@ public class QuestionSummaryResponse {
                 question.getLikeCount(),
                 answerCount,
                 tags,
-                question.getCreatedAt()
+                question.getCreatedAt(),
+                question.isPremium()
         );
     }
 }
