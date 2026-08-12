@@ -54,9 +54,11 @@ function QuestionDetailPage() {
       setError("");
       setNotFound(false);
       try {
+        // 답변 목록은 로그인한 사용자에게만 노출된다. 비로그인 상태에서는
+        // 백엔드가 401을 반환하므로 애초에 요청하지 않는다.
         const [questionData, answersData] = await Promise.all([
           getQuestion(id),
-          getAnswers(id),
+          user ? getAnswers(id) : Promise.resolve([]),
         ]);
         if (cancelled) return;
         setQuestion(questionData);
@@ -238,44 +240,60 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <h2 className="answers-heading">답변 {answers.length}개</h2>
-      <ul className="answer-list">
-        {answers.map((answer) => (
-          <AnswerItem
-            key={answer.id}
-            answer={answer}
-            currentUser={user}
-            isAdmin={isAdmin}
-            isQuestionOwner={isOwner}
-            questionResolved={question.status === "RESOLVED"}
-            isLiked={likedAnswerIds.includes(answer.id)}
-            onChanged={reload}
-          />
-        ))}
-      </ul>
-
       {user ? (
-        <form className="answer-form" onSubmit={handleAnswerSubmit}>
-          <textarea
-            className="textarea"
-            value={answerContent}
-            onChange={(e) => setAnswerContent(e.target.value)}
-            placeholder="답변을 입력하세요"
-            required
-          />
-          {answerError && (
-            <p className="inline-error" role="alert">
-              {answerError}
-            </p>
-          )}
-          <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
-            {answerSubmitting ? "등록 중..." : "답변 등록"}
-          </button>
-        </form>
+        <>
+          <h2 className="answers-heading">답변 {answers.length}개</h2>
+          <ul className="answer-list">
+            {answers.map((answer) => (
+              <AnswerItem
+                key={answer.id}
+                answer={answer}
+                currentUser={user}
+                isAdmin={isAdmin}
+                isQuestionOwner={isOwner}
+                questionResolved={question.status === "RESOLVED"}
+                isLiked={likedAnswerIds.includes(answer.id)}
+                onChanged={reload}
+              />
+            ))}
+          </ul>
+
+          <form className="answer-form" onSubmit={handleAnswerSubmit}>
+            <textarea
+              className="textarea"
+              value={answerContent}
+              onChange={(e) => setAnswerContent(e.target.value)}
+              placeholder="답변을 입력하세요"
+              required
+            />
+            {answerError && (
+              <p className="inline-error" role="alert">
+                {answerError}
+              </p>
+            )}
+            <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
+              {answerSubmitting ? "등록 중..." : "답변 등록"}
+            </button>
+          </form>
+        </>
       ) : (
-        <p className="answer-form__prompt">
-          <Link to="/login">로그인</Link> 후 답변을 작성할 수 있습니다.
-        </p>
+        <>
+          <h2 className="answers-heading">답변</h2>
+          <div className="guest-lock">
+            <div className="guest-lock__placeholder" aria-hidden="true" />
+
+            <div className="guest-lock__overlay">
+              <p className="guest-lock__message">
+                Dev_Community에 가입해서
+                <br />
+                다른 개발자들에게 도움받아 보세요!
+              </p>
+              <Link to="/login" className="btn btn-primary">
+                로그인하기
+              </Link>
+            </div>
+          </div>
+        </>
       )}
 
       {selfAnswerAlertOpen && (
