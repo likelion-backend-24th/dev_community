@@ -37,6 +37,7 @@ function Navbar() {
               <>
                 <Link to="/admin/reports">신고 관리</Link>
                 <Link to="/admin/users">회원 관리</Link>
+                <Link to="/admin/dashboard">관리자 대시보드</Link>
               </>
             )}
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>

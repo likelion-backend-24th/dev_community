@@ -53,6 +53,15 @@
   background: var(--secondary-btn-hover);
 }
 
+.btn-liked {
+  background: var(--green);
+}
+
+.btn-liked:hover:not(:disabled) {
+  background: var(--green);
+  opacity: 0.9;
+}
+
 .btn-destructive {
   background: #da373c;
   color: #ffffff;

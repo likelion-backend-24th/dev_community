@@ -4,6 +4,7 @@ import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
+import com.likelion.dev_community.domain.like.dto.LikeStatusResponse;
 import com.likelion.dev_community.domain.like.entity.LikeHistory;
 import com.likelion.dev_community.domain.like.entity.LikeTargetType;
 import com.likelion.dev_community.domain.like.repository.LikeHistoryRepository;
@@ -14,6 +15,8 @@ import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -50,6 +53,19 @@ public class LikeServiceImpl implements LikeService {
                     increaseCount(targetType, targetId);
                     return true;
                 });
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public LikeStatusResponse getLikeStatus(Long userId, Long questionId, List<Long> answerIds) {
+        boolean questionLiked = likeHistoryRepository
+                .existsByUserIdAndTargetTypeAndTargetId(userId, LikeTargetType.QUESTION, questionId);
+
+        List<Long> likedAnswerIds = answerIds.isEmpty()
+                ? List.of()
+                : likeHistoryRepository.findLikedTargetIds(userId, LikeTargetType.ANSWER, answerIds);
+
+        return new LikeStatusResponse(questionLiked, likedAnswerIds);
     }
 
     private void increaseCount(LikeTargetType targetType, Long targetId) {
