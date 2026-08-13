@@ -18,3 +18,8 @@ admin:
   username: ${ADMIN_USERNAME:}
   password: ${ADMIN_PASSWORD:}
   nickname: ${ADMIN_NICKNAME:관리자}
+
+portone:
+  api-secret: ${PORTONE_API_SECRET}
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
