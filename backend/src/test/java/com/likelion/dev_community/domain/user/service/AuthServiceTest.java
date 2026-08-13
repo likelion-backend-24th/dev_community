@@ -11,10 +11,12 @@ import com.likelion.dev_community.domain.user.entity.RefreshToken;
 import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
+import com.likelion.dev_community.domain.user.repository.OAuthSignupInfoRepository;
 import com.likelion.dev_community.domain.user.repository.RefreshTokenRepository;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import com.likelion.dev_community.security.jwt.CookieProvider;
 import com.likelion.dev_community.security.jwt.JwtProvider;
+import com.likelion.dev_community.security.oauth.GithubOAuthClient;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -60,11 +62,18 @@ class AuthServiceTest {
     @Mock
     private Claims claims;
 
+    @Mock
+    private GithubOAuthClient githubOAuthClient;
+
+    @Mock
+    private OAuthSignupInfoRepository oAuthSignupInfoRepository;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider,
+                githubOAuthClient, oAuthSignupInfoRepository);
     }
 
     // ===== signUp (F-01) =====
