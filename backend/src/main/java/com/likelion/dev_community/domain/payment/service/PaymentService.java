@@ -12,6 +12,7 @@ import com.likelion.dev_community.domain.payment.repository.OrderRepository;
 import com.likelion.dev_community.domain.payment.repository.PaymentRepository;
 import com.likelion.dev_community.domain.payment.repository.PaymentTransactionRepository;
 import com.likelion.dev_community.domain.subscription.entity.PlanType;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
@@ -45,6 +46,7 @@ public class PaymentService {
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentTransactionRepository paymentTransactionRepository;
+    private final SubscriptionService subscriptionService;
 
     // 사전 검증
     @Transactional
@@ -113,6 +115,9 @@ public class PaymentService {
         paymentTransactionRepository.save(
                 PaymentTransaction.succeed(payment, paid.getTransactionId(), paid.getAmount().getTotal(), paid.getCurrency().getValue(), paidAt)
         );
+
+        // 구독 갱신/생성
+        subscriptionService.activateSubscription(order.getUser(), order.getPlanType());
 
         return PaymentCompleteResponse.of(payment.getPaymentId(), order.getPlanType(), payment.getStatus(), paidAt);
     }

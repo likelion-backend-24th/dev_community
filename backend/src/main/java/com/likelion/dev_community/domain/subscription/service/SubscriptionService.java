@@ -3,9 +3,11 @@ package com.likelion.dev_community.domain.subscription.service;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.subscription.dto.SubscriptionResponse;
+import com.likelion.dev_community.domain.subscription.entity.PlanType;
 import com.likelion.dev_community.domain.subscription.entity.Subscription;
 import com.likelion.dev_community.domain.subscription.entity.SubscriptionStatus;
 import com.likelion.dev_community.domain.subscription.repository.SubscriptionRepository;
+import com.likelion.dev_community.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +18,22 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class SubscriptionService {
 
+    private static final long SUBSCRIPTION_PERIOD_DAYS = 30; // 구독 기간 30일
+
     private final SubscriptionRepository subscriptionRepository;
+
+    // 결제 성공 시 구독 갱신/생성
+    @Transactional
+    public void activateSubscription(User user, PlanType planType) {
+        LocalDateTime startedAt = LocalDateTime.now();
+        LocalDateTime expiresAt = startedAt.plusDays(SUBSCRIPTION_PERIOD_DAYS);
+
+        subscriptionRepository.findByUserId(user.getId())
+                .ifPresentOrElse(
+                        subscription -> subscription.activate(planType, startedAt, expiresAt), // 오늘 기점으로 갱신
+                        () -> subscriptionRepository.save(Subscription.create(user, planType, startedAt, expiresAt)) // 신규 생성
+                );
+    }
 
     // 구독 여부 조회
     @Transactional
