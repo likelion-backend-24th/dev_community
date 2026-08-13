@@ -85,6 +85,7 @@ function MyPage() {
           <p className="profile-card__joined">
             가입일 {profile.createdAt.slice(0, 10)}
           </p>
+          <p className="profile-card__reputation">평판 {profile.reputation}점</p>
         </div>
         <div className="profile-card__actions">
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditInfoOpen(true)}>

@@ -34,6 +34,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
+    @Column(nullable = false)
+    private int reputation;
+
     @Builder
     public User(String username, String password, String nickname, Role role, UserStatus status) {
         this.username = username;
@@ -75,5 +78,13 @@ public class User extends BaseTimeEntity {
 
     public String getDisplayNickname(){
         return this.status == UserStatus.WITHDRAWN ? "탈퇴한 사용자" : this.nickname;
+    }
+
+    public void increaseReputation(int points) {
+        this.reputation += points;
+    }
+
+    public void decreaseReputation(int points) {
+        this.reputation = Math.max(0, this.reputation - points);
     }
 }
