@@ -26,7 +26,9 @@ public enum ErrorCode {
     ALREADY_PROCESSED_REPORT(HttpStatus.CONFLICT, "ALREADY_PROCESSED_REPORT", "이미 처리된 신고입니다."),
 
     ALREADY_SUSPENDED_USER(HttpStatus.CONFLICT, "ALREADY_SUSPENDED_USER", "이미 정지 처리된 사용자입니다."),
-    NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다");
+    NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다"),
+
+    PAYMENT_VERIFICATION_FAILED(HttpStatus.CONFLICT, "PAYMENT_VERIFICATION_FAILED", "PortOne 결제 정보 검증에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;
