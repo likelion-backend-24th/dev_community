@@ -11,6 +11,8 @@ import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
+import com.likelion.dev_community.domain.reputation.entity.ReputationEvent;
+import com.likelion.dev_community.domain.reputation.service.ReputationService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
     private final XssSanitizer xssSanitizer;
+    private final ReputationService reputationService;
 
     // F-12
     @Override
@@ -125,6 +128,7 @@ public class AnswerServiceImpl implements AnswerService {
 
         answer.adopt();
         question.resolve();
+        reputationService.apply(answer.getAuthor().getId(), ReputationEvent.ANSWER_ADOPTED);
 
         return AnswerResponse.from(answer);
     }
@@ -146,6 +150,7 @@ public class AnswerServiceImpl implements AnswerService {
 
         answer.cancelAdoption();
         question.reopen();
+        reputationService.revert(answer.getAuthor().getId(), ReputationEvent.ANSWER_ADOPTED);
 
         return AnswerResponse.from(answer);
     }
