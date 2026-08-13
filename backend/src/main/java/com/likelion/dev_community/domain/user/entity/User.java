@@ -34,13 +34,23 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private UserStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private AuthProvider provider;
+
+    @Column(length = 50)
+    private String providerId;
+
     @Builder
-    public User(String username, String password, String nickname, Role role, UserStatus status) {
+    public User(String username, String password, String nickname, Role role, UserStatus status,
+                AuthProvider provider, String providerId) {
         this.username = username;
         this.password = password;
         this.nickname = nickname;
         this.role = role;
         this.status = status;
+        this.provider = provider;
+        this.providerId = providerId;
     }
 
     public static User createUser(String username, String encodedPassword, String nickname) {
@@ -50,6 +60,20 @@ public class User extends BaseTimeEntity {
                 .nickname(nickname)
                 .role(Role.USER)
                 .status(UserStatus.ACTIVE)
+                .provider(AuthProvider.LOCAL)
+                .build();
+    }
+
+    public static User createOAuthUser(String username, String encodedRandomPassword, String nickname,
+                                       AuthProvider provider, String providerId) {
+        return User.builder()
+                .username(username)
+                .password(encodedRandomPassword)
+                .nickname(nickname)
+                .role(Role.USER)
+                .status(UserStatus.ACTIVE)
+                .provider(provider)
+                .providerId(providerId)
                 .build();
     }
 

@@ -26,7 +26,10 @@ public enum ErrorCode {
     ALREADY_PROCESSED_REPORT(HttpStatus.CONFLICT, "ALREADY_PROCESSED_REPORT", "이미 처리된 신고입니다."),
 
     ALREADY_SUSPENDED_USER(HttpStatus.CONFLICT, "ALREADY_SUSPENDED_USER", "이미 정지 처리된 사용자입니다."),
-    NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다");
+    NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다"),
+
+    OAUTH_LOGIN_FAILED(HttpStatus.BAD_GATEWAY, "OAUTH_LOGIN_FAILED", "소셜 로그인 처리 중 오류가 발생했습니다."),
+    OAUTH_SIGNUP_EXPIRED(HttpStatus.BAD_REQUEST, "OAUTH_SIGNUP_EXPIRED", "인증 정보가 만료되었습니다. 다시 로그인해주세요.");
 
     private final HttpStatus status;
     private final String code;
