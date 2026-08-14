@@ -69,7 +69,7 @@ public class PaymentService {
     }
 
     // 결제 완료 검증
-    @Transactional
+    @Transactional(noRollbackFor = CustomException.class)
     public PaymentCompleteResponse completePayment(String paymentId, Long userId) {
         // paymentId로 우리 Payment 조회. (없으면 404)
         Payment payment = paymentRepository.findByPaymentId(paymentId)
@@ -87,6 +87,10 @@ public class PaymentService {
             // PortOne 재조회. (실패 시 409)
             portonePayment = paymentClient.getPayment(paymentId).join();
         } catch (CompletionException e) {
+            payment.markFailed();
+            paymentTransactionRepository.save(
+                    PaymentTransaction.fail(payment, paymentId, order.getAmount(), order.getCurrency(), "PortOne 조회 실패")
+            );
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 결제 정보를 확인할 수 없습니다.");
         }
 
