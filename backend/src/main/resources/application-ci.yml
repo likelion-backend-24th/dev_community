@@ -16,3 +16,8 @@ spring:
 jwt:
   secret: G+6kqk1HfUM/SeQldaZr7C7TEzP9v63eugSEqOMDong=
   refreshSecret: elPyXJUdIN7e5ETkWaNTXeHCJIX+6RG2KFRChqcArus=
+
+portone:
+  api-secret: ci-dummy-secret
+  store-id: ci-dummy-store
+  channel-key: ci-dummy-channel
