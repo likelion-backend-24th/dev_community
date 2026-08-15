@@ -7,6 +7,7 @@ import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.ProductInfo;
 import com.likelion.dev_community.domain.payment.entity.order.Order;
 import com.likelion.dev_community.domain.payment.entity.payment.Payment;
+import com.likelion.dev_community.domain.payment.entity.payment.PaymentStatus;
 import com.likelion.dev_community.domain.payment.entity.transaction.PaymentTransaction;
 import com.likelion.dev_community.domain.payment.repository.OrderRepository;
 import com.likelion.dev_community.domain.payment.repository.PaymentRepository;
@@ -16,6 +17,7 @@ import com.likelion.dev_community.domain.subscription.service.SubscriptionServic
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
+import io.portone.sdk.server.payment.FailedPayment;
 import io.portone.sdk.server.payment.PaidPayment;
 import io.portone.sdk.server.payment.PaymentClient;
 import lombok.RequiredArgsConstructor;
@@ -82,17 +84,28 @@ public class PaymentService {
             throw new CustomException(ErrorCode.FORBIDDEN, "본인 결제만 확인할 수 있습니다.");
         }
 
+        // 이미 완료된 결제면 재검증 없이 현재 상태 그대로 반환
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            return PaymentCompleteResponse.of(payment.getPaymentId(), order.getPlanType(), payment.getStatus(), payment.getPaidAt());
+        }
+
         io.portone.sdk.server.payment.Payment portonePayment;
         try {
             // PortOne 재조회. (실패 시 409)
             portonePayment = paymentClient.getPayment(paymentId).join();
         } catch (CompletionException e) {
+            // PortOne 응답 자체를 못 받아 실제 transactionId가 존재하지 않는 케이스
             payment.markFailed();
             paymentTransactionRepository.save(
-                    PaymentTransaction.fail(payment, paymentId, order.getAmount(), order.getCurrency(), "PortOne 조회 실패")
+                    PaymentTransaction.fail(payment, null, order.getAmount(), order.getCurrency(), "PortOne 조회 실패")
             );
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 결제 정보를 확인할 수 없습니다.");
         }
+
+        // PortOne이 인식한 시도라면(성공/실패 불문) PortOne이 발급한 실제 transactionId를 그대로 사용
+        String recognizedTransactionId = portonePayment instanceof io.portone.sdk.server.payment.Payment.Recognized recognized
+                ? recognized.getTransactionId()
+                : null;
 
         // PaidPayment인지? (결제완료 상태 건인지) + storeId / channelKey / 금액 / 통화가 우리 Order 기록과 일치하는가?
         boolean verified = portonePayment instanceof PaidPayment paid
@@ -104,8 +117,11 @@ public class PaymentService {
         // 불일치 => 트랜잭션에 fail 기록 후 409
         if (!verified) {
             payment.markFailed();
+            String failReason = portonePayment instanceof FailedPayment failed && failed.getFailure() != null
+                    ? failed.getFailure().getReason()
+                    : "PortOne 재검증 실패";
             paymentTransactionRepository.save(
-                    PaymentTransaction.fail(payment, paymentId, order.getAmount(), order.getCurrency(), "PortOne 재검증 실패")
+                    PaymentTransaction.fail(payment, recognizedTransactionId, order.getAmount(), order.getCurrency(), failReason)
             );
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED);
         }

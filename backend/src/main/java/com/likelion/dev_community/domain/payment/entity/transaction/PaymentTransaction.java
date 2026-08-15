@@ -24,7 +24,7 @@ public class PaymentTransaction extends BaseTimeEntity { // 같은 Payment 내 P
     @JoinColumn(name = "payment_id", nullable = false)
     private Payment payment;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(unique = true, length = 50)
     private String transactionId; // PortOne transactionId
 
     @Enumerated(EnumType.STRING)
