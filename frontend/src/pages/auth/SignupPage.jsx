@@ -35,6 +35,7 @@ function SignupPage() {
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -81,6 +82,10 @@ function SignupPage() {
     }
     if (form.password !== form.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.')
+      return
+    }
+    if (!agreeTerms) {
+      setError('이용약관에 동의해주세요.')
       return
     }
 
@@ -221,6 +226,21 @@ function SignupPage() {
               </div>
             </div>
 
+            <label className="field__agree">
+              <input
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
+                required
+              />
+              <span>
+                <Link to="/terms" target="_blank" rel="noopener noreferrer">
+                  이용약관
+                </Link>
+                에 동의합니다 (필수)
+              </span>
+            </label>
+
             {error && (
               <p className="auth-error" role="alert">
                 {error}
@@ -233,7 +253,8 @@ function SignupPage() {
               disabled={
                 submitting ||
                 usernameCheck.status !== 'available' ||
-                nicknameCheck.status !== 'available'
+                nicknameCheck.status !== 'available' ||
+                !agreeTerms
               }
             >
               {submitting ? '가입 중...' : '회원가입'}

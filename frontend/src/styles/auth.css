@@ -194,6 +194,27 @@
   color: var(--red-soft);
 }
 
+.field__agree {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 13px;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.field__agree input {
+  accent-color: var(--blurple);
+}
+
+.field__agree a {
+  color: var(--text-link);
+}
+
+.field__agree a:hover {
+  text-decoration: underline;
+}
+
 .auth-error {
   margin: 0;
   background: var(--surface-tertiary);

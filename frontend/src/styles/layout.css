@@ -1,5 +1,15 @@
 /* App chrome */
 
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main {
+  flex: 1;
+}
+
 .navbar {
   position: sticky;
   top: 0;
@@ -65,6 +75,40 @@
   font-size: 24px;
   font-weight: 700;
   color: var(--text-header);
+}
+
+.footer {
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.footer__inner {
+  max-width: 840px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-sm) var(--space-lg);
+  padding: var(--space-base);
+}
+
+.footer__brand {
+  font-weight: 600;
+}
+
+.footer__links {
+  display: flex;
+  gap: var(--space-lg);
+}
+
+.footer__links a {
+  color: var(--text-muted);
+}
+
+.footer__links a:hover {
+  color: var(--text-normal);
 }
 
 @media (max-width: 640px) {
