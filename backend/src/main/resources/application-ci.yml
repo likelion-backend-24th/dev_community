@@ -21,3 +21,4 @@ portone:
   api-secret: ci-dummy-secret
   store-id: ci-dummy-store
   channel-key: ci-dummy-channel
+  webhook-secret: ci-dummy-webhook-secret

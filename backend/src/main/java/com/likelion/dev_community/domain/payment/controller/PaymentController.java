@@ -6,6 +6,7 @@ import com.likelion.dev_community.domain.payment.dto.PaymentPrepareRequest;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
 import com.likelion.dev_community.domain.payment.service.PaymentService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -24,7 +25,7 @@ public class PaymentController {
 
     @PostMapping("/prepare")
     public ResponseEntity<ApiResponse<PaymentPrepareResponse>> prepare(@AuthenticationPrincipal CustomUserDetails customUserDetails,
-                                                                       @RequestBody PaymentPrepareRequest paymentPrepareRequest){
+                                                                       @Valid @RequestBody PaymentPrepareRequest paymentPrepareRequest){
         PaymentPrepareResponse paymentPrepareResponse = paymentService.preparePayment(customUserDetails.getId(), paymentPrepareRequest.getPlanType());
 
         return ResponseEntity.ok(ApiResponse.success("결제 준비 완료", paymentPrepareResponse));
