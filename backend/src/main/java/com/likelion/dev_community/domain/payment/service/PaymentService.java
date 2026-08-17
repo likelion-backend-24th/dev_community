@@ -73,8 +73,8 @@ public class PaymentService {
     // 결제 완료 검증
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCompleteResponse completePayment(String paymentId, Long userId) {
-        // paymentId로 우리 Payment 조회. (없으면 404)
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
+        // paymentId로 우리 Payment 조회, 동시 완료 요청이 순서대로 처리되도록 락. (없으면 404)
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
 
         Order order = payment.getOrder();
