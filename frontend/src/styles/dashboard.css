@@ -1,4 +1,49 @@
-/* Admin dashboard (통계 대시보드) */
+/* Admin / 개인 활동 대시보드 (통계 대시보드) */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-base);
+  margin-bottom: var(--space-xl);
+}
+
+.stat-tile {
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.stat-tile--clickable {
+  border: none;
+  width: 100%;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.stat-tile--clickable:hover {
+  background: var(--surface-hover);
+}
+
+.stat-tile--active {
+  background: var(--surface-tertiary);
+  outline: 2px solid var(--blurple);
+  outline-offset: -2px;
+}
+
+.stat-tile__value {
+  margin: 0 0 var(--space-xs);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-header);
+}
+
+.stat-tile__label {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
 
 .stat-card {
   background: var(--surface-secondary);
@@ -62,6 +107,7 @@
 
 .top-question-tick:hover {
   fill: var(--text-link);
+  color: var(--text-link);
   text-decoration: underline;
 }
 
