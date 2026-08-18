@@ -192,7 +192,7 @@ function MembershipPage() {
         billingKeyMethod: "CARD",
         issueId: prepared.issueId,
         customer: {
-          customerId: String(user.id),
+          customerId: `user-${user.id}`,
           fullName: user.nickname,
         },
         noticeUrls: [PAYMENT_WEBHOOK_URL],

@@ -171,7 +171,8 @@ public class PaymentService {
     }
 
     private CustomerInput billingCustomer(User user) {
-        return new CustomerInput(user.getId().toString(), null, null, null, null, null, null, null, null, null, null, null);
+        // customerKey는 2자 이상, 255자 이하
+        return new CustomerInput("user-" + user.getId(), null, null, null, null, null, null, null, null, null, null, null);
     }
 
     private List<String> noticeUrls() {
