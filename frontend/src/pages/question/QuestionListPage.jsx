@@ -79,7 +79,7 @@ function QuestionListPage() {
     try {
       const prepared = await preparePayment("PREMIUM");
 
-      await window.PortOne.requestPayment({
+      const payment = await window.PortOne.requestPayment({
         storeId: prepared.storeId,
         channelKey: prepared.channelKey,
         paymentId: prepared.paymentId,
@@ -87,7 +87,20 @@ function QuestionListPage() {
         totalAmount: prepared.amount,
         currency: "KRW",
         payMethod: "CARD",
+        customer: {
+          fullName: "포트원",
+          email: "example@portone.io",
+          phoneNumber: "01012341234",
+        },
+        noticeUrls: [
+          "https://chlorine-ninja-tubular.ngrok-free.dev/api/payments/webhook",
+        ],
       });
+
+      if (payment.code !== undefined) {
+        alert(`결제 실패: ${payment.message}`);
+        return;
+      }
 
       const completed = await completePayment(prepared.paymentId);
       alert(`결제 완료 처리됨: ${completed.status}`);

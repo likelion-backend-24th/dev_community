@@ -21,6 +21,7 @@ import io.portone.sdk.server.payment.FailedPayment;
 import io.portone.sdk.server.payment.PaidPayment;
 import io.portone.sdk.server.payment.PaymentClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,11 +32,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final Long PREMIUM_PRICE= 990L;
+    private final Long PREMIUM_PRICE= 4900L;
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -57,7 +59,7 @@ public class PaymentService {
                 .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND,"서비스 이용 가능 상태가 아닌 사용자입니다."));
 
 
-        String paymentId = "DEV_COM" + UUID.randomUUID();
+        String paymentId = "DEV_" + UUID.randomUUID();
         String currency = "KRW";
 
         Order order = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, currency));
@@ -89,12 +91,20 @@ public class PaymentService {
             return PaymentCompleteResponse.of(payment.getPaymentId(), order.getPlanType(), payment.getStatus(), payment.getPaidAt());
         }
 
+        LocalDateTime paidAt = verifyAndMarkPayment(payment, order);
+
+        return PaymentCompleteResponse.of(payment.getPaymentId(), order.getPlanType(), payment.getStatus(), paidAt);
+    }
+
+    // PortOne 재조회, 검증, 기록
+    private LocalDateTime verifyAndMarkPayment(Payment payment, Order order) {
         io.portone.sdk.server.payment.Payment portonePayment;
         try {
             // PortOne 재조회. (실패 시 409)
-            portonePayment = paymentClient.getPayment(paymentId).join();
+            portonePayment = paymentClient.getPayment(payment.getPaymentId()).join();
         } catch (CompletionException e) {
             // PortOne 응답 자체를 못 받아 실제 transactionId가 존재하지 않는 케이스
+            log.warn("PortOne 결제 조회 실패: paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
             payment.markFailed();
             paymentTransactionRepository.save(
                     PaymentTransaction.fail(payment, null, order.getAmount(), order.getCurrency(), "PortOne 조회 실패")
@@ -139,6 +149,20 @@ public class PaymentService {
         // 구독 갱신/생성
         subscriptionService.activateSubscription(order.getUser(), order.getPlanType());
 
-        return PaymentCompleteResponse.of(payment.getPaymentId(), order.getPlanType(), payment.getStatus(), paidAt);
+        return paidAt;
+    }
+
+    // 웹훅 수신 시 결제 상태 동기화
+    @Transactional(noRollbackFor = CustomException.class)
+    public void syncPaymentFromWebhook(String paymentId) {
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+
+        // 이미 완료된 결제면 재검증 x
+        if (payment.getStatus() == PaymentStatus.PAID) {
+            return;
+        }
+
+        verifyAndMarkPayment(payment, payment.getOrder());
     }
 }
