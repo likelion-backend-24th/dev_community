@@ -12,12 +12,15 @@ public class PortOneConfig {
     @Value("${portone.api-secret}")
     private String apiSecret;
 
+    @Value("${portone.store-id}")
+    private String storeId;
+
     @Value("${portone.webhook-secret}")
     private String webhookSecret;
 
     @Bean
     public PaymentClient paymentClient() {
-        return new PaymentClient(apiSecret, "https://api.portone.io", null);
+        return new PaymentClient(apiSecret, "https://api.portone.io", storeId);
     }
 
     @Bean
