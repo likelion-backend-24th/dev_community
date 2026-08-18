@@ -24,22 +24,21 @@ public class SubscriptionService {
 
     // 결제 성공 시 구독 갱신/생성
     @Transactional
-    public void activateSubscription(User user, PlanType planType) {
+    public Subscription activateSubscription(User user, PlanType planType) {
         LocalDateTime now = LocalDateTime.now();
 
-        subscriptionRepository.findByUserId(user.getId())
-                .ifPresentOrElse(
-                        subscription -> {
-                            // 아직 만료 전이면 남은 기간에 이어서 연장, 아니면 오늘부터 새로 시작
-                            boolean stillActive = subscription.getStatus() == SubscriptionStatus.ACTIVE
-                                    && subscription.getExpiresAt().isAfter(now);
-                            LocalDateTime base = stillActive ? subscription.getExpiresAt() : now;
-                            subscription.activate(planType, now, base.plusDays(SUBSCRIPTION_PERIOD_DAYS));
-                        },
-                        () -> subscriptionRepository.save( // 신규 생성
-                                Subscription.create(user, planType, now, now.plusDays(SUBSCRIPTION_PERIOD_DAYS))
-                        )
-                );
+        return subscriptionRepository.findByUserId(user.getId())
+                .map(subscription -> {
+                    // 아직 만료 전이면 남은 기간에 이어서 연장, 아니면 오늘부터 새로 시작
+                    boolean stillActive = subscription.getStatus() == SubscriptionStatus.ACTIVE
+                            && subscription.getExpiresAt().isAfter(now);
+                    LocalDateTime base = stillActive ? subscription.getExpiresAt() : now;
+                    subscription.activate(planType, now, base.plusDays(SUBSCRIPTION_PERIOD_DAYS));
+                    return subscription;
+                })
+                .orElseGet(() -> subscriptionRepository.save( // 신규 생성
+                        Subscription.create(user, planType, now, now.plusDays(SUBSCRIPTION_PERIOD_DAYS))
+                ));
     }
 
     // 구독 여부 조회

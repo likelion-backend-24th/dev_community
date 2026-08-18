@@ -1,14 +1,17 @@
 package com.likelion.dev_community.domain.payment.dto;
 
 import com.likelion.dev_community.domain.subscription.entity.PlanType;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@Deprecated
 @Getter
 @AllArgsConstructor
-public class PaymentPrepareRequest {
+public class BillingKeyIssueRequest {
+    @NotBlank(message = "빌링키가 필요합니다.")
+    private final String billingKey;
+
     @NotNull(message = "구독 등급을 선택해주세요.")
     private final PlanType planType;
 }

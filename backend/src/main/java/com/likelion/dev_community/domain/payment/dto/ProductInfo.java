@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.payment.dto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@Deprecated
 @Getter
 @AllArgsConstructor
 public class ProductInfo {

@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.payment.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.domain.payment.dto.BillingKeyPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCompleteResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.ProductInfo;
@@ -11,12 +12,22 @@ import com.likelion.dev_community.domain.payment.entity.payment.PaymentStatus;
 import com.likelion.dev_community.domain.payment.repository.OrderRepository;
 import com.likelion.dev_community.domain.payment.repository.PaymentRepository;
 import com.likelion.dev_community.domain.subscription.entity.PlanType;
+import com.likelion.dev_community.domain.subscription.entity.Subscription;
 import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
+import io.portone.sdk.server.common.CustomerInput;
+import io.portone.sdk.server.common.Currency;
+import io.portone.sdk.server.common.PaymentAmountInput;
 import io.portone.sdk.server.payment.PaidPayment;
+import io.portone.sdk.server.payment.PayWithBillingKeyResponse;
 import io.portone.sdk.server.payment.PaymentClient;
+import io.portone.sdk.server.payment.billingkey.BillingKeyClient;
+import io.portone.sdk.server.payment.billingkey.BillingKeyInfo;
+import io.portone.sdk.server.payment.billingkey.IssuedBillingKeyInfo;
+import io.portone.sdk.server.payment.paymentschedule.BillingKeyPaymentScheduleInput;
+import io.portone.sdk.server.payment.paymentschedule.PaymentScheduleClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +46,8 @@ import java.util.concurrent.CompletionException;
 public class PaymentService {
 
     private final Long PREMIUM_PRICE= 4900L;
+    private static final String CURRENCY = "KRW";
+    private static final String SUBSCRIPTION_ORDER_NAME = "프리미엄 구독 정기결제";
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -42,13 +55,19 @@ public class PaymentService {
     @Value("${portone.channel-key}")
     private String channelKey;
 
+    @Value("${portone.webhook-notice-url}")
+    private String webhookNoticeUrl;
+
     private final PaymentClient paymentClient;
+    private final BillingKeyClient billingKeyClient;
+    private final PaymentScheduleClient paymentScheduleClient;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final PaymentRepository paymentRepository;
     private final SubscriptionService subscriptionService;
 
     // 사전 검증
+    @Deprecated
     @Transactional
     public PaymentPrepareResponse preparePayment(Long userId, PlanType planType){
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
@@ -68,7 +87,100 @@ public class PaymentService {
         return PaymentPrepareResponse.of(storeId, channelKey, paymentId, "프리미엄 구독", PREMIUM_PRICE, currency, products);
     }
 
+    // 빌링키 발급 사전 준비
+    @Transactional
+    public BillingKeyPrepareResponse prepareBillingKeyIssue(Long userId) {
+        userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+
+        String issueId = "ISSUE_" + UUID.randomUUID();
+
+        return BillingKeyPrepareResponse.of(storeId, channelKey, issueId);
+    }
+
+    // 빌링키 발급 검증 + 첫 결제 + 다음 회차 예약
+    @Transactional(noRollbackFor = CustomException.class)
+    public PaymentCompleteResponse issueBillingKeyAndCharge(String billingKey, Long userId, PlanType planType) {
+        User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+
+        // 빌링키 재조회
+        BillingKeyInfo billingKeyInfo;
+        try {
+            billingKeyInfo = billingKeyClient.getBillingKeyInfo(billingKey).join();
+        } catch (CompletionException e) {
+            log.warn("PortOne 빌링키 조회 실패: billingKey={}, cause={}", billingKey, e.getCause() != null ? e.getCause().toString() : e.toString());
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 빌링키 정보를 확인할 수 없습니다.");
+        }
+
+        if (!(billingKeyInfo instanceof IssuedBillingKeyInfo issued) || !issued.getStoreId().equals(storeId)) {
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "빌링키 발급 검증에 실패했습니다.");
+        }
+
+        // 1회차 결제
+        Order order = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
+        String paymentId = "DEV_" + UUID.randomUUID();
+        Payment payment = paymentRepository.save(Payment.create(order, paymentId));
+
+        PayWithBillingKeyResponse response;
+        try {
+            response = paymentClient.payWithBillingKey(
+                    paymentId, billingKey, channelKey, SUBSCRIPTION_ORDER_NAME,
+                    billingCustomer(user), null,
+                    new PaymentAmountInput(PREMIUM_PRICE, null, null), Currency.Krw.INSTANCE,
+                    null, null, null, null, null, noticeUrls(), null, null, null, null, null, null, null, null
+            ).join();
+        } catch (CompletionException e) {
+            log.warn("정기결제 첫 결제 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+            payment.markFailed();
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "정기결제 첫 결제에 실패했습니다.");
+        }
+
+        LocalDateTime paidAt = LocalDateTime.ofInstant(response.getPayment().getPaidAt(), ZoneId.systemDefault());
+        payment.markPaid(paidAt);
+        order.complete();
+
+        Subscription subscription = subscriptionService.activateSubscription(user, planType);
+        subscription.registerBillingKey(billingKey);
+
+        scheduleNextCharge(user, planType, billingKey, subscription.getExpiresAt());
+
+        return PaymentCompleteResponse.of(payment.getPaymentId(), planType, payment.getStatus(), paidAt);
+    }
+
+    // 다음 회차 결제 건 생성 + PortOne 결제 예약 등록
+    private void scheduleNextCharge(User user, PlanType planType, String billingKey, LocalDateTime timeToPay) {
+        Order nextOrder = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
+        String nextPaymentId = "DEV_" + UUID.randomUUID();
+        paymentRepository.save(Payment.create(nextOrder, nextPaymentId));
+
+        BillingKeyPaymentScheduleInput scheduleInput = new BillingKeyPaymentScheduleInput(
+                storeId, billingKey, channelKey, SUBSCRIPTION_ORDER_NAME,
+                billingCustomer(user), null,
+                new PaymentAmountInput(PREMIUM_PRICE, null, null), Currency.Krw.INSTANCE,
+                null, null, null, null, null, noticeUrls(), null, null, null, null, null, null, null
+        );
+
+        try {
+            paymentScheduleClient.createPaymentSchedule(
+                    nextPaymentId, scheduleInput, timeToPay.atZone(ZoneId.systemDefault()).toInstant()
+            ).join();
+        } catch (CompletionException e) {
+            log.warn("다음 정기결제 예약 실패: userId={}, cause={}", user.getId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+        }
+    }
+
+    private CustomerInput billingCustomer(User user) {
+        return new CustomerInput(user.getId().toString(), null, null, null, null, null, null, null, null, null, null, null);
+    }
+
+    private List<String> noticeUrls() {
+        return webhookNoticeUrl == null || webhookNoticeUrl.isBlank() ? null : List.of(webhookNoticeUrl);
+    }
+
+
     // 결제 완료 검증
+    @Deprecated
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCompleteResponse completePayment(String paymentId, Long userId) {
         // paymentId로 우리 Payment 조회, 동시 완료 요청이 순서대로 처리되도록 락. (없으면 404)
@@ -126,7 +238,12 @@ public class PaymentService {
         order.complete();
 
         // 구독 갱신/생성
-        subscriptionService.activateSubscription(order.getUser(), order.getPlanType());
+        Subscription subscription = subscriptionService.activateSubscription(order.getUser(), order.getPlanType());
+
+        // 정기결제 구독일때 다음 회차를 이어서 예약 (예약된 결제가 완료된 뒤 다음 결제를 예약)
+        if (subscription.getBillingKey() != null) {
+            scheduleNextCharge(order.getUser(), order.getPlanType(), subscription.getBillingKey(), subscription.getExpiresAt());
+        }
 
         return paidAt;
     }

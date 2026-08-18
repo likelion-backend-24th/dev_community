@@ -1,6 +1,8 @@
 package com.likelion.dev_community.domain.payment.controller;
 
 import com.likelion.dev_community.common.ApiResponse;
+import com.likelion.dev_community.domain.payment.dto.BillingKeyIssueRequest;
+import com.likelion.dev_community.domain.payment.dto.BillingKeyPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCompleteResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareRequest;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
@@ -23,6 +25,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @Deprecated
     @PostMapping("/prepare")
     public ResponseEntity<ApiResponse<PaymentPrepareResponse>> prepare(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                        @Valid @RequestBody PaymentPrepareRequest paymentPrepareRequest){
@@ -31,12 +34,30 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("결제 준비 완료", paymentPrepareResponse));
     }
 
+    @Deprecated
     @PostMapping("/{paymentId}/complete")
     public ResponseEntity<ApiResponse<PaymentCompleteResponse>> complete(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                           @PathVariable String paymentId){
         PaymentCompleteResponse paymentCompleteResponse = paymentService.completePayment(paymentId, customUserDetails.getId());
 
         return ResponseEntity.ok(ApiResponse.success("결제 완료 확인", paymentCompleteResponse));
+    }
+
+    @PostMapping("/billing/prepare")
+    public ResponseEntity<ApiResponse<BillingKeyPrepareResponse>> prepareBillingKey(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+        BillingKeyPrepareResponse response = paymentService.prepareBillingKeyIssue(customUserDetails.getId());
+
+        return ResponseEntity.ok(ApiResponse.success("빌링키 발급 준비 완료", response));
+    }
+
+    @PostMapping("/billing/issue")
+    public ResponseEntity<ApiResponse<PaymentCompleteResponse>> issueBillingKey(@AuthenticationPrincipal CustomUserDetails customUserDetails,
+                                                                                 @Valid @RequestBody BillingKeyIssueRequest billingKeyIssueRequest) {
+        PaymentCompleteResponse response = paymentService.issueBillingKeyAndCharge(
+                billingKeyIssueRequest.getBillingKey(), customUserDetails.getId(), billingKeyIssueRequest.getPlanType()
+        );
+
+        return ResponseEntity.ok(ApiResponse.success("정기결제 등록 완료", response));
     }
 
 }

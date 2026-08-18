@@ -1,6 +1,8 @@
 package com.likelion.dev_community.config;
 
 import io.portone.sdk.server.payment.PaymentClient;
+import io.portone.sdk.server.payment.billingkey.BillingKeyClient;
+import io.portone.sdk.server.payment.paymentschedule.PaymentScheduleClient;
 import io.portone.sdk.server.webhook.WebhookVerifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,6 +23,16 @@ public class PortOneConfig {
     @Bean
     public PaymentClient paymentClient() {
         return new PaymentClient(apiSecret, "https://api.portone.io", storeId);
+    }
+
+    @Bean
+    public BillingKeyClient billingKeyClient() {
+        return new BillingKeyClient(apiSecret, "https://api.portone.io", storeId);
+    }
+
+    @Bean
+    public PaymentScheduleClient paymentScheduleClient() {
+        return new PaymentScheduleClient(apiSecret, "https://api.portone.io", storeId);
     }
 
     @Bean

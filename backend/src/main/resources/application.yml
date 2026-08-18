@@ -24,3 +24,4 @@ portone:
   store-id: ${PORTONE_STORE_ID}
   channel-key: ${PORTONE_CHANNEL_KEY}
   webhook-secret: ${PORTONE_WEBHOOK_SECRET}
+  webhook-notice-url: ${PORTONE_WEBHOOK_NOTICE_URL:}
