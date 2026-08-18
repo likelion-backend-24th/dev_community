@@ -1,0 +1,123 @@
+/* 파일 첨부 (코드 파일 + 작은 이미지) */
+
+.attachment-picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.attachment-picker__input {
+  display: none;
+}
+
+.attachment-picker__button {
+  align-self: flex-start;
+  cursor: pointer;
+}
+
+.attachment-picker__hint {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.attachment-picker__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachment-picker__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+}
+
+.attachment-picker__name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attachment-picker__size {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.attachment-picker__remove,
+.attachment-list__remove {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 var(--space-xs);
+}
+
+.attachment-picker__remove:hover,
+.attachment-list__remove:hover {
+  color: var(--red);
+}
+
+.attachment-groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0 0;
+}
+
+.attachment-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.attachment-list--files {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.attachment-list__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.attachment-list__item--image {
+  position: relative;
+}
+
+.attachment-list__thumbnail {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.attachment-list__item--file {
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--surface-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.attachment-list__filename {
+  color: var(--text-link);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.attachment-list__filename:hover {
+  text-decoration: underline;
+}

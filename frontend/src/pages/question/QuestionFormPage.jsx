@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createQuestion, getQuestion, updateQuestion } from "../../api/questionApi";
+import { uploadQuestionAttachments } from "../../api/attachmentApi";
+import AttachmentPicker from "../../components/attachment/AttachmentPicker";
+import AttachmentList from "../../components/attachment/AttachmentList";
 import "../../styles/question-form.css";
 
 const MAX_TAG_COUNT = 5;
@@ -18,6 +21,9 @@ function QuestionFormPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(isEditMode);
+
+  const [attachmentFiles, setAttachmentFiles] = useState([]);
+  const [attachmentError, setAttachmentError] = useState("");
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -86,13 +92,14 @@ function QuestionFormPage() {
     const payload = { title, content, tags };
 
     try {
+      const questionId = isEditMode ? id : (await createQuestion(payload)).id;
       if (isEditMode) {
         await updateQuestion(id, payload);
-        navigate(`/questions/${id}`);
-      } else {
-        const created = await createQuestion(payload);
-        navigate(`/questions/${created.id}`);
       }
+      if (attachmentFiles.length > 0) {
+        await uploadQuestionAttachments(questionId, attachmentFiles);
+      }
+      navigate(`/questions/${questionId}`);
     } catch (err) {
       setError(err.response?.data?.message ?? "저장 중 오류가 발생했습니다.");
     } finally {
@@ -162,6 +169,17 @@ function QuestionFormPage() {
               disabled={tags.length >= MAX_TAG_COUNT}
             />
           </div>
+        </div>
+
+        <div className="form-field">
+          <label>첨부파일</label>
+          {isEditMode && <AttachmentList targetType="QUESTION" targetId={id} canDelete />}
+          <AttachmentPicker
+            files={attachmentFiles}
+            onChange={setAttachmentFiles}
+            error={attachmentError}
+            onError={setAttachmentError}
+          />
         </div>
 
         {error && (
