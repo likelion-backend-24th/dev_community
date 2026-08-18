@@ -24,9 +24,9 @@ services:
       - app-network
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    # 이미지는 EC2에서 빌드하지 않고 GitHub Actions가 빌드해서 GHCR에 올린 걸 pull만 한다.
+    # (배포 스크립트가 이 파일 그대로 --build 없이 pull + up만 실행)
+    image: ghcr.io/likelion-backend-24th/dev_community-app:latest
     container_name: dev_community_app
     ports:
       - "8080:8080"
@@ -59,9 +59,7 @@ services:
       - app-network
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/likelion-backend-24th/dev_community-frontend:latest
     container_name: dev_community_frontend
     ports:
       - "80:80"
