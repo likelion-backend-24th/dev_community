@@ -29,6 +29,7 @@ function Navbar() {
       <div className="navbar__actions">
         {isAuthenticated ? (
           <>
+            <Link to="/membership">멤버십</Link>
             <Link to="/questions/new" className="btn btn-primary btn-sm">
               질문 작성
             </Link>

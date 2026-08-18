@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
-import { preparePayment, completePayment } from "../../api/paymentApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import "../../styles/question.css";
 
@@ -74,56 +73,10 @@ function QuestionListPage() {
     setAppliedTag(tagInput.trim());
   };
 
-  // TODO: F-30 결제 플로우 프론트 테스트용
-  const handleTempSubscribe = async () => {
-    try {
-      const prepared = await preparePayment("PREMIUM");
-
-      const payment = await window.PortOne.requestPayment({
-        storeId: prepared.storeId,
-        channelKey: prepared.channelKey,
-        paymentId: prepared.paymentId,
-        orderName: prepared.orderName,
-        totalAmount: prepared.amount,
-        currency: "KRW",
-        payMethod: "CARD",
-        customer: {
-          fullName: "포트원",
-          email: "example@portone.io",
-          phoneNumber: "01012341234",
-        },
-        noticeUrls: [
-          "https://chlorine-ninja-tubular.ngrok-free.dev/api/payments/webhook",
-        ],
-      });
-
-      if (payment.code !== undefined) {
-        alert(`결제 실패: ${payment.message}`);
-        return;
-      }
-
-      const completed = await completePayment(prepared.paymentId);
-      alert(`결제 완료 처리됨: ${completed.status}`);
-    } catch (err) {
-      alert(
-        err.response?.data?.message ??
-          err.message ??
-          "결제 중 오류가 발생했습니다.",
-      );
-    }
-  };
-
   return (
     <div className="page">
       <div className="page__header">
         <h1 className="page__title">질문 목록</h1>
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={handleTempSubscribe}
-        >
-          [임시] 구독 결제 테스트
-        </button>
       </div>
 
       <form className="filter-bar" onSubmit={handleSearchSubmit}>
