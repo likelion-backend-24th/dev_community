@@ -9,6 +9,7 @@ import QuestionDetailPage from "./pages/question/QuestionDetailPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
 import MyPage from "./pages/mypage/MyPage";
 import MembershipPage from "./pages/membership/MembershipPage";
+import PersonalDashboardPage from "./pages/dashboard/PersonalDashboardPage";
 import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -37,6 +38,7 @@ function App() {
           <Route path="/questions/:id/edit" element={<QuestionFormPage />} />
           <Route path="/mypage" element={<MyPage />} />
           <Route path="/membership" element={<MembershipPage />} />
+          <Route path="/dashboard" element={<PersonalDashboardPage />} />
         </Route>
 
         <Route element={<AdminRoute />}>

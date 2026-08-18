@@ -182,6 +182,7 @@ function ResolutionRatePanel() {
 }
 
 function StaleQuestionsPanel() {
+  const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
   const animatedCount = useCountUp(data?.count ?? 0);
@@ -222,7 +223,14 @@ function StaleQuestionsPanel() {
             <tbody>
               {data.questions.map((q) => (
                 <tr key={q.id}>
-                  <td>{q.title}</td>
+                  <td>
+                    <span
+                      className="top-question-tick"
+                      onClick={() => navigate(`/questions/${q.id}`)}
+                    >
+                      {q.title}
+                    </span>
+                  </td>
                   <td>{new Date(q.createdAt).toLocaleString()}</td>
                 </tr>
               ))}

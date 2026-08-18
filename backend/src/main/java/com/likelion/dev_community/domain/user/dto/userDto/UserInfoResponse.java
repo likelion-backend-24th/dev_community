@@ -18,6 +18,7 @@ public class UserInfoResponse {
     private final Role role;
     private final UserStatus status;
     private final LocalDateTime createdAt;
+    private final int reputation;
 
     public static UserInfoResponse from(User user){
         return new UserInfoResponse(
@@ -26,7 +27,8 @@ public class UserInfoResponse {
                 user.getNickname(),
                 user.getRole(),
                 user.getStatus(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getReputation()
         );
     }
 }
