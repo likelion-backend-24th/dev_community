@@ -7,6 +7,7 @@ import {
 } from '../../api/answerApi'
 import { toggleAnswerLike } from '../../api/likeApi'
 import ReportButton from './ReportButton'
+import AttachmentList from '../attachment/AttachmentList'
 import '../../styles/question.css'
 
 function AnswerItem({
@@ -90,6 +91,10 @@ function AnswerItem({
         </form>
       ) : (
         <p className="answer-card__body">{answer.content}</p>
+      )}
+
+      {!editing && (
+        <AttachmentList targetType="ANSWER" targetId={answer.id} canDelete={canDelete} />
       )}
 
       <div className="answer-card__meta">
