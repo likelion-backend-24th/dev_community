@@ -31,7 +31,7 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody QuestionCreateRequest request
     ) {
-        boolean isAdmin = isAdmin(userDetails);
+        boolean isAdmin = userDetails.isAdmin();
 
         QuestionResponse response = questionService.createQuestion(userDetails.getId(), isAdmin, request);
 
@@ -67,7 +67,7 @@ public class QuestionController {
             @RequestParam(required = false) String status
     ) {
         Long userId = (userDetails != null) ? userDetails.getId() : null;
-        boolean isAdmin = (userDetails != null) && isAdmin(userDetails);
+        boolean isAdmin = (userDetails != null) && userDetails.isAdmin();
 
         Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, userId, isAdmin);
 
@@ -82,7 +82,7 @@ public class QuestionController {
             HttpServletRequest request
     ) {
         Long userId = (userDetails != null) ? userDetails.getId() : null;
-        boolean isAdmin = (userDetails != null) && isAdmin(userDetails);
+        boolean isAdmin = (userDetails != null) && userDetails.isAdmin();
         String viewerKey = viewerKeyResolver.resolve(userId, request);
 
         QuestionDetailResponse response = questionService.readDetailQuestion(id, viewerKey, userId, isAdmin);
@@ -97,7 +97,7 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody QuestionUpdateRequest request
     ) {
-        boolean isAdmin = isAdmin(userDetails);
+        boolean isAdmin = userDetails.isAdmin();
 
         QuestionResponse response = questionService.updateQuestion(id, userDetails.getId(), isAdmin, request);
 
@@ -110,16 +110,10 @@ public class QuestionController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        boolean isAdmin = isAdmin(userDetails);
+        boolean isAdmin = userDetails.isAdmin();
 
         questionService.deleteQuestion(id, userDetails.getId(), isAdmin);
 
         return ResponseEntity.noContent().build();
-    }
-
-    // 토큰 권한에 ROLE_ADMIN 있는지 확인
-    private boolean isAdmin(CustomUserDetails userDetails) {
-        return userDetails.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

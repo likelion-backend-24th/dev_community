@@ -85,12 +85,7 @@ public class AttachmentController {
             @PathVariable Long attachmentId,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        attachmentService.delete(attachmentId, userDetails.getId(), isAdmin(userDetails));
+        attachmentService.delete(attachmentId, userDetails.getId(), userDetails.isAdmin());
         return ResponseEntity.ok(ApiResponse.success());
-    }
-
-    private boolean isAdmin(CustomUserDetails userDetails) {
-        return userDetails.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }
