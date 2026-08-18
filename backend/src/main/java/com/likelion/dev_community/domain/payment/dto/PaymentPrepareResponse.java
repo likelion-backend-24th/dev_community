@@ -6,6 +6,7 @@ import lombok.Getter;
 
 import java.util.List;
 
+@Deprecated
 @Getter
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class PaymentPrepareResponse {

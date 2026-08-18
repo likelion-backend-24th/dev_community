@@ -47,6 +47,13 @@
   color: var(--text-muted);
 }
 
+.profile-card__reputation {
+  margin: var(--space-xs) 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--yellow);
+}
+
 .profile-card__actions {
   display: flex;
   flex-wrap: wrap;

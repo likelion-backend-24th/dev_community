@@ -10,6 +10,8 @@ import com.likelion.dev_community.domain.like.entity.LikeTargetType;
 import com.likelion.dev_community.domain.like.repository.LikeHistoryRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
+import com.likelion.dev_community.domain.reputation.entity.ReputationEvent;
+import com.likelion.dev_community.domain.reputation.service.ReputationService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class LikeServiceImpl implements LikeService {
     private final UserRepository userRepository;
     private final QuestionRepository questionRepository;
     private final AnswerRepository answerRepository;
+    private final ReputationService reputationService;
 
     @Override
     public boolean toggleLike(Long userId, LikeTargetType targetType, Long targetId) {
@@ -73,18 +76,26 @@ public class LikeServiceImpl implements LikeService {
             Question question = questionRepository.findById(targetId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
             question.increaseLikeCount();
+            reputationService.apply(question.getAuthor().getId(), ReputationEvent.QUESTION_LIKED);
         } else {
             Answer answer = answerRepository.findById(targetId)
                     .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
             answer.increaseLikeCount();
+            reputationService.apply(answer.getAuthor().getId(), ReputationEvent.ANSWER_LIKED);
         }
     }
 
     private void decreaseCount(LikeTargetType targetType, Long targetId) {
         if (targetType == LikeTargetType.QUESTION) {
-            questionRepository.findById(targetId).ifPresent(Question::decreaseLikeCount);
+            questionRepository.findById(targetId).ifPresent(question -> {
+                question.decreaseLikeCount();
+                reputationService.revert(question.getAuthor().getId(), ReputationEvent.QUESTION_LIKED);
+            });
         } else {
-            answerRepository.findById(targetId).ifPresent(Answer::decreaseLikeCount);
+            answerRepository.findById(targetId).ifPresent(answer -> {
+                answer.decreaseLikeCount();
+                reputationService.revert(answer.getAuthor().getId(), ReputationEvent.ANSWER_LIKED);
+            });
         }
     }
 }

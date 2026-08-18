@@ -8,6 +8,9 @@ import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
 import AlertModal from "../../components/common/AlertModal";
+import AttachmentList from "../../components/attachment/AttachmentList";
+import AttachmentPicker from "../../components/attachment/AttachmentPicker";
+import { uploadAnswerAttachments } from "../../api/attachmentApi";
 import "../../styles/question.css";
 import "../../styles/error.css";
 
@@ -28,6 +31,8 @@ function QuestionDetailPage() {
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
   const [answerError, setAnswerError] = useState("");
   const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
+  const [answerAttachmentFiles, setAnswerAttachmentFiles] = useState([]);
+  const [answerAttachmentError, setAnswerAttachmentError] = useState("");
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
@@ -120,8 +125,12 @@ function QuestionDetailPage() {
     setAnswerSubmitting(true);
     setAnswerError("");
     try {
-      await createAnswer(id, answerContent);
+      const created = await createAnswer(id, answerContent);
+      if (answerAttachmentFiles.length > 0) {
+        await uploadAnswerAttachments(created.id, answerAttachmentFiles);
+      }
       setAnswerContent("");
+      setAnswerAttachmentFiles([]);
       reload();
     } catch (err) {
       setAnswerError(
@@ -213,6 +222,8 @@ function QuestionDetailPage() {
 
       <p className="question-detail__body">{question.content}</p>
 
+      <AttachmentList targetType="QUESTION" targetId={id} canDelete={canEdit} />
+
       <div className="question-detail__actions">
         <button
           type="button"
@@ -265,6 +276,12 @@ function QuestionDetailPage() {
               onChange={(e) => setAnswerContent(e.target.value)}
               placeholder="답변을 입력하세요"
               required
+            />
+            <AttachmentPicker
+              files={answerAttachmentFiles}
+              onChange={setAnswerAttachmentFiles}
+              error={answerAttachmentError}
+              onError={setAnswerAttachmentError}
             />
             {answerError && (
               <p className="inline-error" role="alert">

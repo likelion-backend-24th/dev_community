@@ -38,6 +38,8 @@ public class Subscription extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private SubscriptionStatus status;
 
+    private String billingKey; // 정기결제용 빌링키
+
     @Builder
     public Subscription(User user, PlanType planType, LocalDateTime startedAt, LocalDateTime expiresAt) {
         this.user = user;
@@ -67,6 +69,10 @@ public class Subscription extends BaseTimeEntity {
 
     public void expire() {
         this.status = SubscriptionStatus.EXPIRED;
+    }
+
+    public void registerBillingKey(String billingKey) {
+        this.billingKey = billingKey;
     }
 
     public void cancel() {
