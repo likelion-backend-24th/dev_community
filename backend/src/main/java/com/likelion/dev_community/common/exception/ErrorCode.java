@@ -28,6 +28,7 @@ public enum ErrorCode {
     ALREADY_SUSPENDED_USER(HttpStatus.CONFLICT, "ALREADY_SUSPENDED_USER", "이미 정지 처리된 사용자입니다."),
     NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다"),
 
+    PAYMENT_VERIFICATION_FAILED(HttpStatus.CONFLICT, "PAYMENT_VERIFICATION_FAILED", "PortOne 결제 정보 검증에 실패했습니다."),
     FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "FILE_TOO_LARGE", "파일 용량이 너무 큽니다. (최대 2MB)"),
     UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "UNSUPPORTED_FILE_TYPE", "지원하지 않는 파일 형식입니다."),
     ATTACHMENT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ATTACHMENT_LIMIT_EXCEEDED", "첨부파일은 최대 5개까지 등록할 수 있습니다."),

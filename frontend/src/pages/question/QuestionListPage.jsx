@@ -156,7 +156,10 @@ function QuestionListPage() {
           {questions.map((q) => (
             <li key={q.id} className="question-card">
               <div className="question-card__top">
-                <Link to={`/questions/${q.id}`} className="question-card__title">
+                <Link
+                  to={`/questions/${q.id}`}
+                  className="question-card__title"
+                >
                   {q.title}
                 </Link>
                 <span
