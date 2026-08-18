@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   getMyDashboardSummary,
@@ -6,6 +6,7 @@ import {
   getMyQuestionsForDashboard,
   getMyAnswersForDashboard,
 } from "../../api/dashboardApi";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import "../../styles/dashboard.css";
 import "../../styles/mypage.css";
@@ -31,32 +32,17 @@ function StatTile({ label, value, active, onClick }) {
 }
 
 function PersonalDashboardPage() {
-  const [summary, setSummary] = useState(null);
-  const [timeline, setTimeline] = useState(null);
-  const [error, setError] = useState("");
+  const { data: overview, error: loadError } = useAsyncData(() =>
+    Promise.all([getMyDashboardSummary(), getMyActivityTimeline()]),
+  );
 
   const [questions, setQuestions] = useState(null);
   const [answers, setAnswers] = useState(null);
   const [activeFilter, setActiveFilter] = useState(null);
   const [filterLoading, setFilterLoading] = useState(false);
+  const [filterError, setFilterError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([getMyDashboardSummary(), getMyActivityTimeline()])
-      .then(([summaryRes, timelineRes]) => {
-        if (cancelled) return;
-        setSummary(summaryRes);
-        setTimeline(timelineRes);
-      })
-      .catch(
-        (err) =>
-          !cancelled &&
-          setError(err.response?.data?.message ?? "데이터를 불러오지 못했습니다."),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const error = loadError || filterError;
 
   const handleTileClick = async (filterKey) => {
     if (activeFilter === filterKey) {
@@ -74,7 +60,7 @@ function PersonalDashboardPage() {
       }
       setActiveFilter(filterKey);
     } catch (err) {
-      setError(err.response?.data?.message ?? "목록을 불러오지 못했습니다.");
+      setFilterError(err.response?.data?.message ?? "목록을 불러오지 못했습니다.");
     } finally {
       setFilterLoading(false);
     }
@@ -88,7 +74,9 @@ function PersonalDashboardPage() {
         </p>
       </div>
     );
-  if (!summary || !timeline) return <p className="state-text">불러오는 중...</p>;
+  if (!overview) return <p className="state-text">불러오는 중...</p>;
+
+  const [summary, timeline] = overview;
 
   const activeFilterDef = activeFilter ? FILTERS[activeFilter] : null;
   const filteredList = activeFilterDef

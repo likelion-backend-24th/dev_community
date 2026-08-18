@@ -6,6 +6,7 @@ import {
   getStaleQuestions,
   getTopQuestions,
 } from "../../api/adminApi";
+import { useAsyncData } from "../../hooks/useAsyncData";
 import {
   ResponsiveContainer,
   LineChart,
@@ -58,26 +59,18 @@ function useCountUp(target, durationMs = 600) {
   return value;
 }
 
-function DailyTrendPanel() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let cancelled = false;
-    getDailyTrend()
-      .then((res) => !cancelled && setData(res))
-      .catch(
-        (err) =>
-          !cancelled &&
-          setError(err.response?.data?.message ?? "데이터를 불러오지 못했습니다."),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+// 조회 전/실패 시 보여줄 상태 표시. 아직 표시할 데이터가 없으면 엘리먼트를, 있으면 null을 반환한다.
+function panelState(error, data, plainLoading = false) {
   if (error) return <p className="inline-error" role="alert">{error}</p>;
-  if (!data) return <p className="state-text">불러오는 중...</p>;
+  if (!data) return <p className={`state-text${plainLoading ? " state-text--plain" : ""}`}>불러오는 중...</p>;
+  return null;
+}
+
+function DailyTrendPanel() {
+  const { data, error } = useAsyncData(getDailyTrend);
+
+  const state = panelState(error, data);
+  if (state) return state;
 
   return (
     <div className="stat-card">
@@ -123,25 +116,10 @@ function DailyTrendPanel() {
 }
 
 function ResolutionRatePanel() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const { data, error } = useAsyncData(getResolutionRate);
 
-  useEffect(() => {
-    let cancelled = false;
-    getResolutionRate()
-      .then((res) => !cancelled && setData(res))
-      .catch(
-        (err) =>
-          !cancelled &&
-          setError(err.response?.data?.message ?? "데이터를 불러오지 못했습니다."),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (error) return <p className="inline-error" role="alert">{error}</p>;
-  if (!data) return <p className="state-text">불러오는 중...</p>;
+  const state = panelState(error, data);
+  if (state) return state;
 
   const pieData = [
     { name: "해결됨", value: data.resolvedQuestions },
@@ -183,26 +161,11 @@ function ResolutionRatePanel() {
 
 function StaleQuestionsPanel() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const { data, error } = useAsyncData(getStaleQuestions);
   const animatedCount = useCountUp(data?.count ?? 0);
 
-  useEffect(() => {
-    let cancelled = false;
-    getStaleQuestions()
-      .then((res) => !cancelled && setData(res))
-      .catch(
-        (err) =>
-          !cancelled &&
-          setError(err.response?.data?.message ?? "데이터를 불러오지 못했습니다."),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (error) return <p className="inline-error" role="alert">{error}</p>;
-  if (!data) return <p className="state-text state-text--plain">불러오는 중...</p>;
+  const state = panelState(error, data, true);
+  if (state) return state;
 
   return (
     <div className="stat-card">
@@ -244,25 +207,10 @@ function StaleQuestionsPanel() {
 
 function TopQuestionsPanel() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null);
-  const [error, setError] = useState("");
+  const { data, error } = useAsyncData(getTopQuestions);
 
-  useEffect(() => {
-    let cancelled = false;
-    getTopQuestions()
-      .then((res) => !cancelled && setData(res))
-      .catch(
-        (err) =>
-          !cancelled &&
-          setError(err.response?.data?.message ?? "데이터를 불러오지 못했습니다."),
-      );
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  if (error) return <p className="inline-error" role="alert">{error}</p>;
-  if (!data) return <p className="state-text">불러오는 중...</p>;
+  const state = panelState(error, data);
+  if (state) return state;
 
   const chartData = data.map((q) => ({
     title: q.title.length > 16 ? `${q.title.slice(0, 16)}...` : q.title,
