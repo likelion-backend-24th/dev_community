@@ -155,7 +155,7 @@ function MyPage() {
           {answers.map((a) => (
             <li key={a.id}>
               <Link to={`/questions/${a.questionId}`} className="mypage-list__item">
-                {a.isAdopted && <span className="badge badge-resolved">채택됨</span>}
+                {a.adopted && <span className="badge badge-resolved">채택됨</span>}
                 <span className="mypage-list__title">{a.content}</span>
                 <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
               </Link>
