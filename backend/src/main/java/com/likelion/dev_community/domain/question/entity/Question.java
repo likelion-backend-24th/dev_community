@@ -50,13 +50,17 @@ public class Question extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isAnonymous;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private QuestionType type;
+
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionTag> questionTags = new ArrayList<>();
 
     @Builder
-    public Question(User author, String title, String content, boolean isPremium, boolean isAnonymous) {
+    public Question(User author, String title, String content, boolean isPremium, boolean isAnonymous, QuestionType type) {
         this.author = author;
         this.title = title;
         this.content = content;
@@ -65,12 +69,14 @@ public class Question extends BaseTimeEntity {
         this.status = QuestionStatus.OPEN;
         this.isPremium = isPremium;
         this.isAnonymous = isAnonymous;
+        this.type = type != null ? type : QuestionType.GENERAL;
     }
 
-    public void update(String title, String content, boolean isAnonymous) {
+    public void update(String title, String content, boolean isAnonymous, QuestionType type) {
         this.title = title;
         this.content = content;
         this.isAnonymous = isAnonymous;
+        this.type = type;
     }
 
     // F-09

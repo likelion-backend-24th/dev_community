@@ -21,6 +21,8 @@ public class QuestionUpdateRequest {
 
     private final Boolean isAnonymous;
 
+    private final String type;
+
     public boolean isAnonymous() {
         return Boolean.TRUE.equals(isAnonymous);
     }

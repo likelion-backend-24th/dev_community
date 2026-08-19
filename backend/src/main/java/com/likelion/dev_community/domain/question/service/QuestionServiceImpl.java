@@ -12,6 +12,7 @@ import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
@@ -56,6 +57,8 @@ public class QuestionServiceImpl implements QuestionService {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
         }
 
+        QuestionType type = request.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
+
         // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
         // String title = xssSanitizer.sanitize(request.getTitle());
         // String content = xssSanitizer.sanitize(request.getContent());
@@ -68,6 +71,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .content(content)
                 .isPremium(request.isPremium())
                 .isAnonymous(request.isAnonymous())
+                .type(type)
                 .build();
 
         questionRepository.save(question);
@@ -198,9 +202,11 @@ public class QuestionServiceImpl implements QuestionService {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
         }
 
+        QuestionType type = question.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
+
         // String title = xssSanitizer.sanitize(request.getTitle());
         // String content = xssSanitizer.sanitize(request.getContent());
-        question.update(request.getTitle(), request.getContent(), request.isAnonymous());
+        question.update(request.getTitle(), request.getContent(), request.isAnonymous(), type);
 
         List<String> tagNames = syncTags(question, request.getTags());
 

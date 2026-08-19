@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.question.dto;
 
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import lombok.Getter;
 import lombok.AllArgsConstructor;
 
@@ -27,6 +28,8 @@ public class QuestionResponse {
     private final boolean isPremium;
     private final boolean isAnonymous;
 
+    private final QuestionType type;
+
     public static QuestionResponse from(Question question, List<String> tagNames) {
         return new QuestionResponse(
                 question.getId(),
@@ -42,7 +45,8 @@ public class QuestionResponse {
                 tagNames,
                 question.getCreatedAt(),
                 question.isPremium(),
-                question.isAnonymous()
+                question.isAnonymous(),
+                question.getType()
         );
     }
 }

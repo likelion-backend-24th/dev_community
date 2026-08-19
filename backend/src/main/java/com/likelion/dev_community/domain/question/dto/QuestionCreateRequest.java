@@ -23,6 +23,8 @@ public class QuestionCreateRequest {
 
     private final Boolean isAnonymous;
 
+    private final String type;
+
     public boolean isPremium() {
         return Boolean.TRUE.equals(isPremium);
     }
