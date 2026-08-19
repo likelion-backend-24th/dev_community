@@ -37,7 +37,8 @@ public enum ErrorCode {
     ATTACHMENT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ATTACHMENT_LIMIT_EXCEEDED", "첨부파일은 최대 5개까지 등록할 수 있습니다."),
     FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE_UPLOAD_FAILED", "파일 업로드에 실패했습니다."),
 
-    CAREER_CONSULT_ANSWER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CAREER_CONSULT_ANSWER_NOT_ALLOWED", "커리어상담 게시글에는 답변을 등록할 수 없습니다.");
+    CAREER_CONSULT_ANSWER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CAREER_CONSULT_ANSWER_NOT_ALLOWED", "커리어상담 게시글에는 답변을 등록할 수 없습니다."),
+    CODE_REVIEW_ONLY(HttpStatus.BAD_REQUEST, "CODE_REVIEW_ONLY", "코드리뷰 게시글에만 라인 코멘트를 남길 수 있습니다.");
 
     private final HttpStatus status;
     private final String code;
