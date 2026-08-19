@@ -4,6 +4,7 @@ import com.likelion.dev_community.common.ApiResponse;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.user.dto.authDto.*;
+import com.likelion.dev_community.domain.user.entity.AuthProvider;
 import com.likelion.dev_community.domain.user.service.AuthService;
 import com.likelion.dev_community.security.CustomUserDetails;
 import jakarta.servlet.http.HttpServletResponse;
@@ -68,5 +69,31 @@ public class AuthController {
         authService.checkNickname(nickname);
 
         return ResponseEntity.ok(ApiResponse.success("사용 가능한 닉네임입니다", null));
+    }
+
+    @PostMapping("/oauth/{provider}")
+    public ResponseEntity<ApiResponse<OAuthLoginResponse>> oauthLogin(
+            @PathVariable String provider,
+            @Valid @RequestBody OAuthLoginRequest request,
+            HttpServletResponse httpServletResponse
+    ) {
+        AuthProvider authProvider;
+        try {
+            authProvider = AuthProvider.valueOf(provider.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new CustomException(ErrorCode.INVALID_INPUT, "지원하지 않는 로그인 방식입니다.");
+        }
+
+        OAuthLoginResponse response = authService.oauthLogin(authProvider, request.getCode(), httpServletResponse);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PostMapping("/oauth/complete")
+    public ResponseEntity<ApiResponse<TokenResponse>> oauthComplete(
+            @Valid @RequestBody OAuthCompleteRequest request,
+            HttpServletResponse httpServletResponse
+    ) {
+        TokenResponse tokenResponse = authService.oauthComplete(request.getSignupToken(), request.getNickname(), httpServletResponse);
+        return ResponseEntity.ok(ApiResponse.success("회원가입 및 로그인 성공", tokenResponse));
     }
 }

@@ -14,6 +14,7 @@ import com.likelion.dev_community.domain.question.repository.QuestionTagReposito
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoRequest;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserPwRequest;
+import com.likelion.dev_community.domain.user.entity.AuthProvider;
 import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
@@ -92,7 +93,9 @@ public class UserService {
     public void deleteUser(Long userId, String currentPassword, HttpServletResponse httpServletResponse){
         User user = findUserById(userId);
 
-        if(!passwordEncoder.matches(currentPassword, user.getPassword()))
+        boolean isOAuthUser = user.getProvider() != AuthProvider.LOCAL;
+
+        if (!isOAuthUser && !passwordEncoder.matches(currentPassword, user.getPassword()))
             throw new CustomException(ErrorCode.INVALID_CREDENTIALS);
 
         user.withdraw(); // 사용자 상태 withdrawn

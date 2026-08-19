@@ -5,6 +5,8 @@ import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
+import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
+import OAuthNicknamePage from "./pages/auth/OAuthNicknamePage";
 import QuestionListPage from "./pages/question/QuestionListPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
@@ -19,7 +21,13 @@ import ForbiddenPage from "./pages/error/ForbiddenPage";
 import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
 
-const NO_NAVBAR_PATHS = ["/", "/login", "/signup"];
+const NO_NAVBAR_PATHS = [
+  "/",
+  "/login",
+  "/signup",
+  "/login/oauth2/code/github",
+  "/oauth/nickname",
+];
 
 function App() {
   const location = useLocation();
@@ -35,6 +43,11 @@ function App() {
           <Route path="/questions/:id" element={<QuestionDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+
+          {/* GitHub OAuth 콜백. GitHub App의 Authorization callback URL이랑 경로 정확히 일치해야 함 */}
+          <Route path="/login/oauth2/code/github" element={<OAuthCallbackPage />} />
+          {/* 처음 인증하는 GitHub 계정이면 여기서 닉네임 입력받고 가입 완료 */}
+          <Route path="/oauth/nickname" element={<OAuthNicknamePage />} />
 
           <Route element={<PrivateRoute />}>
             <Route path="/questions/new" element={<QuestionFormPage />} />
