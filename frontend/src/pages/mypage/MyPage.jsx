@@ -106,7 +106,7 @@ function MyPage() {
           onClick={() => handleTabClick("questions")}
           disabled={activeTab === "questions"}
         >
-          내 질문 ({questions.length})
+          내 질문
         </button>
         <button
           type="button"
@@ -182,6 +182,7 @@ function MyPage() {
 
       {withdrawModalOpen && (
         <WithdrawModal
+          provider={profile.provider}
           onClose={() => setWithdrawModalOpen(false)}
           onConfirmed={async (currentPassword) => {
             await withdraw({ currentPassword });
@@ -322,19 +323,21 @@ function PasswordModal({ onClose, onSaved }) {
   );
 }
 
-function WithdrawModal({ onClose, onConfirmed }) {
+function WithdrawModal({ onClose, onConfirmed, provider }) {
+  const isLocal = provider === "LOCAL";
   const [currentPassword, setCurrentPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   const handleConfirm = async () => {
-    if (!currentPassword) {
+    if (isLocal && !currentPassword) {
       setError("비밀번호를 입력해주세요.");
       return;
     }
     setSubmitting(true);
+    setError("");
     try {
-      await onConfirmed(currentPassword);
+      await onConfirmed(isLocal ? currentPassword : null);
     } catch (err) {
       if (err.response?.data?.code === "INVALID_CREDENTIALS") {
         setError("비밀번호가 일치하지 않습니다.");
@@ -356,20 +359,22 @@ function WithdrawModal({ onClose, onConfirmed }) {
             탈퇴하면 로그인할 수 없게 됩니다. 작성한 질문과 답변은 삭제되지
             않고 "탈퇴한 사용자"로 표시되어 남습니다.
           </p>
-          <div className="form-field">
-            <label htmlFor="withdrawPassword">비밀번호 확인</label>
-            <input
-              id="withdrawPassword"
-              type="password"
-              className="input"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </div>
+
+          {isLocal && (
+            <div className="form-field">
+              <label htmlFor="withdrawPassword">비밀번호 확인</label>
+              <input
+                id="withdrawPassword"
+                type="password"
+                className="input"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+              />
+            </div>
+          )}
+
           {error && (
-            <p className="inline-error" role="alert">
-              {error}
-            </p>
+            <p className="inline-error" role="alert">{error}</p>
           )}
         </div>
         <div className="modal__footer">

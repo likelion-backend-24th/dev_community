@@ -7,6 +7,5 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class UserWithdrawRequest {
-    @NotBlank
-    private final String currentPassword;
+    private final String currentPassword; // OAuth 유저는 null
 }
