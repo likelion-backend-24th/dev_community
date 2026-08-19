@@ -335,8 +335,9 @@ public class PaymentService {
     @Transactional
     public void cancelSubscriptionForWithdrawal(Long userId) {
         subscriptionService.cancelIfActive(userId)
-                .map(Subscription::getBillingKey)
-                .ifPresent(billingKey -> {
+                .filter(subscription -> subscription.getBillingKey() != null)
+                .ifPresent(subscription -> {
+                    String billingKey = subscription.getBillingKey();
                     revokeNextSchedule(userId, billingKey, "회원 탈퇴로 인한 예약 결제 취소");
 
                     try {
@@ -345,6 +346,8 @@ public class PaymentService {
                     } catch (CompletionException e) {
                         log.warn("빌링키 폐기 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
                     }
+
+                    subscription.clearBillingKey();
                 });
     }
 
@@ -357,14 +360,14 @@ public class PaymentService {
 
     // 예약된 다음 회차 결제(PortOne 예약 + 로컬 레코드) 취소
     private void revokeNextSchedule(Long userId, String billingKey, String cancelReason) {
+        try {
+            paymentScheduleClient.revokePaymentSchedules(billingKey, null).join();
+        } catch (CompletionException e) {
+            log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+        }
+
         paymentRepository.findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(userId, PaymentStatus.READY)
                 .ifPresent(nextPayment -> {
-                    try {
-                        paymentScheduleClient.revokePaymentSchedules(billingKey, List.of(nextPayment.getPaymentId()))
-                                .join();
-                    } catch (CompletionException e) {
-                        log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
-                    }
                     nextPayment.cancel(LocalDateTime.now(), cancelReason);
                     nextPayment.getOrder().cancel();
                 });

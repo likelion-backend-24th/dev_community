@@ -75,6 +75,10 @@ public class Subscription extends BaseTimeEntity {
         this.billingKey = billingKey;
     }
 
+    public void clearBillingKey() {
+        this.billingKey = null;
+    }
+
     public void cancel() {
         this.status = SubscriptionStatus.CANCELLED;
     }
