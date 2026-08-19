@@ -24,19 +24,21 @@ public class QuestionSummaryResponse {
     private final List<String> tags;
     private final LocalDateTime createdAt;
     private final boolean isPremium;
+    private final boolean isAnonymous;
 
     public static QuestionSummaryResponse of(Question question, int answerCount, List<String> tags) {
         return new QuestionSummaryResponse(
                 question.getId(),
                 question.getTitle(),
-                question.getAuthor().getDisplayNickname(),
+                question.isAnonymous() ? "익명" : question.getAuthor().getDisplayNickname(),
                 question.getStatus(),
                 question.getViewCount(),
                 question.getLikeCount(),
                 answerCount,
                 tags,
                 question.getCreatedAt(),
-                question.isPremium()
+                question.isPremium(),
+                question.isAnonymous()
         );
     }
 }

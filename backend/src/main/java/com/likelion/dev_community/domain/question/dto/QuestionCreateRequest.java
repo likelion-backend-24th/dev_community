@@ -21,7 +21,13 @@ public class QuestionCreateRequest {
 
     private final Boolean isPremium;
 
+    private final Boolean isAnonymous;
+
     public boolean isPremium() {
         return Boolean.TRUE.equals(isPremium);
+    }
+
+    public boolean isAnonymous() {
+        return Boolean.TRUE.equals(isAnonymous);
     }
 }

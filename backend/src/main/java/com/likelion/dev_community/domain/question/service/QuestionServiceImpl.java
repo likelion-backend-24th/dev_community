@@ -52,7 +52,7 @@ public class QuestionServiceImpl implements QuestionService {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 사용자 정보"));
 
-        if (request.isPremium()) {
+        if (request.isPremium() || request.isAnonymous()) {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
         }
 
@@ -67,6 +67,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .title(title)
                 .content(content)
                 .isPremium(request.isPremium())
+                .isAnonymous(request.isAnonymous())
                 .build();
 
         questionRepository.save(question);
@@ -193,9 +194,13 @@ public class QuestionServiceImpl implements QuestionService {
 
         checkUpdate(question, userId, isAdmin);
 
+        if (request.isAnonymous()) {
+            subscriptionService.requireActiveSubscriber(userId, isAdmin);
+        }
+
         // String title = xssSanitizer.sanitize(request.getTitle());
         // String content = xssSanitizer.sanitize(request.getContent());
-        question.update(request.getTitle(), request.getContent());
+        question.update(request.getTitle(), request.getContent(), request.isAnonymous());
 
         List<String> tagNames = syncTags(question, request.getTags());
 

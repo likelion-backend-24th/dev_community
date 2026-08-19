@@ -18,4 +18,10 @@ public class QuestionUpdateRequest {
     private final String content;
 
     private final List<String> tags;
+
+    private final Boolean isAnonymous;
+
+    public boolean isAnonymous() {
+        return Boolean.TRUE.equals(isAnonymous);
+    }
 }
