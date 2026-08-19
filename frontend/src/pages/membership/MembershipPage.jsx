@@ -289,7 +289,7 @@ function MembershipPage() {
         <h1>나에게 맞는 플랜을 선택하세요</h1>
         <p className="membership-hero__sub">
           무료로 질문하고 답하면서 시작하고,
-          <br /> 필요할 때 프리미엄 게시판까지 열어보세요.
+          <br /> 필요할 때 멤버십 게시판까지 열어보세요.
         </p>
       </header>
 
@@ -300,7 +300,7 @@ function MembershipPage() {
           {justCompleted && (
             <div className="banner">
               <CheckIcon />
-              결제가 완료됐어요. 이제 프리미엄 게시판을 이용할 수 있어요.
+              결제가 완료됐어요. 이제 멤버십 게시판을 이용할 수 있어요.
             </div>
           )}
 
@@ -375,7 +375,7 @@ function MembershipPage() {
                 </li>
                 <li>
                   <CheckIcon />
-                  프리미엄 전용 질문 게시판 작성 · 열람
+                  멤버십 전용 질문 게시판 작성 · 열람
                 </li>
                 <li>
                   <CheckIcon />
@@ -424,7 +424,7 @@ function MembershipPage() {
                 <div className="cancel-panel">
                   <p className="cancel-panel__desc">
                     결제일로부터 7일 이내의 결제만 취소(환불)할 수 있어요.
-                    취소하면 프리미엄 이용이 즉시 종료돼요.
+                    취소하면 멤버십 이용이 즉시 종료돼요.
                   </p>
                   <textarea
                     className="textarea cancel-panel__textarea"
@@ -489,7 +489,7 @@ function MembershipPage() {
                   </td>
                 </tr>
                 <tr>
-                  <td>프리미엄 전용 게시판</td>
+                  <td>멤버십 전용 게시판</td>
                   <td className="compare__no">
                     <CrossIcon />
                   </td>

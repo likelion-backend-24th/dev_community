@@ -19,5 +19,17 @@ public class QuestionCreateRequest {
 
     private final List<String> tags;
 
-    private final boolean isPremium;
+    private final Boolean isPremium;
+
+    private final Boolean isAnonymous;
+
+    private final String type;
+
+    public boolean isPremium() {
+        return Boolean.TRUE.equals(isPremium);
+    }
+
+    public boolean isAnonymous() {
+        return Boolean.TRUE.equals(isAnonymous);
+    }
 }

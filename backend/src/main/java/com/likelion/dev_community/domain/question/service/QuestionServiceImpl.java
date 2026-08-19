@@ -12,6 +12,7 @@ import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
@@ -52,9 +53,11 @@ public class QuestionServiceImpl implements QuestionService {
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 사용자 정보"));
 
-        if (request.isPremium()) {
+        if (request.isPremium() || request.isAnonymous()) {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
         }
+
+        QuestionType type = request.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
 
         // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
         // String title = xssSanitizer.sanitize(request.getTitle());
@@ -67,6 +70,8 @@ public class QuestionServiceImpl implements QuestionService {
                 .title(title)
                 .content(content)
                 .isPremium(request.isPremium())
+                .isAnonymous(request.isAnonymous())
+                .type(type)
                 .build();
 
         questionRepository.save(question);
@@ -193,9 +198,15 @@ public class QuestionServiceImpl implements QuestionService {
 
         checkUpdate(question, userId, isAdmin);
 
+        if (request.isAnonymous()) {
+            subscriptionService.requireActiveSubscriber(userId, isAdmin);
+        }
+
+        QuestionType type = question.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
+
         // String title = xssSanitizer.sanitize(request.getTitle());
         // String content = xssSanitizer.sanitize(request.getContent());
-        question.update(request.getTitle(), request.getContent());
+        question.update(request.getTitle(), request.getContent(), request.isAnonymous(), type);
 
         List<String> tagNames = syncTags(question, request.getTags());
 

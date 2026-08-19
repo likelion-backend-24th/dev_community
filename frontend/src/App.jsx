@@ -8,6 +8,7 @@ import SignupPage from "./pages/auth/SignupPage";
 import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 import OAuthNicknamePage from "./pages/auth/OAuthNicknamePage";
 import QuestionListPage from "./pages/question/QuestionListPage";
+import PremiumQuestionListPage from "./pages/question/PremiumQuestionListPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
 import MyPage from "./pages/mypage/MyPage";
@@ -40,6 +41,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/questions" element={<QuestionListPage key={location.key} />} />
+          <Route path="/questions/premium" element={<PremiumQuestionListPage key={location.key} />} />
           <Route path="/questions/:id" element={<QuestionDetailPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />

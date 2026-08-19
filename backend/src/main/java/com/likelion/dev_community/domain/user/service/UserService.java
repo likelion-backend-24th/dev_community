@@ -150,6 +150,26 @@ public class UserService {
         return UserInfoResponse.from(user);
     }
 
+    // 전문가 지정 (관리자)
+    @Transactional
+    public UserInfoResponse grantExpert(Long userId){
+        User user = findUserById(userId);
+
+        user.grantExpert();
+
+        return UserInfoResponse.from(user);
+    }
+
+    // 전문가 지정 해제 (관리자)
+    @Transactional
+    public UserInfoResponse revokeExpert(Long userId){
+        User user = findUserById(userId);
+
+        user.revokeExpert();
+
+        return UserInfoResponse.from(user);
+    }
+
     public User findUserById(Long userId){
         return userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND, "유저를 찾을 수 없습니다. "+userId));
     }

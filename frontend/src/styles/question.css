@@ -1,5 +1,41 @@
 /* Question list/detail */
 
+.board-tabs {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--surface-tertiary);
+  border-radius: var(--radius-pill);
+  margin-bottom: var(--space-xl);
+}
+
+.board-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--interactive-normal);
+  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+}
+
+.board-tab:hover {
+  color: var(--text-header);
+}
+
+.board-tab--active,
+.board-tab--active:hover {
+  background: var(--blurple);
+  color: #ffffff;
+}
+
+.board-tab svg {
+  width: 14px;
+  height: 14px;
+}
+
 .filter-bar {
   display: flex;
   flex-wrap: wrap;

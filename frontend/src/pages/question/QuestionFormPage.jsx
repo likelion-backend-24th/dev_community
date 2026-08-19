@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createQuestion, getQuestion, updateQuestion } from "../../api/questionApi";
+import { getMySubscription } from "../../api/subscriptionApi";
 import { uploadQuestionAttachments } from "../../api/attachmentApi";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
 import AttachmentList from "../../components/attachment/AttachmentList";
@@ -17,6 +18,11 @@ function QuestionFormPage() {
   const [content, setContent] = useState("");
   const [tags, setTags] = useState([]);
   const [tagInput, setTagInput] = useState("");
+
+  const [isPremium, setIsPremium] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [type, setType] = useState("GENERAL");
+  const [isSubscriber, setIsSubscriber] = useState(false);
 
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -37,6 +43,9 @@ function QuestionFormPage() {
         setTitle(question.title);
         setContent(question.content);
         setTags(question.tags ?? []);
+        setIsPremium(question.premium ?? false);
+        setIsAnonymous(question.anonymous ?? false);
+        setType(question.type ?? "GENERAL");
       } catch {
         if (!cancelled) setError("질문 정보를 불러오지 못했습니다.");
       } finally {
@@ -48,6 +57,23 @@ function QuestionFormPage() {
       cancelled = true;
     };
   }, [id, isEditMode]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const subscription = await getMySubscription();
+        if (!cancelled) setIsSubscriber(Boolean(subscription));
+      } catch {
+        if (!cancelled) setIsSubscriber(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleTagKeyDown = (e) => {
     if (e.key !== "Enter") return;
@@ -89,7 +115,9 @@ function QuestionFormPage() {
     setError("");
     setSubmitting(true);
 
-    const payload = { title, content, tags };
+    const payload = isEditMode
+      ? { title, content, tags, isAnonymous, type }
+      : { title, content, tags, isPremium, isAnonymous, type };
 
     try {
       const questionId = isEditMode ? id : (await createQuestion(payload)).id;
@@ -170,6 +198,58 @@ function QuestionFormPage() {
             />
           </div>
         </div>
+
+        {(isSubscriber || isEditMode) && (
+          <div className="form-field">
+            <label className="question-form__checkbox">
+              <input
+                type="checkbox"
+                checked={isPremium}
+                disabled={isEditMode}
+                onChange={(e) => {
+                  setIsPremium(e.target.checked);
+                  if (!e.target.checked) {
+                    setIsAnonymous(false);
+                    setType("GENERAL");
+                  }
+                }}
+              />
+              멤버십(구독자 전용) 게시판에 작성
+            </label>
+            {isEditMode && (
+              <p className="form-field__hint">게시판 구분은 작성 후에는 바꿀 수 없어요.</p>
+            )}
+          </div>
+        )}
+
+        {isPremium && (
+          <>
+            <div className="form-field">
+              <label htmlFor="questionType">글 유형</label>
+              <select
+                id="questionType"
+                className="select"
+                value={type}
+                onChange={(e) => setType(e.target.value)}
+              >
+                <option value="GENERAL">일반</option>
+                <option value="CODE_REVIEW">코드리뷰</option>
+                <option value="CAREER_CONSULT">커리어상담</option>
+              </select>
+            </div>
+
+            <div className="form-field">
+              <label className="question-form__checkbox">
+                <input
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                />
+                익명으로 작성
+              </label>
+            </div>
+          </>
+        )}
 
         <div className="form-field">
           <label>첨부파일</label>

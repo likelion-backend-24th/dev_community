@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { getQuestions } from "../../api/questionApi";
+import { getPremiumQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
+import { TYPE_LABEL } from "../../constants/questionType";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
 
-function QuestionListPage() {
+function PremiumQuestionListPage() {
   const [searchParams] = useSearchParams();
   const initialTag = searchParams.get("tag") ?? "";
 
@@ -34,7 +35,7 @@ function QuestionListPage() {
       setLoading(true);
       setError("");
       try {
-        const { content, meta: resMeta } = await getQuestions({
+        const { content, meta: resMeta } = await getPremiumQuestions({
           page,
           size: PAGE_SIZE,
           sort: sort || undefined,
@@ -51,9 +52,10 @@ function QuestionListPage() {
           // 존재하지 않는 태그로 필터링한 경우 (백엔드에서 404 반환)
           setQuestions([]);
           setMeta({ page: 0, totalPages: 0, totalElements: 0 });
-        } else {
+        } else if (err.response?.status !== 403) {
           setError(
-            err.response?.data?.message ?? "질문 목록을 불러오지 못했습니다.",
+            err.response?.data?.message ??
+              "멤버십 게시판 목록을 불러오지 못했습니다.",
           );
         }
       } finally {
@@ -147,7 +149,7 @@ function QuestionListPage() {
 
       {!loading && !error && questions.length === 0 && (
         <div className="empty-state">
-          <p>아직 질문이 없어요. 첫 질문을 남겨보세요.</p>
+          <p>아직 멤버십 게시판에 글이 없어요.</p>
           <Link to="/questions/new" className="btn btn-primary">
             질문하기
           </Link>
@@ -165,6 +167,9 @@ function QuestionListPage() {
                 >
                   {q.title}
                 </Link>
+                <span className="badge badge-type">
+                  {TYPE_LABEL[q.type] ?? q.type}
+                </span>
                 <span
                   className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
                 >
@@ -223,4 +228,4 @@ function QuestionListPage() {
   );
 }
 
-export default QuestionListPage;
+export default PremiumQuestionListPage;

@@ -92,4 +92,20 @@ public class AdminController {
 
         return ResponseEntity.ok(ApiResponse.success(userId + " 회원 정지 해제", userInfoResponse));
     }
+
+    // 관리자가 특정 유저를 전문가로 승인
+    @PatchMapping("/users/{id}/expert")
+    public ResponseEntity<ApiResponse<UserInfoResponse>> grantExpert(@PathVariable(name = "id") Long userId){
+        UserInfoResponse userInfoResponse = userService.grantExpert(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(userId + " 전문가로 지정됨", userInfoResponse));
+    }
+
+    // 전문가 지정 해제
+    @DeleteMapping("/users/{id}/expert")
+    public ResponseEntity<ApiResponse<UserInfoResponse>> revokeExpert(@PathVariable(name = "id") Long userId){
+        UserInfoResponse userInfoResponse = userService.revokeExpert(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(userId + " 전문가 지정 해제", userInfoResponse));
+    }
 }

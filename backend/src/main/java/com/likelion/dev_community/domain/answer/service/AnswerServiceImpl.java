@@ -10,6 +10,7 @@ import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.reputation.entity.ReputationEvent;
 import com.likelion.dev_community.domain.reputation.service.ReputationService;
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -42,6 +44,11 @@ public class AnswerServiceImpl implements AnswerService {
         Question question = questionRepository.findById(questionId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
 
+        // 커리어상담 글은 답변 대신 채팅으로 응답
+        if (question.getType() == QuestionType.CAREER_CONSULT) {
+            throw new CustomException(ErrorCode.CAREER_CONSULT_ANSWER_NOT_ALLOWED);
+        }
+
         if (question.getAuthor().getId().equals(userId)) {
             throw new CustomException(ErrorCode.SELF_ANSWER_NOT_ALLOWED);
         }
@@ -64,11 +71,23 @@ public class AnswerServiceImpl implements AnswerService {
     @Transactional(readOnly = true)
     public List<AnswerResponse> readAnswers(Long questionId) {
 
-        if (!questionRepository.existsById(questionId)) {
-            throw new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다.");
+        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+
+        // 커리어상담은 답변 목록 대신 채팅 개설 버튼 노출 (프론트)
+        if (question.getType() == QuestionType.CAREER_CONSULT) {
+            return List.of();
         }
 
-        return answerRepository.findByQuestionIdOrderByCreatedAtAsc(questionId).stream()
+        List<Answer> answers = answerRepository.findByQuestionIdOrderByCreatedAtAsc(questionId);
+
+        // 코드리뷰 글 전문가 답변을 상단 우선 정렬
+        if (question.getType() == QuestionType.CODE_REVIEW) {
+            answers = answers.stream()
+                    .sorted(Comparator.comparing(answer -> !answer.getAuthor().isExpert()))
+                    .toList();
+        }
+
+        return answers.stream()
                 .map(AnswerResponse::from)
                 .toList();
     }

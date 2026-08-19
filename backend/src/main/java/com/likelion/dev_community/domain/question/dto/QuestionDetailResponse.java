@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.question.dto;
 
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -26,12 +27,15 @@ public class QuestionDetailResponse {
     private final List<String> tags;
     private final LocalDateTime createdAt;
     private final boolean isPremium;
+    private final boolean isAnonymous;
+
+    private final QuestionType type;
 
     public static QuestionDetailResponse of(Question question, List<String> tags) {
         return new QuestionDetailResponse(
                 question.getId(),
                 question.getAuthor().getId(),
-                question.getAuthor().getDisplayNickname(),
+                question.isAnonymous() ? "익명" : question.getAuthor().getDisplayNickname(),
                 question.getTitle(),
                 question.getContent(),
                 question.getStatus(),
@@ -39,7 +43,9 @@ public class QuestionDetailResponse {
                 question.getLikeCount(),
                 tags,
                 question.getCreatedAt(),
-                question.isPremium()
+                question.isPremium(),
+                question.isAnonymous(),
+                question.getType()
         );
     }
 }

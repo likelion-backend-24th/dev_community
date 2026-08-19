@@ -43,6 +43,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private int reputation;
 
+    @Column(nullable = false)
+    private boolean isExpert;
+
     @Builder
     public User(String username, String password, String nickname, Role role, UserStatus status,
                 AuthProvider provider, String providerId) {
@@ -109,5 +112,13 @@ public class User extends BaseTimeEntity {
 
     public void decreaseReputation(int points) {
         this.reputation = Math.max(0, this.reputation - points);
+    }
+
+    public void grantExpert() {
+        this.isExpert = true;
+    }
+
+    public void revokeExpert() {
+        this.isExpert = false;
     }
 }

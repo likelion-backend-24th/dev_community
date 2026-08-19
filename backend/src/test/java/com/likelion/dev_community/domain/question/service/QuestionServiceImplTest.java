@@ -12,6 +12,7 @@ import com.likelion.dev_community.domain.question.dto.QuestionSummaryResponse;
 import com.likelion.dev_community.domain.question.dto.QuestionUpdateRequest;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
@@ -43,6 +44,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -178,7 +180,7 @@ class QuestionServiceImplTest {
     void 본인이_질문을_수정한다() {
         User author = createUser(1L, "author");
         Question question = createQuestion(10L, author);
-        QuestionUpdateRequest request = new QuestionUpdateRequest("새 제목", "새 내용", List.of());
+        QuestionUpdateRequest request = new QuestionUpdateRequest("새 제목", "새 내용", List.of(), false, null);
 
         when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
 
@@ -205,7 +207,7 @@ class QuestionServiceImplTest {
     void 타인이_질문_수정을_시도하면_FORBIDDEN() {
         User author = createUser(1L, "author");
         Question question = createQuestion(10L, author);
-        QuestionUpdateRequest request = new QuestionUpdateRequest("제목", "내용", List.of());
+        QuestionUpdateRequest request = new QuestionUpdateRequest("제목", "내용", List.of(), false, null);
 
         when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
 
@@ -245,7 +247,7 @@ class QuestionServiceImplTest {
     @Test
     void 대소문자와_공백만_다른_태그는_하나로_정규화되어_저장된다() {
         User author = createUser(1L, "author");
-        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of("Java", " java ", "JAVA"), false);
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of("Java", " java ", "JAVA"), false, false, null);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(tagRepository.findByName("java")).thenReturn(Optional.empty());
@@ -256,6 +258,89 @@ class QuestionServiceImplTest {
         assertThat(response.getTags()).containsExactly("java");
         verify(tagRepository, times(1)).findByName("java");
         verify(tagRepository, times(1)).save(any(Tag.class));
+    }
+
+    // ===== 게시글 유형 세분화 (F-42) =====
+
+    @Test
+    void 일반_게시판_글은_유형을_요청해도_GENERAL로_고정된다() {
+        User author = createUser(1L, "author");
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), false, false, "CODE_REVIEW");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+
+        QuestionResponse response = questionService.createQuestion(1L, false, request);
+
+        assertThat(response.getType()).isEqualTo(QuestionType.GENERAL);
+    }
+
+    @Test
+    void 프리미엄_게시판에서_코드리뷰_유형으로_질문을_작성한다() {
+        User author = createUser(1L, "author");
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), true, false, "CODE_REVIEW");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+
+        QuestionResponse response = questionService.createQuestion(1L, false, request);
+
+        assertThat(response.getType()).isEqualTo(QuestionType.CODE_REVIEW);
+        verify(subscriptionService).requireActiveSubscriber(1L, false);
+    }
+
+    @Test
+    void 잘못된_유형_문자열이면_INVALID_INPUT() {
+        User author = createUser(1L, "author");
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), true, false, "INVALID_TYPE");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+
+        assertThatThrownBy(() -> questionService.createQuestion(1L, false, request))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_INPUT));
+    }
+
+    // ===== 익명 질문 (F-41) =====
+
+    @Test
+    void 비구독자가_익명으로_질문을_작성하면_FORBIDDEN() {
+        User author = createUser(1L, "author");
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), false, true, null);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+        doThrow(new CustomException(ErrorCode.FORBIDDEN, "구독자 전용 기능입니다."))
+                .when(subscriptionService).requireActiveSubscriber(1L, false);
+
+        assertThatThrownBy(() -> questionService.createQuestion(1L, false, request))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
+    }
+
+    @Test
+    void 익명으로_작성한_질문은_작성자_닉네임이_익명으로_노출된다() {
+        User author = createUser(1L, "author");
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), false, true, null);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+
+        QuestionResponse response = questionService.createQuestion(1L, false, request);
+
+        assertThat(response.getAuthorNickname()).isEqualTo("익명");
+        assertThat(response.isAnonymous()).isTrue();
+    }
+
+    @Test
+    void 비구독자가_질문_수정_시_익명으로_전환하면_FORBIDDEN() {
+        User author = createUser(1L, "author");
+        Question question = createQuestion(10L, author);
+        QuestionUpdateRequest request = new QuestionUpdateRequest("제목", "내용", List.of(), true, null);
+
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
+        doThrow(new CustomException(ErrorCode.FORBIDDEN, "구독자 전용 기능입니다."))
+                .when(subscriptionService).requireActiveSubscriber(1L, false);
+
+        assertThatThrownBy(() -> questionService.updateQuestion(10L, 1L, false, request))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.FORBIDDEN));
     }
 
     // ===== deleteQuestion의 답변 cascade soft delete (F-11) =====

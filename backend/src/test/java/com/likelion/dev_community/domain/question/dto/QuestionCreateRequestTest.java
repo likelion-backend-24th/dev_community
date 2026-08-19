@@ -31,7 +31,7 @@ class QuestionCreateRequestTest {
 
     @Test
     void title이_100자를_초과하면_검증에_실패한다() {
-        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(101), "내용", List.of(), false);
+        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(101), "내용", List.of(), false, false, null);
 
         Set<ConstraintViolation<QuestionCreateRequest>> violations = validator.validate(request);
 
@@ -40,10 +40,24 @@ class QuestionCreateRequestTest {
 
     @Test
     void title이_100자이면_검증을_통과한다() {
-        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(100), "내용", List.of(), false);
+        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(100), "내용", List.of(), false, false, null);
 
         Set<ConstraintViolation<QuestionCreateRequest>> violations = validator.validate(request);
 
         assertThat(violations).isEmpty();
+    }
+
+    @Test
+    void isPremium이_null이면_false로_취급한다() {
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), null, null, null);
+
+        assertThat(request.isPremium()).isFalse();
+    }
+
+    @Test
+    void isAnonymous가_null이면_false로_취급한다() {
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), null, null, null);
+
+        assertThat(request.isAnonymous()).isFalse();
     }
 }
