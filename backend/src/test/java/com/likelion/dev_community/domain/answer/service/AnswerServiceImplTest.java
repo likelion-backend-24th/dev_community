@@ -9,6 +9,7 @@ import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
+import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.reputation.service.ReputationService;
 import com.likelion.dev_community.domain.user.entity.Role;
@@ -92,7 +93,7 @@ class AnswerServiceImplTest {
         Answer answer1 = createAnswer(1L, question, createUser(3L, "answerer1"), "첫 번째 답변");
         Answer answer2 = createAnswer(2L, question, createUser(4L, "answerer2"), "두 번째 답변");
 
-        when(questionRepository.existsById(10L)).thenReturn(true);
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
         when(answerRepository.findByQuestionIdOrderByCreatedAtAsc(10L)).thenReturn(List.of(answer1, answer2));
 
         List<AnswerResponse> responses = answerService.readAnswers(10L);
@@ -104,7 +105,9 @@ class AnswerServiceImplTest {
 
     @Test
     void 답변이_없는_질문은_빈_목록을_반환한다() {
-        when(questionRepository.existsById(10L)).thenReturn(true);
+        Question question = createQuestion(10L, createUser(2L, "asker"));
+
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
         when(answerRepository.findByQuestionIdOrderByCreatedAtAsc(10L)).thenReturn(List.of());
 
         List<AnswerResponse> responses = answerService.readAnswers(10L);
@@ -114,11 +117,58 @@ class AnswerServiceImplTest {
 
     @Test
     void 답변_목록_조회_시_존재하지_않는_질문이면_예외가_발생한다() {
-        when(questionRepository.existsById(999L)).thenReturn(false);
+        when(questionRepository.findById(999L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> answerService.readAnswers(999L))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND));
+    }
+
+    // ===== F-42 코드리뷰/커리어상담 =====
+
+    @Test
+    void 커리어상담_질문에는_답변을_등록할_수_없다() {
+        User author = createUser(1L, "answerer");
+        Question question = createQuestion(10L, createUser(2L, "asker"), QuestionType.CAREER_CONSULT);
+        AnswerRequest request = new AnswerRequest("답변 시도");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(author));
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
+
+        assertThatThrownBy(() -> answerService.createAnswer(1L, 10L, request))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.CAREER_CONSULT_ANSWER_NOT_ALLOWED));
+    }
+
+    @Test
+    void 커리어상담_질문의_답변_목록은_빈_리스트를_반환한다() {
+        Question question = createQuestion(10L, createUser(2L, "asker"), QuestionType.CAREER_CONSULT);
+
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
+
+        List<AnswerResponse> responses = answerService.readAnswers(10L);
+
+        assertThat(responses).isEmpty();
+    }
+
+    @Test
+    void 코드리뷰_질문의_답변은_전문가가_상단에_정렬된다() {
+        User normalAnswerer = createUser(3L, "answerer1");
+        User expertAnswerer = createUser(4L, "answerer2");
+        expertAnswerer.grantExpert();
+
+        Question question = createQuestion(10L, createUser(2L, "asker"), QuestionType.CODE_REVIEW);
+        Answer normalAnswer = createAnswer(1L, question, normalAnswerer, "일반 답변");
+        Answer expertAnswer = createAnswer(2L, question, expertAnswerer, "전문가 답변");
+
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
+        when(answerRepository.findByQuestionIdOrderByCreatedAtAsc(10L)).thenReturn(List.of(normalAnswer, expertAnswer));
+
+        List<AnswerResponse> responses = answerService.readAnswers(10L);
+
+        assertThat(responses).hasSize(2);
+        assertThat(responses.get(0).getContent()).isEqualTo("전문가 답변");
+        assertThat(responses.get(1).getContent()).isEqualTo("일반 답변");
     }
 
     @Test
@@ -399,10 +449,16 @@ class AnswerServiceImplTest {
     }
 
     private Question createQuestion(Long id, User author) {
+        return createQuestion(id, author, QuestionType.GENERAL);
+    }
+
+    private Question createQuestion(Long id, User author, QuestionType type) {
         Question question = Question.builder()
                 .author(author)
                 .title("제목")
                 .content("내용")
+                .isPremium(type != QuestionType.GENERAL)
+                .type(type)
                 .build();
         setId(question, id);
         return question;
