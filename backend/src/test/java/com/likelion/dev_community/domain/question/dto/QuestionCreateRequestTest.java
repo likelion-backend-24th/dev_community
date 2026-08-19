@@ -46,4 +46,11 @@ class QuestionCreateRequestTest {
 
         assertThat(violations).isEmpty();
     }
+
+    @Test
+    void isPremium이_null이면_false로_취급한다() {
+        QuestionCreateRequest request = new QuestionCreateRequest("제목", "내용", List.of(), null);
+
+        assertThat(request.isPremium()).isFalse();
+    }
 }

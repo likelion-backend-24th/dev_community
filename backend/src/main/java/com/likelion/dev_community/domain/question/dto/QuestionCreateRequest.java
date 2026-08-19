@@ -19,5 +19,9 @@ public class QuestionCreateRequest {
 
     private final List<String> tags;
 
-    private final boolean isPremium;
+    private final Boolean isPremium;
+
+    public boolean isPremium() {
+        return Boolean.TRUE.equals(isPremium);
+    }
 }
