@@ -28,6 +28,7 @@ import io.portone.sdk.server.payment.PayWithBillingKeyResponse;
 import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PaymentClient;
 import io.portone.sdk.server.payment.billingkey.BillingKeyClient;
+import io.portone.sdk.server.payment.billingkey.BillingKeyDeleteRequester;
 import io.portone.sdk.server.payment.billingkey.BillingKeyInfo;
 import io.portone.sdk.server.payment.billingkey.IssuedBillingKeyInfo;
 import io.portone.sdk.server.payment.paymentschedule.BillingKeyPaymentScheduleInput;
@@ -326,18 +327,46 @@ public class PaymentService {
     // 구독 즉시 해지 + 예약된 다음 회차 결제 취소
     private void cancelSubscriptionAndSchedule(User user) {
         subscriptionService.cancelIfActive(user.getId())
-                .filter(subscription -> subscription.getBillingKey() != null)
-                .ifPresent(subscription -> paymentRepository.findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(user.getId(), PaymentStatus.READY)
-                        .ifPresent(nextPayment -> {
-                            try {
-                                paymentScheduleClient.revokePaymentSchedules(
-                                        subscription.getBillingKey(), List.of(nextPayment.getPaymentId())
-                                ).join();
-                            } catch (CompletionException e) {
-                                log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", user.getId(), e.getCause() != null ? e.getCause().toString() : e.toString());
-                            }
-                            nextPayment.cancel(LocalDateTime.now(), "구독 해지로 인한 예약 결제 취소");
-                            nextPayment.getOrder().cancel();
-                        }));
+                .map(Subscription::getBillingKey)
+                .ifPresent(billingKey -> revokeNextSchedule(user.getId(), billingKey, "구독 해지로 인한 예약 결제 취소"));
+    }
+
+    // 회원 탈퇴 - 구독 해지 + 다음 회차 예약 취소 + 빌링키 폐기
+    @Transactional
+    public void cancelSubscriptionForWithdrawal(Long userId) {
+        subscriptionService.cancelIfActive(userId)
+                .map(Subscription::getBillingKey)
+                .ifPresent(billingKey -> {
+                    revokeNextSchedule(userId, billingKey, "회원 탈퇴로 인한 예약 결제 취소");
+
+                    try {
+                        billingKeyClient.deleteBillingKey(billingKey, "회원 탈퇴", BillingKeyDeleteRequester.Customer.INSTANCE, null)
+                                .join();
+                    } catch (CompletionException e) {
+                        log.warn("빌링키 폐기 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+                    }
+                });
+    }
+
+    // 계정 정지 - 다음 회차 예약만 취소
+    @Transactional
+    public void revokeNextChargeForSuspension(Long userId) {
+        subscriptionService.getActiveBillingKey(userId)
+                .ifPresent(billingKey -> revokeNextSchedule(userId, billingKey, "계정 정지로 인한 예약 결제 취소"));
+    }
+
+    // 예약된 다음 회차 결제(PortOne 예약 + 로컬 레코드) 취소
+    private void revokeNextSchedule(Long userId, String billingKey, String cancelReason) {
+        paymentRepository.findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(userId, PaymentStatus.READY)
+                .ifPresent(nextPayment -> {
+                    try {
+                        paymentScheduleClient.revokePaymentSchedules(billingKey, List.of(nextPayment.getPaymentId()))
+                                .join();
+                    } catch (CompletionException e) {
+                        log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+                    }
+                    nextPayment.cancel(LocalDateTime.now(), cancelReason);
+                    nextPayment.getOrder().cancel();
+                });
     }
 }

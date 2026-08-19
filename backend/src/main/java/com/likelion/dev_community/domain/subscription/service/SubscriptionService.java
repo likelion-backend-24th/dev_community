@@ -69,6 +69,13 @@ public class SubscriptionService {
                 });
     }
 
+    // 계정 정지 시 다음 회차 예약만 취소하기 위한 빌링키 조회
+    @Transactional(readOnly = true)
+    public Optional<String> getActiveBillingKey(Long userId) {
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .map(Subscription::getBillingKey);
+    }
+
     // 구독자 전용 기능 접근 체크
     @Transactional
     public void requireActiveSubscriber(Long userId, boolean isAdmin){

@@ -8,6 +8,7 @@ import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.answer.repository.QuestionAnswerCount;
 import com.likelion.dev_community.domain.question.dto.QuestionSummaryResponse;
 import com.likelion.dev_community.domain.question.entity.Question;
+import com.likelion.dev_community.domain.payment.service.PaymentService;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoRequest;
@@ -45,6 +46,7 @@ public class UserService {
     private final QuestionRepository questionRepository;
     private final QuestionTagRepository questionTagRepository;
     private final AnswerRepository answerRepository;
+    private final PaymentService paymentService;
 
     // 회원 정보 조회
     public UserInfoResponse getUserInfo(Long userId){
@@ -95,6 +97,8 @@ public class UserService {
 
         user.withdraw(); // 사용자 상태 withdrawn
 
+        paymentService.cancelSubscriptionForWithdrawal(userId); // 회원 탈퇴 시 구독 해지 처리
+
         refreshTokenRepository.deleteById(userId);
 
         ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
@@ -121,6 +125,8 @@ public class UserService {
             throw new CustomException(ErrorCode.ALREADY_SUSPENDED_USER);
 
         user.suspend();
+
+        paymentService.revokeNextChargeForSuspension(userId); // 구독 중인 유저가 정지당하면 다음 회차 구독을 취소시킴
 
         refreshTokenRepository.deleteById(userId);
 
