@@ -40,6 +40,8 @@ function QuestionDetailPage() {
   const [openTag, setOpenTag] = useState(null);
   const tagsRef = useRef(null);
 
+  const previousUserRef = useRef(user);
+
   useEffect(() => {
     if (!openTag) return;
     const handleClickOutside = (e) => {
@@ -52,6 +54,10 @@ function QuestionDetailPage() {
   }, [openTag]);
 
   useEffect(() => {
+    const loggedOut = previousUserRef.current && !user;
+    previousUserRef.current = user;
+    if (loggedOut) return;
+
     let cancelled = false;
 
     const fetchData = async () => {
@@ -70,7 +76,10 @@ function QuestionDetailPage() {
         setAnswers(answersData);
 
         if (user) {
-          const likeStatus = await getLikeStatus(id, answersData.map((a) => a.id));
+          const likeStatus = await getLikeStatus(
+            id,
+            answersData.map((a) => a.id),
+          );
           if (cancelled) return;
           setQuestionLiked(likeStatus.questionLiked);
           setLikedAnswerIds(likeStatus.likedAnswerIds);
@@ -83,7 +92,9 @@ function QuestionDetailPage() {
         if (err.response?.status === 404) {
           setNotFound(true);
         } else {
-          setError(err.response?.data?.message ?? "질문을 불러오지 못했습니다.");
+          setError(
+            err.response?.data?.message ?? "질문을 불러오지 못했습니다.",
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -147,7 +158,9 @@ function QuestionDetailPage() {
       <div className="error-page">
         <p className="error-page__code">404</p>
         <h1 className="error-page__title">질문을 찾을 수 없습니다</h1>
-        <p className="error-page__desc">삭제되었거나 존재하지 않는 질문이에요.</p>
+        <p className="error-page__desc">
+          삭제되었거나 존재하지 않는 질문이에요.
+        </p>
         <div className="error-page__actions">
           <Link to="/questions" className="btn btn-primary">
             질문 목록으로
@@ -198,7 +211,9 @@ function QuestionDetailPage() {
               <button
                 type="button"
                 className="tag-chip tag-chip--clickable"
-                onClick={() => setOpenTag((prev) => (prev === tag ? null : tag))}
+                onClick={() =>
+                  setOpenTag((prev) => (prev === tag ? null : tag))
+                }
               >
                 {tag}
               </button>
@@ -207,7 +222,9 @@ function QuestionDetailPage() {
                   <button
                     type="button"
                     className="tag-search-popover__btn"
-                    onClick={() => navigate(`/questions?tag=${encodeURIComponent(tag)}`)}
+                    onClick={() =>
+                      navigate(`/questions?tag=${encodeURIComponent(tag)}`)
+                    }
                   >
                     [{tag}] 검색하기
                   </button>
@@ -242,7 +259,11 @@ function QuestionDetailPage() {
           </button>
         )}
         {canDelete && (
-          <button type="button" className="btn btn-destructive btn-sm" onClick={handleDeleteQuestion}>
+          <button
+            type="button"
+            className="btn btn-destructive btn-sm"
+            onClick={handleDeleteQuestion}
+          >
             삭제
           </button>
         )}
@@ -288,7 +309,11 @@ function QuestionDetailPage() {
                 {answerError}
               </p>
             )}
-            <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={answerSubmitting}
+            >
               {answerSubmitting ? "등록 중..." : "답변 등록"}
             </button>
           </form>
