@@ -2,9 +2,23 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { signup, checkUsername, checkNickname } from '../../api/authApi'
 import AuthHeader from '../../components/layout/AuthHeader'
+import hideIcon from '../../assets/hide.png'
+import showIcon from '../../assets/show.png'
 import '../../styles/auth.css'
 
 const IDLE = { status: 'idle', message: '' }
+
+function EyeIcon({ open }) {
+  return (
+    <img
+      src={open ? showIcon : hideIcon}
+      alt=""
+      width="18"
+      height="18"
+      aria-hidden="true"
+    />
+  )
+}
 
 function SignupPage() {
   const navigate = useNavigate()
@@ -19,6 +33,9 @@ function SignupPage() {
   const [nicknameCheck, setNicknameCheck] = useState(IDLE)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+  const [agreeTerms, setAgreeTerms] = useState(false)
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -65,6 +82,10 @@ function SignupPage() {
     }
     if (form.password !== form.passwordConfirm) {
       setError('비밀번호가 일치하지 않습니다.')
+      return
+    }
+    if (!agreeTerms) {
+      setError('이용약관에 동의해주세요.')
       return
     }
 
@@ -155,33 +176,70 @@ function SignupPage() {
               <label className="field__label" htmlFor="password">
                 비밀번호
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                className="field__input"
-                value={form.password}
-                onChange={handleChange}
-                autoComplete="new-password"
-                required
-              />
+              <div className="field__password-row">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="field__input"
+                  value={form.password}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="field__toggle-visibility"
+                  onClick={() => setShowPassword((v) => !v)}
+                  aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 보기'}
+                  aria-pressed={showPassword}
+                >
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
             </div>
 
             <div className="field">
               <label className="field__label" htmlFor="passwordConfirm">
                 비밀번호 확인
               </label>
+              <div className="field__password-row">
+                <input
+                  id="passwordConfirm"
+                  name="passwordConfirm"
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  className="field__input"
+                  value={form.passwordConfirm}
+                  onChange={handleChange}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  className="field__toggle-visibility"
+                  onClick={() => setShowPasswordConfirm((v) => !v)}
+                  aria-label={showPasswordConfirm ? '비밀번호 숨기기' : '비밀번호 보기'}
+                  aria-pressed={showPasswordConfirm}
+                >
+                  <EyeIcon open={showPasswordConfirm} />
+                </button>
+              </div>
+            </div>
+
+            <label className="field__agree">
               <input
-                id="passwordConfirm"
-                name="passwordConfirm"
-                type="password"
-                className="field__input"
-                value={form.passwordConfirm}
-                onChange={handleChange}
-                autoComplete="new-password"
+                type="checkbox"
+                checked={agreeTerms}
+                onChange={(e) => setAgreeTerms(e.target.checked)}
                 required
               />
-            </div>
+              <span>
+                <Link to="/terms" target="_blank" rel="noopener noreferrer">
+                  이용약관
+                </Link>
+                에 동의합니다 (필수)
+              </span>
+            </label>
 
             {error && (
               <p className="auth-error" role="alert">
@@ -195,7 +253,8 @@ function SignupPage() {
               disabled={
                 submitting ||
                 usernameCheck.status !== 'available' ||
-                nicknameCheck.status !== 'available'
+                nicknameCheck.status !== 'available' ||
+                !agreeTerms
               }
             >
               {submitting ? '가입 중...' : '회원가입'}

@@ -7,6 +7,7 @@ import {
 } from '../../api/answerApi'
 import { toggleAnswerLike } from '../../api/likeApi'
 import ReportButton from './ReportButton'
+import AttachmentList from '../attachment/AttachmentList'
 import '../../styles/question.css'
 
 function AnswerItem({
@@ -15,6 +16,7 @@ function AnswerItem({
   isAdmin,
   isQuestionOwner,
   questionResolved,
+  isLiked,
   onChanged,
 }) {
   const [editing, setEditing] = useState(false)
@@ -91,6 +93,10 @@ function AnswerItem({
         <p className="answer-card__body">{answer.content}</p>
       )}
 
+      {!editing && (
+        <AttachmentList targetType="ANSWER" targetId={answer.id} canDelete={canDelete} />
+      )}
+
       <div className="answer-card__meta">
         <span>{answer.authorNickname}</span>
         <span>추천 {answer.likeCount}</span>
@@ -99,7 +105,12 @@ function AnswerItem({
 
       {!editing && (
         <div className="answer-card__actions">
-          <button type="button" className="btn btn-secondary btn-sm" onClick={handleLike} disabled={busy}>
+          <button
+            type="button"
+            className={`btn btn-secondary btn-sm${isLiked ? " btn-liked" : ""}`}
+            onClick={handleLike}
+            disabled={busy}
+          >
             추천
           </button>
           {canEdit && (

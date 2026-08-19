@@ -5,6 +5,14 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 10MB
+
+app:
+  upload:
+    dir: uploads
 
 oauth:
   github:
@@ -24,3 +32,10 @@ admin:
   username: ${ADMIN_USERNAME:}
   password: ${ADMIN_PASSWORD:}
   nickname: ${ADMIN_NICKNAME:관리자}
+
+portone:
+  api-secret: ${PORTONE_API_SECRET}
+  store-id: ${PORTONE_STORE_ID}
+  channel-key: ${PORTONE_CHANNEL_KEY}
+  webhook-secret: ${PORTONE_WEBHOOK_SECRET}
+  webhook-notice-url: ${PORTONE_WEBHOOK_NOTICE_URL:}

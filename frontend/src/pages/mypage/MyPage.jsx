@@ -14,7 +14,7 @@ import "../../styles/mypage.css";
 
 function MyPage() {
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, isAdmin } = useAuth();
 
   const [profile, setProfile] = useState(null);
   const [activeTab, setActiveTab] = useState("questions");
@@ -85,17 +85,28 @@ function MyPage() {
           <p className="profile-card__joined">
             가입일 {profile.createdAt.slice(0, 10)}
           </p>
+          <p className="profile-card__reputation">평판 {profile.reputation}점</p>
         </div>
         <div className="profile-card__actions">
+          <Link to="/dashboard" className="btn btn-secondary btn-sm">
+            내 활동 대시보드
+          </Link>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditInfoOpen(true)}>
             내 정보 수정
           </button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setPasswordModalOpen(true)}>
             비밀번호 변경
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setWithdrawModalOpen(true)}>
-            회원 탈퇴
-          </button>
+          {!isAdmin && (
+            <button type="button" className="btn btn-destructive btn-sm" onClick={() => setWithdrawModalOpen(true)}>
+              회원 탈퇴
+            </button>
+          )}
+          {isAdmin && (
+            <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
+              관리자 대시보드
+            </Link>
+          )}
         </div>
       </section>
 
@@ -147,7 +158,7 @@ function MyPage() {
           {answers.map((a) => (
             <li key={a.id}>
               <Link to={`/questions/${a.questionId}`} className="mypage-list__item">
-                {a.isAdopted && <span className="badge badge-resolved">채택됨</span>}
+                {a.adopted && <span className="badge badge-resolved">채택됨</span>}
                 <span className="mypage-list__title">{a.content}</span>
                 <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
               </Link>

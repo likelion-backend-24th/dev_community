@@ -25,7 +25,21 @@ public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
     public Page<Question> searchQuestions(
             String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable
     ) {
+        return search(keyword, tagId, status, sortType, pageable, false);
+    }
+
+    @Override
+    public Page<Question> searchPremiumQuestions(
+            String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable
+    ) {
+        return search(keyword, tagId, status, sortType, pageable, true);
+    }
+
+    private Page<Question> search(
+            String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable, boolean isPremium
+    ) {
         BooleanBuilder condition = new BooleanBuilder();
+        condition.and(question.isPremium.eq(isPremium));
 
         if (keyword != null && !keyword.isBlank()) {
             BooleanBuilder keywordCondition = new BooleanBuilder();

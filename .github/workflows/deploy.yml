@@ -13,6 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     # main으로의 push에 대해 CI 워크플로우가 성공적으로 끝났을 때만 배포한다.
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    permissions:
+      packages: read
 
     steps:
       - name: Deploy over SSH
@@ -25,4 +27,11 @@ jobs:
             set -e
             cd ${{ secrets.EC2_PROJECT_PATH }}
             git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build
+            # 이미지는 여기(EC2, t2.micro)에서 빌드하지 않는다 - 다른 컨테이너들과
+            # 메모리를 나눠 쓰는 상태에서 Gradle 빌드를 돌리면 스왑까지 밀려
+            # 들어가 사실상 멈춰버리는 문제가 있었음. CI가 이미 빌드해서 GHCR에
+            # 올려둔 이미지를 pull만 한다.
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            docker compose -f docker-compose.prod.yml pull
+            docker compose -f docker-compose.prod.yml up -d
+            docker image prune -a -f --filter "until=24h"

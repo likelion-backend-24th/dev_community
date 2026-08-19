@@ -40,6 +40,8 @@ public class User extends BaseTimeEntity {
 
     @Column(length = 50)
     private String providerId;
+    @Column(nullable = false)
+    private int reputation;
 
     @Builder
     public User(String username, String password, String nickname, Role role, UserStatus status,
@@ -77,27 +79,35 @@ public class User extends BaseTimeEntity {
                 .build();
     }
 
-    public void updateUser(String nickname){
+    public void updateUser(String nickname) {
         this.nickname = nickname;
     }
 
-    public void updatePassword(String newPassword){
+    public void updatePassword(String newPassword) {
         this.password = newPassword;
     }
 
-    public void withdraw(){
+    public void withdraw() {
         this.status = UserStatus.WITHDRAWN;
     }
 
-    public void suspend(){
+    public void suspend() {
         this.status = UserStatus.SUSPENDED;
     }
 
-    public void unsuspend(){
-        this.status =UserStatus.ACTIVE;
+    public void unsuspend() {
+        this.status = UserStatus.ACTIVE;
     }
 
-    public String getDisplayNickname(){
+    public String getDisplayNickname() {
         return this.status == UserStatus.WITHDRAWN ? "탈퇴한 사용자" : this.nickname;
+    }
+
+    public void increaseReputation(int points) {
+        this.reputation += points;
+    }
+
+    public void decreaseReputation(int points) {
+        this.reputation = Math.max(0, this.reputation - points);
     }
 }

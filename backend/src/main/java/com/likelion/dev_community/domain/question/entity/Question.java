@@ -44,19 +44,23 @@ public class Question extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private QuestionStatus status;
 
+    @Column(nullable = false)
+    private boolean isPremium;
+
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionTag> questionTags = new ArrayList<>();
 
     @Builder
-    public Question(User author, String title, String content) {
+    public Question(User author, String title, String content, boolean isPremium) {
         this.author = author;
         this.title = title;
         this.content = content;
         this.viewCount = 0;
         this.likeCount = 0;
         this.status = QuestionStatus.OPEN;
+        this.isPremium = isPremium;
     }
 
     public void update(String title, String content) {

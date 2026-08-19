@@ -16,4 +16,13 @@ public interface QuestionRepositoryCustom {
             QuestionSortType sortType,
             Pageable pageable
     );
+
+    // F-32 프리미엄 게시판용
+    Page<Question> searchPremiumQuestions(
+            String keyword,
+            Long tagId,
+            QuestionStatus status,
+            QuestionSortType sortType,
+            Pageable pageable
+    );
 }

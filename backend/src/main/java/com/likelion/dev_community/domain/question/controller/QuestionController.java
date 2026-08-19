@@ -1,6 +1,7 @@
 package com.likelion.dev_community.domain.question.controller;
 
 import com.likelion.dev_community.common.ApiResponse;
+import com.likelion.dev_community.common.PageMetaMapper;
 import com.likelion.dev_community.common.viewcount.ViewerKeyResolver;
 import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.service.QuestionService;
@@ -15,7 +16,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -31,7 +31,9 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody QuestionCreateRequest request
     ) {
-        QuestionResponse response = questionService.createQuestion(userDetails.getId(), request);
+        boolean isAdmin = userDetails.isAdmin();
+
+        QuestionResponse response = questionService.createQuestion(userDetails.getId(), isAdmin, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("질문 등록 완료", response));
@@ -50,14 +52,26 @@ public class QuestionController {
     ) {
         Page<QuestionSummaryResponse> result = questionService.readQuestions(page, size, sort, keyword, tag, status);
 
-        Map<String, Object> meta = Map.of(
-                "page", result.getNumber(),
-                "size", result.getSize(),
-                "totalElements", result.getTotalElements(),
-                "totalPages", result.getTotalPages()
-        );
+        return ResponseEntity.ok(ApiResponse.success("질문 목록 조회", result.getContent(), PageMetaMapper.of(result)));
+    }
 
-        return ResponseEntity.ok(ApiResponse.success("질문 목록 조회", result.getContent(), meta));
+    // F-32
+    @GetMapping("/premium")
+    public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readPremiumQuestions(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String sort,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String tag,
+            @RequestParam(required = false) String status
+    ) {
+        Long userId = (userDetails != null) ? userDetails.getId() : null;
+        boolean isAdmin = (userDetails != null) && userDetails.isAdmin();
+
+        Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, userId, isAdmin);
+
+        return ResponseEntity.ok(ApiResponse.success("프리미엄 질문 목록 조회", result.getContent(), PageMetaMapper.of(result)));
     }
 
     // F-08
@@ -68,9 +82,10 @@ public class QuestionController {
             HttpServletRequest request
     ) {
         Long userId = (userDetails != null) ? userDetails.getId() : null;
+        boolean isAdmin = (userDetails != null) && userDetails.isAdmin();
         String viewerKey = viewerKeyResolver.resolve(userId, request);
 
-        QuestionDetailResponse response = questionService.readDetailQuestion(id, viewerKey);
+        QuestionDetailResponse response = questionService.readDetailQuestion(id, viewerKey, userId, isAdmin);
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
@@ -82,7 +97,7 @@ public class QuestionController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody QuestionUpdateRequest request
     ) {
-        boolean isAdmin = isAdmin(userDetails);
+        boolean isAdmin = userDetails.isAdmin();
 
         QuestionResponse response = questionService.updateQuestion(id, userDetails.getId(), isAdmin, request);
 
@@ -95,16 +110,10 @@ public class QuestionController {
             @PathVariable Long id,
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        boolean isAdmin = isAdmin(userDetails);
+        boolean isAdmin = userDetails.isAdmin();
 
         questionService.deleteQuestion(id, userDetails.getId(), isAdmin);
 
         return ResponseEntity.noContent().build();
-    }
-
-    // 토큰 권한에 ROLE_ADMIN 있는지 확인
-    private boolean isAdmin(CustomUserDetails userDetails) {
-        return userDetails.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
     }
 }

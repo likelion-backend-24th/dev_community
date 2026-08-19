@@ -29,6 +29,7 @@ function Navbar() {
       <div className="navbar__actions">
         {isAuthenticated ? (
           <>
+            <Link to="/membership">멤버십</Link>
             <Link to="/questions/new" className="btn btn-primary btn-sm">
               질문 작성
             </Link>
@@ -37,6 +38,7 @@ function Navbar() {
               <>
                 <Link to="/admin/reports">신고 관리</Link>
                 <Link to="/admin/users">회원 관리</Link>
+                <Link to="/admin/dashboard">관리자 대시보드</Link>
               </>
             )}
             <button type="button" className="btn btn-ghost" onClick={handleLogout}>

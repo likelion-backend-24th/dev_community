@@ -29,7 +29,12 @@ public enum ErrorCode {
     NOT_SUSPENDED_USER(HttpStatus.CONFLICT, "NOT_SUSPENDED_USER", "정지 상태가 아닌 사용자입니다"),
 
     OAUTH_LOGIN_FAILED(HttpStatus.BAD_GATEWAY, "OAUTH_LOGIN_FAILED", "소셜 로그인 처리 중 오류가 발생했습니다."),
-    OAUTH_SIGNUP_EXPIRED(HttpStatus.BAD_REQUEST, "OAUTH_SIGNUP_EXPIRED", "인증 정보가 만료되었습니다. 다시 로그인해주세요.");
+    OAUTH_SIGNUP_EXPIRED(HttpStatus.BAD_REQUEST, "OAUTH_SIGNUP_EXPIRED", "인증 정보가 만료되었습니다. 다시 로그인해주세요."),
+    PAYMENT_VERIFICATION_FAILED(HttpStatus.CONFLICT, "PAYMENT_VERIFICATION_FAILED", "PortOne 결제 정보 검증에 실패했습니다."),
+    FILE_TOO_LARGE(HttpStatus.BAD_REQUEST, "FILE_TOO_LARGE", "파일 용량이 너무 큽니다. (최대 2MB)"),
+    UNSUPPORTED_FILE_TYPE(HttpStatus.BAD_REQUEST, "UNSUPPORTED_FILE_TYPE", "지원하지 않는 파일 형식입니다."),
+    ATTACHMENT_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "ATTACHMENT_LIMIT_EXCEEDED", "첨부파일은 최대 5개까지 등록할 수 있습니다."),
+    FILE_UPLOAD_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "FILE_UPLOAD_FAILED", "파일 업로드에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;

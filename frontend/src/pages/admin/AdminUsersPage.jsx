@@ -114,6 +114,7 @@ function AdminUsersPage() {
                 <th>닉네임</th>
                 <th>권한</th>
                 <th>상태</th>
+                <th>평판</th>
                 <th>누적 신고</th>
                 <th>가입일</th>
                 <th>처리</th>
@@ -130,6 +131,7 @@ function AdminUsersPage() {
                       {STATUS_LABEL[u.status] ?? u.status}
                     </span>
                   </td>
+                  <td>{u.reputation}</td>
                   <td>{u.reportCount}</td>
                   <td>{u.createdAt.slice(0, 10)}</td>
                   <td>

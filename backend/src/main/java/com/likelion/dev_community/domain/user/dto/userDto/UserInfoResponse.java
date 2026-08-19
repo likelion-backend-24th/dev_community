@@ -20,6 +20,7 @@ public class UserInfoResponse {
     private final UserStatus status;
     private final AuthProvider provider;
     private final LocalDateTime createdAt;
+    private final int reputation;
 
     public static UserInfoResponse from(User user){
         return new UserInfoResponse(
@@ -29,7 +30,8 @@ public class UserInfoResponse {
                 user.getRole(),
                 user.getStatus(),
                 user.getProvider(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.getReputation()
         );
     }
 }

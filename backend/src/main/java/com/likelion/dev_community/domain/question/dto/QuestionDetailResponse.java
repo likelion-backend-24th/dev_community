@@ -25,6 +25,7 @@ public class QuestionDetailResponse {
 
     private final List<String> tags;
     private final LocalDateTime createdAt;
+    private final boolean isPremium;
 
     public static QuestionDetailResponse of(Question question, List<String> tags) {
         return new QuestionDetailResponse(
@@ -37,7 +38,8 @@ public class QuestionDetailResponse {
                 question.getViewCount(),
                 question.getLikeCount(),
                 tags,
-                question.getCreatedAt()
+                question.getCreatedAt(),
+                question.isPremium()
         );
     }
 }

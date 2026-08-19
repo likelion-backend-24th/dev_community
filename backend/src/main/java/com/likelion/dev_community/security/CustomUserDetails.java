@@ -31,6 +31,13 @@ public class CustomUserDetails implements UserDetails {
         return nickname;
     }
 
+    // 토큰 권한에 ROLE_ADMIN이 있는지 확인. 각 컨트롤러가 같은 판별 로직을
+    // private 헬퍼로 중복 구현하던 것을 여기로 모았다.
+    public boolean isAdmin() {
+        return authorities.stream()
+                .anyMatch(authority -> authority.getAuthority().equals("ROLE_ADMIN"));
+    }
+
     @Override
     public boolean isAccountNonExpired() {
         return UserDetails.super.isAccountNonExpired();

@@ -3,11 +3,14 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getQuestion, deleteQuestion } from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
-import { toggleQuestionLike } from "../../api/likeApi";
+import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
 import AlertModal from "../../components/common/AlertModal";
+import AttachmentList from "../../components/attachment/AttachmentList";
+import AttachmentPicker from "../../components/attachment/AttachmentPicker";
+import { uploadAnswerAttachments } from "../../api/attachmentApi";
 import "../../styles/question.css";
 import "../../styles/error.css";
 
@@ -18,6 +21,8 @@ function QuestionDetailPage() {
 
   const [question, setQuestion] = useState(null);
   const [answers, setAnswers] = useState([]);
+  const [questionLiked, setQuestionLiked] = useState(false);
+  const [likedAnswerIds, setLikedAnswerIds] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notFound, setNotFound] = useState(false);
@@ -26,6 +31,8 @@ function QuestionDetailPage() {
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
   const [answerError, setAnswerError] = useState("");
   const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
+  const [answerAttachmentFiles, setAnswerAttachmentFiles] = useState([]);
+  const [answerAttachmentError, setAnswerAttachmentError] = useState("");
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
@@ -52,13 +59,25 @@ function QuestionDetailPage() {
       setError("");
       setNotFound(false);
       try {
+        // 답변 목록은 로그인한 사용자에게만 노출된다. 비로그인 상태에서는
+        // 백엔드가 401을 반환하므로 애초에 요청하지 않는다.
         const [questionData, answersData] = await Promise.all([
           getQuestion(id),
-          getAnswers(id),
+          user ? getAnswers(id) : Promise.resolve([]),
         ]);
         if (cancelled) return;
         setQuestion(questionData);
         setAnswers(answersData);
+
+        if (user) {
+          const likeStatus = await getLikeStatus(id, answersData.map((a) => a.id));
+          if (cancelled) return;
+          setQuestionLiked(likeStatus.questionLiked);
+          setLikedAnswerIds(likeStatus.likedAnswerIds);
+        } else {
+          setQuestionLiked(false);
+          setLikedAnswerIds([]);
+        }
       } catch (err) {
         if (cancelled) return;
         if (err.response?.status === 404) {
@@ -75,7 +94,7 @@ function QuestionDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [id, reloadKey]);
+  }, [id, reloadKey, user]);
 
   const handleLikeQuestion = async () => {
     try {
@@ -106,8 +125,12 @@ function QuestionDetailPage() {
     setAnswerSubmitting(true);
     setAnswerError("");
     try {
-      await createAnswer(id, answerContent);
+      const created = await createAnswer(id, answerContent);
+      if (answerAttachmentFiles.length > 0) {
+        await uploadAnswerAttachments(created.id, answerAttachmentFiles);
+      }
       setAnswerContent("");
+      setAnswerAttachmentFiles([]);
       reload();
     } catch (err) {
       setAnswerError(
@@ -199,8 +222,14 @@ function QuestionDetailPage() {
 
       <p className="question-detail__body">{question.content}</p>
 
+      <AttachmentList targetType="QUESTION" targetId={id} canDelete={canEdit} />
+
       <div className="question-detail__actions">
-        <button type="button" className="btn btn-secondary btn-sm" onClick={handleLikeQuestion}>
+        <button
+          type="button"
+          className={`btn btn-secondary btn-sm${questionLiked ? " btn-liked" : ""}`}
+          onClick={handleLikeQuestion}
+        >
           추천
         </button>
         {canEdit && (
@@ -222,43 +251,66 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <h2 className="answers-heading">답변 {answers.length}개</h2>
-      <ul className="answer-list">
-        {answers.map((answer) => (
-          <AnswerItem
-            key={answer.id}
-            answer={answer}
-            currentUser={user}
-            isAdmin={isAdmin}
-            isQuestionOwner={isOwner}
-            questionResolved={question.status === "RESOLVED"}
-            onChanged={reload}
-          />
-        ))}
-      </ul>
-
       {user ? (
-        <form className="answer-form" onSubmit={handleAnswerSubmit}>
-          <textarea
-            className="textarea"
-            value={answerContent}
-            onChange={(e) => setAnswerContent(e.target.value)}
-            placeholder="답변을 입력하세요"
-            required
-          />
-          {answerError && (
-            <p className="inline-error" role="alert">
-              {answerError}
-            </p>
-          )}
-          <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
-            {answerSubmitting ? "등록 중..." : "답변 등록"}
-          </button>
-        </form>
+        <>
+          <h2 className="answers-heading">답변 {answers.length}개</h2>
+          <ul className="answer-list">
+            {answers.map((answer) => (
+              <AnswerItem
+                key={answer.id}
+                answer={answer}
+                currentUser={user}
+                isAdmin={isAdmin}
+                isQuestionOwner={isOwner}
+                questionResolved={question.status === "RESOLVED"}
+                isLiked={likedAnswerIds.includes(answer.id)}
+                onChanged={reload}
+              />
+            ))}
+          </ul>
+
+          <form className="answer-form" onSubmit={handleAnswerSubmit}>
+            <textarea
+              className="textarea"
+              value={answerContent}
+              onChange={(e) => setAnswerContent(e.target.value)}
+              placeholder="답변을 입력하세요"
+              required
+            />
+            <AttachmentPicker
+              files={answerAttachmentFiles}
+              onChange={setAnswerAttachmentFiles}
+              error={answerAttachmentError}
+              onError={setAnswerAttachmentError}
+            />
+            {answerError && (
+              <p className="inline-error" role="alert">
+                {answerError}
+              </p>
+            )}
+            <button type="submit" className="btn btn-primary" disabled={answerSubmitting}>
+              {answerSubmitting ? "등록 중..." : "답변 등록"}
+            </button>
+          </form>
+        </>
       ) : (
-        <p className="answer-form__prompt">
-          <Link to="/login">로그인</Link> 후 답변을 작성할 수 있습니다.
-        </p>
+        <>
+          <h2 className="answers-heading">답변</h2>
+          <div className="guest-lock">
+            <div className="guest-lock__placeholder" aria-hidden="true" />
+
+            <div className="guest-lock__overlay">
+              <p className="guest-lock__message">
+                Dev_Community에 가입해서
+                <br />
+                다른 개발자들에게 도움받아 보세요!
+              </p>
+              <Link to="/login" className="btn btn-primary">
+                로그인하기
+              </Link>
+            </div>
+          </div>
+        </>
       )}
 
       {selfAnswerAlertOpen && (

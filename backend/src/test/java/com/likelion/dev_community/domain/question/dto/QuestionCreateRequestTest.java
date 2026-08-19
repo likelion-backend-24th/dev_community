@@ -31,7 +31,7 @@ class QuestionCreateRequestTest {
 
     @Test
     void title이_100자를_초과하면_검증에_실패한다() {
-        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(101), "내용", List.of());
+        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(101), "내용", List.of(), false);
 
         Set<ConstraintViolation<QuestionCreateRequest>> violations = validator.validate(request);
 
@@ -40,7 +40,7 @@ class QuestionCreateRequestTest {
 
     @Test
     void title이_100자이면_검증을_통과한다() {
-        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(100), "내용", List.of());
+        QuestionCreateRequest request = new QuestionCreateRequest("t".repeat(100), "내용", List.of(), false);
 
         Set<ConstraintViolation<QuestionCreateRequest>> violations = validator.validate(request);
 
