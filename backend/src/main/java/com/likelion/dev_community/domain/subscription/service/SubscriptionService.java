@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -56,6 +57,16 @@ public class SubscriptionService {
         return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
                 .filter(this::isStillActive)
                 .isPresent();
+    }
+
+    // 결제 취소 시 구독 해지 (CANCELLED)
+    @Transactional
+    public Optional<Subscription> cancelIfActive(Long userId) {
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .map(subscription -> {
+                    subscription.cancel();
+                    return subscription;
+                });
     }
 
     // 구독자 전용 기능 접근 체크

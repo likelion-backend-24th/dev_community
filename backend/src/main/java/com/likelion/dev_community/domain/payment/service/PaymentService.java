@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.payment.service;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.payment.dto.BillingKeyPrepareResponse;
+import com.likelion.dev_community.domain.payment.dto.PaymentCancelResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCompleteResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.ProductInfo;
@@ -20,8 +21,11 @@ import com.likelion.dev_community.domain.user.repository.UserRepository;
 import io.portone.sdk.server.common.CustomerInput;
 import io.portone.sdk.server.common.Currency;
 import io.portone.sdk.server.common.PaymentAmountInput;
+import io.portone.sdk.server.payment.CancelPaymentResponse;
+import io.portone.sdk.server.payment.CancelRequester;
 import io.portone.sdk.server.payment.PaidPayment;
 import io.portone.sdk.server.payment.PayWithBillingKeyResponse;
+import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PaymentClient;
 import io.portone.sdk.server.payment.billingkey.BillingKeyClient;
 import io.portone.sdk.server.payment.billingkey.BillingKeyInfo;
@@ -48,6 +52,7 @@ public class PaymentService {
     private final Long PREMIUM_PRICE= 4900L;
     private static final String CURRENCY = "KRW";
     private static final String SUBSCRIPTION_ORDER_NAME = "프리미엄 구독 정기결제";
+    private static final long CANCELLABLE_DAYS = 7; // 결제 취소(환불) 가능 기간
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -261,5 +266,78 @@ public class PaymentService {
         }
 
         verifyAndMarkPayment(payment, payment.getOrder());
+    }
+
+    // 가장 최근 결제완료 건 조회
+    @Transactional
+    public PaymentCompleteResponse getLatestPaidPayment(Long userId) {
+        return paymentRepository.findFirstByOrder_User_IdAndStatusOrderByPaidAtDesc(userId, PaymentStatus.PAID)
+                .map(payment -> PaymentCompleteResponse.of(payment.getPaymentId(), payment.getOrder().getPlanType(), payment.getStatus(), payment.getPaidAt()))
+                .orElse(null);
+    }
+
+    // 결제 취소 (환불) - 본인 PAID 결제 건을 결제일로부터 CANCELLABLE_DAYS 이내에 취소
+    @Transactional(noRollbackFor = CustomException.class)
+    public PaymentCancelResponse cancelPayment(String paymentId, Long userId, String reason) {
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+
+        Order order = payment.getOrder();
+
+        if (!order.getUser().getId().equals(userId)) {
+            throw new CustomException(ErrorCode.FORBIDDEN, "본인 결제만 취소할 수 있습니다.");
+        }
+
+        if (payment.getStatus() != PaymentStatus.PAID) {
+            throw new CustomException(ErrorCode.PAYMENT_NOT_CANCELLABLE, "결제 완료 상태 건만 취소할 수 있습니다.");
+        }
+
+        if (payment.getPaidAt() == null || payment.getPaidAt().isBefore(LocalDateTime.now().minusDays(CANCELLABLE_DAYS))) {
+            throw new CustomException(ErrorCode.PAYMENT_NOT_CANCELLABLE, "결제일로부터 " + CANCELLABLE_DAYS + "일이 지나 취소할 수 없습니다.");
+        }
+
+        CancelPaymentResponse response;
+        try {
+            response = paymentClient.cancelPayment(
+                    payment.getPaymentId(), null, null, null, reason,
+                    CancelRequester.Customer.INSTANCE, null, null, null, null, null
+            ).join();
+        } catch (CompletionException e) {
+            log.warn("PortOne 결제 취소 실패: paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
+        }
+
+        LocalDateTime cancelledAt = extractCancelledAt(response);
+        payment.cancel(cancelledAt, reason);
+        order.cancel();
+
+        cancelSubscriptionAndSchedule(order.getUser());
+
+        return PaymentCancelResponse.of(payment.getPaymentId(), payment.getStatus(), cancelledAt, reason);
+    }
+
+    private LocalDateTime extractCancelledAt(CancelPaymentResponse response) {
+        if (response.getCancellation() instanceof PaymentCancellation.Recognized recognized) {
+            return LocalDateTime.ofInstant(recognized.getCancelledAt(), ZoneId.systemDefault());
+        }
+        return LocalDateTime.now();
+    }
+
+    // 구독 즉시 해지 + 예약된 다음 회차 결제 취소
+    private void cancelSubscriptionAndSchedule(User user) {
+        subscriptionService.cancelIfActive(user.getId())
+                .filter(subscription -> subscription.getBillingKey() != null)
+                .ifPresent(subscription -> paymentRepository.findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(user.getId(), PaymentStatus.READY)
+                        .ifPresent(nextPayment -> {
+                            try {
+                                paymentScheduleClient.revokePaymentSchedules(
+                                        subscription.getBillingKey(), List.of(nextPayment.getPaymentId())
+                                ).join();
+                            } catch (CompletionException e) {
+                                log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", user.getId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+                            }
+                            nextPayment.cancel(LocalDateTime.now(), "구독 해지로 인한 예약 결제 취소");
+                            nextPayment.getOrder().cancel();
+                        }));
     }
 }
