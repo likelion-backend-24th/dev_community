@@ -44,6 +44,15 @@ function LoginPage() {
     }
   };
 
+  // GitHub 인증 화면으로 리다이렉트. 콜백은 GitHub OAuth App에 등록한
+  // "/login/oauth2/code/github" 경로로 돌아오고, 그 라우트(OAuthCallbackPage)가 나머지를 처리함
+  const handleGithubLogin = () => {
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    const redirectUri = `${window.location.origin}/login/oauth2/code/github`;
+    const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:user`;
+    window.location.href = url;
+  };
+
   return (
     <div className="auth-page">
       <AuthHeader />
@@ -97,6 +106,19 @@ function LoginPage() {
               {submitting ? "로그인 중..." : "로그인"}
             </button>
           </form>
+
+          <div className="auth-divider">
+            <span>또는</span>
+          </div>
+
+          <button
+            type="button"
+            className="auth-oauth-btn"
+            onClick={handleGithubLogin}
+          >
+            <i className="ti ti-brand-github" aria-hidden="true"></i>
+            GitHub로 로그인
+          </button>
 
           <div className="auth-links">
             <p className="auth-links__muted">

@@ -222,3 +222,51 @@
 .auth-links__muted a {
   margin-left: var(--space-xs);
 }
+
+/* GitHub 로그인 구분선 */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin: var(--space-lg) 0;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.auth-divider span {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* GitHub 로그인 버튼 */
+.auth-oauth-btn {
+  width: 100%;
+  min-height: 38px;
+  background: var(--input-bg);
+  color: var(--text-normal);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2px var(--space-base);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.auth-oauth-btn:hover {
+  background: var(--surface-hover);
+}
+
+.auth-oauth-btn i {
+  font-size: 18px;
+}
