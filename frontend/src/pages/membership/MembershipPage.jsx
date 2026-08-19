@@ -4,6 +4,8 @@ import { getMySubscription } from "../../api/subscriptionApi";
 import {
   prepareBillingKeyIssue,
   issueBillingKey,
+  getLatestPaidPayment,
+  cancelPayment,
   PAYMENT_WEBHOOK_URL,
 } from "../../api/paymentApi";
 import "../../styles/membership.css";
@@ -142,39 +144,59 @@ const FAQ_ITEMS = [
     q: "자동으로 매달 갱신되나요?",
     a: "네, 자동결제예요. 구독 시 등록한 카드로 30일마다 자동으로 결제되어 구독이 이어져요.",
   },
+  {
+    q: "구독을 취소하고 싶어요. 환불되나요?",
+    a: "결제일로부터 7일 이내의 결제 건은 멤버십 페이지에서 직접 취소(환불) 요청할 수 있어요. 취소하면 구독이 즉시 해지되고, 예약된 다음 회차 자동결제도 함께 취소돼요. 7일이 지난 결제 건은 취소할 수 없어요.",
+  },
+  {
+    q: "회원 탈퇴하면 구독은 어떻게 되나요?",
+    a: "탈퇴 즉시 구독이 해지되고, 예약된 다음 회차 자동결제도 함께 취소돼요. 이미 결제한 금액은 자동 환불되지 않으니, 환불을 원하시면 탈퇴 전에 결제 취소(7일 이내)를 먼저 진행해주세요.",
+  },
 ];
 
 function MembershipPage() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState(null);
+  const [latestPayment, setLatestPayment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [paying, setPaying] = useState(false);
   const [justCompleted, setJustCompleted] = useState(false);
+  const [justCancelled, setJustCancelled] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [showCancelForm, setShowCancelForm] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
-    let cancelled = false;
+    let cancelledEffect = false;
 
     const fetchSubscription = async () => {
       setLoading(true);
       try {
-        const res = await getMySubscription();
-        if (!cancelled) setSubscription(res);
+        const subRes = await getMySubscription();
+        if (!cancelledEffect) setSubscription(subRes);
       } catch (err) {
-        if (!cancelled) {
+        if (!cancelledEffect) {
           setError(
             err.response?.data?.message ?? "구독 정보를 불러오지 못했습니다.",
           );
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelledEffect) setLoading(false);
+      }
+
+      try {
+        const paymentRes = await getLatestPaidPayment();
+        if (!cancelledEffect) setLatestPayment(paymentRes);
+      } catch {
+        // ignore
       }
     };
 
     fetchSubscription();
     return () => {
-      cancelled = true;
+      cancelledEffect = true;
     };
   }, []);
 
@@ -226,6 +248,40 @@ function MembershipPage() {
     }
   };
 
+  const handleCancelSubscription = async () => {
+    if (!latestPayment || !cancelReason.trim()) return;
+
+    setError("");
+    setCancelling(true);
+    try {
+      await cancelPayment(latestPayment.paymentId, cancelReason.trim());
+
+      setShowCancelForm(false);
+      setCancelReason("");
+      setJustCancelled(true);
+      setJustCompleted(false);
+
+      try {
+        setSubscription(await getMySubscription());
+      } catch {
+        // ignore
+      }
+      try {
+        setLatestPayment(await getLatestPaidPayment());
+      } catch {
+        // ignore
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message ??
+          err.message ??
+          "결제 취소 중 오류가 발생했습니다.",
+      );
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   return (
     <div className="page membership-page">
       <header className="membership-hero">
@@ -245,6 +301,13 @@ function MembershipPage() {
             <div className="banner">
               <CheckIcon />
               결제가 완료됐어요. 이제 프리미엄 게시판을 이용할 수 있어요.
+            </div>
+          )}
+
+          {justCancelled && (
+            <div className="banner banner--neutral">
+              <CheckIcon />
+              결제가 취소되고 구독이 해지됐어요.
             </div>
           )}
 
@@ -330,10 +393,21 @@ function MembershipPage() {
 
               <div className="plan-card__foot">
                 {isSubscribed ? (
-                  <span className="plan-card__badge">
-                    <CheckIcon />
-                    구독 중 · {subscription.expiresAt?.slice(0, 10)}까지
-                  </span>
+                  <div className="plan-card__subscribed">
+                    <span className="plan-card__badge">
+                      <CheckIcon />
+                      구독 중 · {subscription.expiresAt?.slice(0, 10)}까지
+                    </span>
+                    {latestPayment && !showCancelForm && (
+                      <button
+                        type="button"
+                        className="btn btn-ghost cancel-trigger"
+                        onClick={() => setShowCancelForm(true)}
+                      >
+                        결제 취소 / 구독 해지
+                      </button>
+                    )}
+                  </div>
                 ) : (
                   <button
                     type="button"
@@ -345,6 +419,43 @@ function MembershipPage() {
                   </button>
                 )}
               </div>
+
+              {isSubscribed && showCancelForm && (
+                <div className="cancel-panel">
+                  <p className="cancel-panel__desc">
+                    결제일로부터 7일 이내의 결제만 취소(환불)할 수 있어요.
+                    취소하면 프리미엄 이용이 즉시 종료돼요.
+                  </p>
+                  <textarea
+                    className="textarea cancel-panel__textarea"
+                    placeholder="취소 사유를 입력해주세요"
+                    value={cancelReason}
+                    onChange={(e) => setCancelReason(e.target.value)}
+                    disabled={cancelling}
+                  />
+                  <div className="cancel-panel__actions">
+                    <button
+                      type="button"
+                      className="btn btn-ghost"
+                      onClick={() => {
+                        setShowCancelForm(false);
+                        setCancelReason("");
+                      }}
+                      disabled={cancelling}
+                    >
+                      닫기
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      onClick={handleCancelSubscription}
+                      disabled={cancelling || !cancelReason.trim()}
+                    >
+                      {cancelling ? "처리 중..." : "결제 취소 및 해지"}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

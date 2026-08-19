@@ -1,6 +1,7 @@
 package com.likelion.dev_community.domain.payment.repository;
 
 import com.likelion.dev_community.domain.payment.entity.payment.Payment;
+import com.likelion.dev_community.domain.payment.entity.payment.PaymentStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -16,4 +17,10 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select p from Payment p where p.paymentId = :paymentId")
     Optional<Payment> findByPaymentIdForUpdate(@Param("paymentId") String paymentId);
+
+    // 정기결제 취소 시 예약된 다음 회차 결제 건 조회
+    Optional<Payment> findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(Long userId, PaymentStatus status);
+
+    // 마이페이지에서 취소 가능한(가장 최근 결제완료) 건 조회
+    Optional<Payment> findFirstByOrder_User_IdAndStatusOrderByPaidAtDesc(Long userId, PaymentStatus status);
 }

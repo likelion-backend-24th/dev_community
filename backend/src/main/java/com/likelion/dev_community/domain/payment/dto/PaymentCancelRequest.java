@@ -1,0 +1,12 @@
+package com.likelion.dev_community.domain.payment.dto;
+
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class PaymentCancelRequest {
+    @NotBlank(message = "취소 사유를 입력해주세요.")
+    private final String reason;
+}

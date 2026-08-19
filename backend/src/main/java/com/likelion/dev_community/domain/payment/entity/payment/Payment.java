@@ -35,6 +35,8 @@ public class Payment extends BaseTimeEntity { // 결제 이력 저장 테이블
 
     private LocalDateTime cancelledAt;
 
+    private String cancelReason;
+
     @Builder
     public Payment(Order order, String paymentId) {
         this.order = order;
@@ -59,8 +61,9 @@ public class Payment extends BaseTimeEntity { // 결제 이력 저장 테이블
         this.status = PaymentStatus.FAILED;
     }
 
-    public void cancel(LocalDateTime cancelledAt) {
+    public void cancel(LocalDateTime cancelledAt, String cancelReason) {
         this.status = PaymentStatus.CANCELLED;
         this.cancelledAt = cancelledAt;
+        this.cancelReason = cancelReason;
     }
 }
