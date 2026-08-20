@@ -5,6 +5,8 @@ import client from "../api/client";
 import { reissue } from "../api/authApi";
 import { decodeToken } from "../utils/jwt";
 
+let refreshPromise = null;
+
 export function AuthProvider({ children }) {
   const [accessToken, setAccessToken] = useState(() =>
     localStorage.getItem("accessToken"),
@@ -22,8 +24,6 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    let refreshPromise = null;
-
     const redirectToLogin = () => {
       logout();
       navigate("/401", {

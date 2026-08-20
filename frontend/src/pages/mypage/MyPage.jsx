@@ -30,23 +30,41 @@ function MyPage() {
   const [toast, setToast] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
+    const fetchOnce = async () => {
+      const [info, myQuestions] = await Promise.all([
+        getMyInfo(),
+        getMyQuestions(),
+      ]);
+      const myAnswers = await getMyAnswers();
+      return { info, myQuestions, myAnswers };
+    };
+
     (async () => {
+      setLoading(true);
       try {
-        const [info, myQuestions] = await Promise.all([
-          getMyInfo(),
-          getMyQuestions(),
-        ]);
-        setProfile(info);
-        setQuestions(myQuestions);
-        const myAnswers = await getMyAnswers();
-        setAnswers(myAnswers);
-        setAnswerCount(myAnswers.length);
+        let result;
+        try {
+          result = await fetchOnce();
+        } catch {
+          result = await fetchOnce();
+        }
+        if (cancelled) return;
+        setProfile(result.info);
+        setQuestions(result.myQuestions);
+        setAnswers(result.myAnswers);
+        setAnswerCount(result.myAnswers.length);
       } catch {
-        setError("마이페이지 정보를 불러오지 못했습니다.");
+        if (!cancelled) setError("마이페이지 정보를 불러오지 못했습니다.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleTabClick = async (tab) => {
@@ -85,20 +103,34 @@ function MyPage() {
           <p className="profile-card__joined">
             가입일 {profile.createdAt.slice(0, 10)}
           </p>
-          <p className="profile-card__reputation">평판 {profile.reputation}점</p>
+          <p className="profile-card__reputation">
+            평판 {profile.reputation}점
+          </p>
         </div>
         <div className="profile-card__actions">
           <Link to="/dashboard" className="btn btn-secondary btn-sm">
             내 활동 대시보드
           </Link>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditInfoOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setEditInfoOpen(true)}
+          >
             내 정보 수정
           </button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setPasswordModalOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setPasswordModalOpen(true)}
+          >
             비밀번호 변경
           </button>
           {!isAdmin && (
-            <button type="button" className="btn btn-destructive btn-sm" onClick={() => setWithdrawModalOpen(true)}>
+            <button
+              type="button"
+              className="btn btn-destructive btn-sm"
+              onClick={() => setWithdrawModalOpen(true)}
+            >
               회원 탈퇴
             </button>
           )}
@@ -139,11 +171,15 @@ function MyPage() {
             {questions.map((q) => (
               <li key={q.id}>
                 <Link to={`/questions/${q.id}`} className="mypage-list__item">
-                  <span className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}>
+                  <span
+                    className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
+                  >
                     {STATUS_LABEL[q.status] ?? q.status}
                   </span>
                   <span className="mypage-list__title">{q.title}</span>
-                  <span className="mypage-list__date">{new Date(q.createdAt).toLocaleString()}</span>
+                  <span className="mypage-list__date">
+                    {new Date(q.createdAt).toLocaleString()}
+                  </span>
                 </Link>
               </li>
             ))}
@@ -157,17 +193,28 @@ function MyPage() {
         <ul className="mypage-list">
           {answers.map((a) => (
             <li key={a.id}>
-              <Link to={`/questions/${a.questionId}`} className="mypage-list__item">
-                {a.adopted && <span className="badge badge-resolved">채택됨</span>}
+              <Link
+                to={`/questions/${a.questionId}`}
+                className="mypage-list__item"
+              >
+                {a.adopted && (
+                  <span className="badge badge-resolved">채택됨</span>
+                )}
                 <span className="mypage-list__title">{a.content}</span>
-                <span className="mypage-list__date">{new Date(a.createdAt).toLocaleString()}</span>
+                <span className="mypage-list__date">
+                  {new Date(a.createdAt).toLocaleString()}
+                </span>
               </Link>
             </li>
           ))}
         </ul>
       )}
 
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
 
       {editInfoOpen && (
         <EditInfoModal
@@ -253,7 +300,12 @@ function EditInfoModal({ initialNickname, onClose, onSaved }) {
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             취소
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleSave} disabled={submitting}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={submitting}
+          >
             {submitting ? "저장 중..." : "수정"}
           </button>
         </div>
@@ -281,7 +333,9 @@ function PasswordModal({ onClose, onSaved }) {
       if (err.response?.data?.code === "INVALID_CREDENTIALS") {
         setError("비밀번호가 일치하지 않습니다.");
       } else {
-        setError(err.response?.data?.message ?? "비밀번호 변경에 실패했습니다.");
+        setError(
+          err.response?.data?.message ?? "비밀번호 변경에 실패했습니다.",
+        );
       }
     } finally {
       setSubmitting(false);
@@ -325,7 +379,12 @@ function PasswordModal({ onClose, onSaved }) {
           <button type="button" className="btn btn-ghost" onClick={onClose}>
             취소
           </button>
-          <button type="button" className="btn btn-primary" onClick={handleSave} disabled={submitting}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={handleSave}
+            disabled={submitting}
+          >
             {submitting ? "저장 중..." : "저장"}
           </button>
         </div>
@@ -367,8 +426,8 @@ function WithdrawModal({ onClose, onConfirmed, provider }) {
         </div>
         <div className="modal__body">
           <p className="modal__desc">
-            탈퇴하면 로그인할 수 없게 됩니다. 작성한 질문과 답변은 삭제되지
-            않고 "탈퇴한 사용자"로 표시되어 남습니다.
+            탈퇴하면 로그인할 수 없게 됩니다. 작성한 질문과 답변은 삭제되지 않고
+            "탈퇴한 사용자"로 표시되어 남습니다.
           </p>
 
           {isLocal && (
@@ -385,14 +444,26 @@ function WithdrawModal({ onClose, onConfirmed, provider }) {
           )}
 
           {error && (
-            <p className="inline-error" role="alert">{error}</p>
+            <p className="inline-error" role="alert">
+              {error}
+            </p>
           )}
         </div>
         <div className="modal__footer">
-          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={onClose}
+            disabled={submitting}
+          >
             취소
           </button>
-          <button type="button" className="btn btn-destructive" onClick={handleConfirm} disabled={submitting}>
+          <button
+            type="button"
+            className="btn btn-destructive"
+            onClick={handleConfirm}
+            disabled={submitting}
+          >
             {submitting ? "처리 중..." : "탈퇴"}
           </button>
         </div>
