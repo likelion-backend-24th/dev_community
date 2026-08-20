@@ -16,6 +16,10 @@ import ExpertBadge from "../../components/common/ExpertBadge";
 import AttachmentList from "../../components/attachment/AttachmentList";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
 import { uploadAnswerAttachments } from "../../api/attachmentApi";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
+
 import "../../styles/question.css";
 import "../../styles/error.css";
 
@@ -284,7 +288,9 @@ function QuestionDetailPage() {
       <div className="question-detail__meta">
         <span className="author-with-badge">
           {question.authorNickname}
-          {question.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+          {question.authorIsExpert && (
+            <ExpertBadge className="expert-badge--sm" />
+          )}
         </span>
         <span>조회 {question.viewCount}</span>
         <span>추천 {question.likeCount}</span>
@@ -358,7 +364,14 @@ function QuestionDetailPage() {
           isAdmin={isAdmin}
         />
       ) : (
-        <p className="question-detail__body">{question.content}</p>
+        <div className="question-detail__body markdown-body">
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            rehypePlugins={[rehypeHighlight]}
+          >
+            {question.content}
+          </ReactMarkdown>
+        </div>
       )}
 
       <AttachmentList targetType="QUESTION" targetId={id} canDelete={canEdit} />
@@ -415,7 +428,9 @@ function QuestionDetailPage() {
             </p>
           ) : (
             <form className="answer-form" onSubmit={handleOpenChat}>
-              <p className="state-text state-text--plain">1:1 채팅으로 답변해 보세요</p>
+              <p className="state-text state-text--plain">
+                1:1 채팅으로 답변해 보세요
+              </p>
               <textarea
                 className="textarea"
                 value={chatContent}
