@@ -116,4 +116,15 @@ public class QuestionController {
 
         return ResponseEntity.noContent().build();
     }
+
+    // 질문 글 AI 요약 (멤버십 구독자 전용)
+    @GetMapping("/{id}/summary")
+    public ResponseEntity<ApiResponse<String>> getSummary(
+            @PathVariable Long id,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        String summary = questionService.getSummary(id, userDetails.getId(), userDetails.isAdmin());
+
+        return ResponseEntity.ok(ApiResponse.success(summary));
+    }
 }

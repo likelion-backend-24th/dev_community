@@ -39,3 +39,7 @@ portone:
   channel-key: ${PORTONE_CHANNEL_KEY}
   webhook-secret: ${PORTONE_WEBHOOK_SECRET}
   webhook-notice-url: ${PORTONE_WEBHOOK_NOTICE_URL:}
+
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  model: gemini-3.6-flash
