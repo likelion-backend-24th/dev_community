@@ -7,6 +7,7 @@ import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
+import CodeReviewBody from "../../components/question/CodeReviewBody";
 import AlertModal from "../../components/common/AlertModal";
 import AttachmentList from "../../components/attachment/AttachmentList";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
@@ -244,7 +245,15 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <p className="question-detail__body">{question.content}</p>
+      {question.type === "CODE_REVIEW" ? (
+        <CodeReviewBody
+          questionId={id}
+          content={question.content}
+          canComment={Boolean(user)}
+        />
+      ) : (
+        <p className="question-detail__body">{question.content}</p>
+      )}
 
       <AttachmentList targetType="QUESTION" targetId={id} canDelete={canEdit} />
 
