@@ -16,6 +16,7 @@ import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
+import com.likelion.dev_community.domain.question.repository.CodeCommentRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.question.repository.TagRepository;
@@ -79,6 +80,9 @@ class QuestionServiceImplTest {
     private ChatRoomRepository chatRoomRepository;
 
     @Mock
+    private CodeCommentRepository codeCommentRepository;
+
+    @Mock
     private GeminiClient geminiClient;
 
     private QuestionServiceImpl questionService;
@@ -87,7 +91,8 @@ class QuestionServiceImplTest {
     void setUp() {
         questionService = new QuestionServiceImpl(
                 questionRepository, questionTagRepository, answerRepository, userRepository,
-                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository, geminiClient
+                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository,
+                codeCommentRepository, geminiClient
         );
     }
 
