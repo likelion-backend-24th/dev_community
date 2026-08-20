@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.question.controller;
 import com.likelion.dev_community.common.ApiResponse;
 import com.likelion.dev_community.domain.question.dto.CodeCommentRequest;
 import com.likelion.dev_community.domain.question.dto.CodeCommentResponse;
+import com.likelion.dev_community.domain.question.dto.CodeCommentUpdateRequest;
 import com.likelion.dev_community.domain.question.service.CodeCommentService;
 import com.likelion.dev_community.security.CustomUserDetails;
 import jakarta.validation.Valid;
@@ -40,5 +41,24 @@ public class CodeCommentController {
         List<CodeCommentResponse> response = codeCommentService.readComments(userId, isAdmin, questionId);
 
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @PutMapping("/{commentId}")
+    public ResponseEntity<ApiResponse<CodeCommentResponse>> updateComment(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                                                          @PathVariable Long questionId,
+                                                                          @PathVariable Long commentId,
+                                                                          @Valid @RequestBody CodeCommentUpdateRequest request) {
+        CodeCommentResponse response = codeCommentService.updateComment(userDetails.getId(), userDetails.isAdmin(), questionId, commentId, request);
+
+        return ResponseEntity.ok(ApiResponse.success("코드 코멘트 수정 완료", response));
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                              @PathVariable Long questionId,
+                                              @PathVariable Long commentId) {
+        codeCommentService.deleteComment(userDetails.getId(), userDetails.isAdmin(), questionId, commentId);
+
+        return ResponseEntity.noContent().build();
     }
 }

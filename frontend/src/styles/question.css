@@ -464,3 +464,30 @@
   gap: var(--space-sm);
   margin-top: var(--space-sm);
 }
+
+.code-review-thread__item-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.code-review-thread__item-action {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.code-review-thread__item-action:hover {
+  color: var(--text-link);
+}
+
+.code-review-thread__edit-form {
+  cursor: default;
+}
+
+.code-review-thread__edit-form .textarea {
+  width: 100%;
+  resize: vertical;
+}

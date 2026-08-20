@@ -250,6 +250,8 @@ function QuestionDetailPage() {
           questionId={id}
           content={question.content}
           canComment={Boolean(user)}
+          currentUserId={user?.id}
+          isAdmin={isAdmin}
         />
       ) : (
         <p className="question-detail__body">{question.content}</p>
