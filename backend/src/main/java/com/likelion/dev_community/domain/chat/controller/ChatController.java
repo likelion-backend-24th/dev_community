@@ -65,6 +65,17 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    // 채팅방을 이미 보고 있는 상태에서 실시간으로 새 메시지가 온 경우, 그 메시지도 곧바로 읽음 처리
+    @PatchMapping("/api/chat-rooms/{roomId}/read")
+    public ResponseEntity<ApiResponse<Void>> markChatRoomRead(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Long roomId
+    ) {
+        chatService.markRoomRead(userDetails.getId(), roomId);
+
+        return ResponseEntity.ok(ApiResponse.success());
+    }
+
     @PostMapping("/api/chat-rooms/{roomId}/messages")
     public ResponseEntity<ApiResponse<ChatMessageResponse>> sendMessage(
             @AuthenticationPrincipal CustomUserDetails userDetails,

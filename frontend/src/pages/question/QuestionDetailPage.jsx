@@ -213,7 +213,10 @@ function QuestionDetailPage() {
 
   return (
     <div className="page">
-      <Link to="/questions" className="back-link">
+      <Link
+        to={question.premium ? "/questions/premium" : "/questions"}
+        className="back-link"
+      >
         ← 목록으로
       </Link>
 
@@ -332,6 +335,10 @@ function QuestionDetailPage() {
             >
               채팅으로 이동
             </Link>
+          ) : question.status === "RESOLVED" ? (
+            <p className="state-text state-text--plain">
+              이미 채택된 답변이 있어 해결된 질문이에요.
+            </p>
           ) : (
             <form className="answer-form" onSubmit={handleOpenChat}>
               <p className="state-text state-text--plain">1:1 채팅으로 답변해 보세요</p>

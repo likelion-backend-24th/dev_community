@@ -34,3 +34,7 @@ export async function getUnreadChatRoomCount() {
   const res = await client.get('/api/chat-rooms/unread-count')
   return res.data.data
 }
+
+export async function markChatRoomRead(roomId) {
+  await client.patch(`/api/chat-rooms/${roomId}/read`)
+}
