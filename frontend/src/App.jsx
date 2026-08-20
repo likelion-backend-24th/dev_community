@@ -1,6 +1,8 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
+import FloatingWriteButton from "./components/layout/FloatingWriteButton";
+import { useAuth } from "./hooks/useAuth";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
 import LoginPage from "./pages/auth/LoginPage";
@@ -30,9 +32,17 @@ const NO_NAVBAR_PATHS = [
   "/oauth/nickname",
 ];
 
+const NO_FLOATING_WRITE_BUTTON_PATHS = ["/questions/new"];
+
 function App() {
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const showNavbar = !NO_NAVBAR_PATHS.includes(location.pathname);
+  const showFloatingWriteButton =
+    showNavbar &&
+    isAuthenticated &&
+    !NO_FLOATING_WRITE_BUTTON_PATHS.includes(location.pathname) &&
+    !location.pathname.endsWith("/edit");
 
   return (
     <div className="app-shell">
@@ -72,6 +82,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+      {showFloatingWriteButton && <FloatingWriteButton />}
       <Footer />
     </div>
   );
