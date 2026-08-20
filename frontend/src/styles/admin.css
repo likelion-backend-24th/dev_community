@@ -7,6 +7,20 @@
   margin-bottom: var(--space-xl);
 }
 
+.select-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.select-group label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+}
+
 .table-wrap {
   background: var(--surface-secondary);
   border-radius: var(--radius-md);
@@ -47,6 +61,18 @@
 
 .table tbody tr:hover {
   background: var(--surface-hover);
+}
+
+.table-row--clickable {
+  cursor: pointer;
+}
+
+.badge--spaced {
+  margin-left: var(--space-xs);
+}
+
+.stat-grid--admin {
+  grid-template-columns: repeat(5, 1fr);
 }
 
 .table a {

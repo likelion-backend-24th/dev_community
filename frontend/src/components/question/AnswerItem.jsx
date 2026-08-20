@@ -8,6 +8,7 @@ import {
 import { toggleAnswerLike } from '../../api/likeApi'
 import ReportButton from './ReportButton'
 import AttachmentList from '../attachment/AttachmentList'
+import ExpertBadge from '../common/ExpertBadge'
 import '../../styles/question.css'
 
 function AnswerItem({
@@ -98,7 +99,10 @@ function AnswerItem({
       )}
 
       <div className="answer-card__meta">
-        <span>{answer.authorNickname}</span>
+        <span className="author-with-badge">
+          {answer.authorNickname}
+          {answer.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+        </span>
         <span>추천 {answer.likeCount}</span>
         <span>{new Date(answer.createdAt).toLocaleString()}</span>
       </div>

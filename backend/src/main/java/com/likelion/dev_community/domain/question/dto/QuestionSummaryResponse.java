@@ -16,6 +16,7 @@ public class QuestionSummaryResponse {
     private final Long id;
     private final String title;
     private final String authorNickname;
+    private final boolean authorIsExpert;
     private final QuestionStatus status;
 
     private final int viewCount;
@@ -34,6 +35,7 @@ public class QuestionSummaryResponse {
                 question.getId(),
                 question.getTitle(),
                 question.isAnonymous() ? "익명" : question.getAuthor().getDisplayNickname(),
+                !question.isAnonymous() && question.getAuthor().isExpert(),
                 question.getStatus(),
                 question.getViewCount(),
                 question.getLikeCount(),

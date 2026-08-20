@@ -3,6 +3,8 @@ package com.likelion.dev_community.domain.user.repository;
 import com.likelion.dev_community.domain.user.entity.AuthProvider;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
@@ -17,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByProviderAndProviderId(AuthProvider provider, String providerId);
 
     Optional<User> findByIdAndStatus(Long id, UserStatus status);
+
+    Page<User> findAllByExpertRequestedTrue(Pageable pageable);
 }

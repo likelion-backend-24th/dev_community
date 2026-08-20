@@ -6,6 +6,7 @@ import com.likelion.dev_community.common.viewcount.ViewCountService;
 import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
+import com.likelion.dev_community.domain.chat.repository.ChatRoomRepository;
 import com.likelion.dev_community.domain.question.dto.QuestionCreateRequest;
 import com.likelion.dev_community.domain.question.dto.QuestionResponse;
 import com.likelion.dev_community.domain.question.dto.QuestionSummaryResponse;
@@ -73,13 +74,16 @@ class QuestionServiceImplTest {
     @Mock
     private SubscriptionService subscriptionService;
 
+    @Mock
+    private ChatRoomRepository chatRoomRepository;
+
     private QuestionServiceImpl questionService;
 
     @BeforeEach
     void setUp() {
         questionService = new QuestionServiceImpl(
                 questionRepository, questionTagRepository, answerRepository, userRepository,
-                new XssSanitizer(), viewCountService, tagRepository, subscriptionService
+                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository
         );
     }
 

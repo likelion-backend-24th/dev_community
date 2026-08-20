@@ -16,6 +16,7 @@ public class QuestionDetailResponse {
     private final Long id;
     private final Long authorId;
     private final String authorNickname;
+    private final boolean authorIsExpert;
 
     private final String title;
     private final String content;
@@ -30,12 +31,19 @@ public class QuestionDetailResponse {
     private final boolean isAnonymous;
 
     private final QuestionType type;
+    private final boolean typeLocked;
+    private final Long myChatRoomId;
 
     public static QuestionDetailResponse of(Question question, List<String> tags) {
+        return of(question, tags, null);
+    }
+
+    public static QuestionDetailResponse of(Question question, List<String> tags, Long myChatRoomId) {
         return new QuestionDetailResponse(
                 question.getId(),
                 question.getAuthor().getId(),
                 question.isAnonymous() ? "익명" : question.getAuthor().getDisplayNickname(),
+                !question.isAnonymous() && question.getAuthor().isExpert(),
                 question.getTitle(),
                 question.getContent(),
                 question.getStatus(),
@@ -45,7 +53,9 @@ public class QuestionDetailResponse {
                 question.getCreatedAt(),
                 question.isPremium(),
                 question.isAnonymous(),
-                question.getType()
+                question.getType(),
+                question.isTypeLocked(),
+                myChatRoomId
         );
     }
 }

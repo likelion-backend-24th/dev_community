@@ -94,4 +94,12 @@ public class UserController {
 
         return ResponseEntity.ok(ApiResponse.success("내 답변 목록 조회 성공", myAnswers.getContent(), meta));
     }
+
+    // 마이페이지 - 전문가 등급 신청
+    @PostMapping("/me/expert-request")
+    public ResponseEntity<ApiResponse<UserInfoResponse>> requestExpert(@AuthenticationPrincipal CustomUserDetails customUserDetails){
+        UserInfoResponse userInfo = userService.requestExpert(customUserDetails.getId());
+
+        return ResponseEntity.ok(ApiResponse.success("전문가 등급 신청이 접수되었습니다", userInfo));
+    }
 }

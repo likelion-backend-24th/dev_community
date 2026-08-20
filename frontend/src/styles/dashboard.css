@@ -86,10 +86,6 @@
   color: var(--text-muted);
 }
 
-.state-text--plain::before {
-  content: none;
-}
-
 .stat-card .recharts-bar-rectangle,
 .stat-card .recharts-bar-rectangle * {
   cursor: default;

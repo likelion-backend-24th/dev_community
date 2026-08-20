@@ -8,6 +8,8 @@ import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.answer.repository.QuestionAnswerCount;
+import com.likelion.dev_community.domain.chat.entity.ChatRoom;
+import com.likelion.dev_community.domain.chat.repository.ChatRoomRepository;
 import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionSortType;
@@ -45,6 +47,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final ViewCountService viewCountService;
     private final TagRepository tagRepository;
     private final SubscriptionService subscriptionService;
+    private final ChatRoomRepository chatRoomRepository;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
 
@@ -188,7 +191,17 @@ public class QuestionServiceImpl implements QuestionService {
                 .map(qt -> qt.getTag().getName())
                 .toList();
 
-        return QuestionDetailResponse.of(question, tags);
+        // 커리어상담 글에서 (글 작성자가 아닌) 로그인 사용자가 이미 채팅을 열어둔 상태라면
+        // 프론트가 "채팅으로 이동" 버튼을 보여줄 수 있도록 방 id를 함께 내려준다.
+        Long myChatRoomId = null;
+        if (userId != null && question.getType() == QuestionType.CAREER_CONSULT
+                && !question.getAuthor().getId().equals(userId)) {
+            myChatRoomId = chatRoomRepository.findByQuestionIdAndAnswererId(questionId, userId)
+                    .map(ChatRoom::getId)
+                    .orElse(null);
+        }
+
+        return QuestionDetailResponse.of(question, tags, myChatRoomId);
     }
 
     // F-09 (수정)

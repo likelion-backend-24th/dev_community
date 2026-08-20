@@ -4,6 +4,7 @@ import { getPremiumQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import { TYPE_LABEL } from "../../constants/questionType";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
+import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -167,14 +168,16 @@ function PremiumQuestionListPage() {
                 >
                   {q.title}
                 </Link>
-                <span className="badge badge-type">
-                  {TYPE_LABEL[q.type] ?? q.type}
-                </span>
-                <span
-                  className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
-                >
-                  {STATUS_LABEL[q.status] ?? q.status}
-                </span>
+                <div className="question-card__badges">
+                  <span className="badge badge-type">
+                    {TYPE_LABEL[q.type] ?? q.type}
+                  </span>
+                  <span
+                    className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
+                  >
+                    {STATUS_LABEL[q.status] ?? q.status}
+                  </span>
+                </div>
               </div>
 
               <div className="question-card__tags">
@@ -190,7 +193,10 @@ function PremiumQuestionListPage() {
               </div>
 
               <div className="question-card__meta">
-                <span>{q.authorNickname}</span>
+                <span className="author-with-badge">
+                  {q.authorNickname}
+                  {q.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+                </span>
                 <span>조회 {q.viewCount}</span>
                 <span>추천 {q.likeCount}</span>
                 <span>답변 {q.answerCount}</span>
