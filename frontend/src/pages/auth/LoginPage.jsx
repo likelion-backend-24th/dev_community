@@ -14,7 +14,9 @@ function LoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(
-    location.state?.signupSuccess ? "회원가입이 완료되었습니다." : "",
+    location.state?.signupSuccess
+      ? "회원가입이 완료되었습니다."
+      : (location.state?.message ?? ""),
   );
 
   useEffect(() => {
