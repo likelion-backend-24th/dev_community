@@ -1,6 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createQuestion, getQuestion, updateQuestion } from "../../api/questionApi";
+import {
+  createQuestion,
+  getQuestion,
+  updateQuestion,
+} from "../../api/questionApi";
 import { getMySubscription } from "../../api/subscriptionApi";
 import { uploadQuestionAttachments } from "../../api/attachmentApi";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
@@ -38,7 +42,12 @@ function QuestionFormPage() {
 
     (async () => {
       try {
-        const question = await getQuestion(id);
+        let question;
+        try {
+          question = await getQuestion(id);
+        } catch {
+          question = await getQuestion(id);
+        }
         if (cancelled) return;
         setTitle(question.title);
         setContent(question.content);
@@ -63,7 +72,12 @@ function QuestionFormPage() {
 
     (async () => {
       try {
-        const subscription = await getMySubscription();
+        let subscription;
+        try {
+          subscription = await getMySubscription();
+        } catch {
+          subscription = await getMySubscription();
+        }
         if (!cancelled) setIsSubscriber(Boolean(subscription));
       } catch {
         if (!cancelled) setIsSubscriber(false);
@@ -142,7 +156,9 @@ function QuestionFormPage() {
   return (
     <div className="page">
       <div className="page__header">
-        <h1 className="page__title">{isEditMode ? "질문 수정하기" : "질문 작성하기"}</h1>
+        <h1 className="page__title">
+          {isEditMode ? "질문 수정하기" : "질문 작성하기"}
+        </h1>
       </div>
 
       <form className="question-form" onSubmit={handleSubmit}>
@@ -217,7 +233,9 @@ function QuestionFormPage() {
               멤버십(구독자 전용) 게시판에 작성
             </label>
             {isEditMode && (
-              <p className="form-field__hint">게시판 구분은 작성 후에는 바꿀 수 없어요.</p>
+              <p className="form-field__hint">
+                게시판 구분은 작성 후에는 바꿀 수 없어요.
+              </p>
             )}
           </div>
         )}
@@ -253,7 +271,9 @@ function QuestionFormPage() {
 
         <div className="form-field">
           <label>첨부파일</label>
-          {isEditMode && <AttachmentList targetType="QUESTION" targetId={id} canDelete />}
+          {isEditMode && (
+            <AttachmentList targetType="QUESTION" targetId={id} canDelete />
+          )}
           <AttachmentPicker
             files={attachmentFiles}
             onChange={setAttachmentFiles}
@@ -269,10 +289,18 @@ function QuestionFormPage() {
         )}
 
         <div className="question-form__actions">
-          <button type="button" className="btn btn-ghost" onClick={handleCancel}>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            onClick={handleCancel}
+          >
             취소
           </button>
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={submitting}
+          >
             {submitting ? "처리 중..." : isEditMode ? "수정완료" : "등록하기"}
           </button>
         </div>

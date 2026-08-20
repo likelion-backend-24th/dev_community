@@ -60,33 +60,40 @@ function QuestionDetailPage() {
 
     let cancelled = false;
 
+    const fetchOnce = async () => {
+      const [questionData, answersData] = await Promise.all([
+        getQuestion(id),
+        user ? getAnswers(id) : Promise.resolve([]),
+      ]);
+
+      let likeStatus = { questionLiked: false, likedAnswerIds: [] };
+      if (user) {
+        likeStatus = await getLikeStatus(
+          id,
+          answersData.map((a) => a.id),
+        );
+      }
+
+      return { questionData, answersData, likeStatus };
+    };
+
     const fetchData = async () => {
       setLoading(true);
       setError("");
       setNotFound(false);
       try {
-        // 답변 목록은 로그인한 사용자에게만 노출된다. 비로그인 상태에서는
-        // 백엔드가 401을 반환하므로 애초에 요청하지 않는다.
-        const [questionData, answersData] = await Promise.all([
-          getQuestion(id),
-          user ? getAnswers(id) : Promise.resolve([]),
-        ]);
-        if (cancelled) return;
-        setQuestion(questionData);
-        setAnswers(answersData);
-
-        if (user) {
-          const likeStatus = await getLikeStatus(
-            id,
-            answersData.map((a) => a.id),
-          );
-          if (cancelled) return;
-          setQuestionLiked(likeStatus.questionLiked);
-          setLikedAnswerIds(likeStatus.likedAnswerIds);
-        } else {
-          setQuestionLiked(false);
-          setLikedAnswerIds([]);
+        let result;
+        try {
+          result = await fetchOnce();
+        } catch (err) {
+          if (err.response?.status === 404) throw err;
+          result = await fetchOnce();
         }
+        if (cancelled) return;
+        setQuestion(result.questionData);
+        setAnswers(result.answersData);
+        setQuestionLiked(result.likeStatus.questionLiked);
+        setLikedAnswerIds(result.likeStatus.likedAnswerIds);
       } catch (err) {
         if (cancelled) return;
         if (err.response?.status === 404) {

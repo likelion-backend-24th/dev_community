@@ -1,87 +1,103 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { getReports, processReport } from '../../api/adminApi'
-import { getAnswer } from '../../api/answerApi'
-import '../../styles/admin.css'
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { getReports, processReport } from "../../api/adminApi";
+import { getAnswer } from "../../api/answerApi";
+import "../../styles/admin.css";
 
 const STATUS_LABEL = {
-  PENDING: '대기중',
-  RESOLVED: '정당함',
-  REJECTED: '부당함',
-}
+  PENDING: "대기중",
+  RESOLVED: "정당함",
+  REJECTED: "부당함",
+};
 
 const STATUS_BADGE = {
-  PENDING: 'badge-pending',
-  RESOLVED: 'badge-danger',
-  REJECTED: 'badge-open',
-}
+  PENDING: "badge-pending",
+  RESOLVED: "badge-danger",
+  REJECTED: "badge-open",
+};
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
 function AdminReportsPage() {
-  const [reports, setReports] = useState([])
-  const [meta, setMeta] = useState({ page: 0, totalPages: 0, totalElements: 0 })
-  const [page, setPage] = useState(0)
-  const [status, setStatus] = useState('PENDING')
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [processingId, setProcessingId] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
+  const [reports, setReports] = useState([]);
+  const [meta, setMeta] = useState({
+    page: 0,
+    totalPages: 0,
+    totalElements: 0,
+  });
+  const [page, setPage] = useState(0);
+  const [status, setStatus] = useState("PENDING");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [processingId, setProcessingId] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
+
+    const fetchOnce = async () => {
+      const { content, meta: resMeta } = await getReports({
+        status: status || undefined,
+        page,
+        size: PAGE_SIZE,
+      });
+      const withLinks = await Promise.all(
+        content.map(async (r) => {
+          if (r.targetType === "QUESTION") {
+            return { ...r, linkQuestionId: r.targetId };
+          }
+          try {
+            const answer = await getAnswer(r.targetId);
+            return { ...r, linkQuestionId: answer.questionId };
+          } catch {
+            return { ...r, linkQuestionId: null };
+          }
+        }),
+      );
+      return { withLinks, resMeta };
+    };
 
     const fetchReports = async () => {
-      setLoading(true)
-      setError('')
+      setLoading(true);
+      setError("");
       try {
-        const { content, meta: resMeta } = await getReports({
-          status: status || undefined,
-          page,
-          size: PAGE_SIZE,
-        })
-        const withLinks = await Promise.all(
-          content.map(async (r) => {
-            if (r.targetType === 'QUESTION') {
-              return { ...r, linkQuestionId: r.targetId }
-            }
-            try {
-              const answer = await getAnswer(r.targetId)
-              return { ...r, linkQuestionId: answer.questionId }
-            } catch {
-              return { ...r, linkQuestionId: null }
-            }
-          }),
-        )
-        if (cancelled) return
-        setReports(withLinks)
-        setMeta(resMeta)
+        let result;
+        try {
+          result = await fetchOnce();
+        } catch {
+          result = await fetchOnce();
+        }
+        if (cancelled) return;
+        setReports(result.withLinks);
+        setMeta(result.resMeta);
       } catch (err) {
-        if (cancelled) return
-        setError(err.response?.data?.message ?? '신고 목록을 불러오지 못했습니다.')
+        if (cancelled) return;
+        setError(
+          err.response?.data?.message ?? "신고 목록을 불러오지 못했습니다.",
+        );
       } finally {
-        if (!cancelled) setLoading(false)
+        if (!cancelled) setLoading(false);
       }
-    }
+    };
 
-    fetchReports()
+    fetchReports();
     return () => {
-      cancelled = true
-    }
-  }, [status, page, reloadKey])
+      cancelled = true;
+    };
+  }, [status, page, reloadKey]);
 
   const handleProcess = async (id, newStatus) => {
-    setProcessingId(id)
-    setError('')
+    setProcessingId(id);
+    setError("");
     try {
-      await processReport(id, newStatus)
-      setReloadKey((k) => k + 1)
+      await processReport(id, newStatus);
+      setReloadKey((k) => k + 1);
     } catch (err) {
-      setError(err.response?.data?.message ?? '신고 처리에 실패했습니다.')
+      setError(err.response?.data?.message ?? "신고 처리에 실패했습니다.");
     } finally {
-      setProcessingId(null)
+      setProcessingId(null);
     }
-  }
+  };
 
   return (
     <div className="page">
@@ -97,8 +113,8 @@ function AdminReportsPage() {
             className="select"
             value={status}
             onChange={(e) => {
-              setPage(0)
-              setStatus(e.target.value)
+              setPage(0);
+              setStatus(e.target.value);
             }}
           >
             <option value="">전체</option>
@@ -154,19 +170,21 @@ function AdminReportsPage() {
                   <td>{r.targetUserNickname}</td>
                   <td>{r.reason}</td>
                   <td>
-                    <span className={`badge ${STATUS_BADGE[r.status] ?? 'badge-open'}`}>
+                    <span
+                      className={`badge ${STATUS_BADGE[r.status] ?? "badge-open"}`}
+                    >
                       {STATUS_LABEL[r.status] ?? r.status}
                     </span>
                   </td>
                   <td>{new Date(r.createdAt).toLocaleString()}</td>
                   <td>
-                    {r.status === 'PENDING' ? (
+                    {r.status === "PENDING" ? (
                       <div className="table__actions">
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
                           disabled={processingId === r.id}
-                          onClick={() => handleProcess(r.id, 'RESOLVED')}
+                          onClick={() => handleProcess(r.id, "RESOLVED")}
                         >
                           정당함
                         </button>
@@ -174,7 +192,7 @@ function AdminReportsPage() {
                           type="button"
                           className="btn btn-ghost btn-sm"
                           disabled={processingId === r.id}
-                          onClick={() => handleProcess(r.id, 'REJECTED')}
+                          onClick={() => handleProcess(r.id, "REJECTED")}
                         >
                           부당함
                         </button>
@@ -214,7 +232,7 @@ function AdminReportsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default AdminReportsPage
+export default AdminReportsPage;

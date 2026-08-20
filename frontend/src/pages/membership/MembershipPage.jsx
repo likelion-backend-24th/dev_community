@@ -174,7 +174,12 @@ function MembershipPage() {
     const fetchSubscription = async () => {
       setLoading(true);
       try {
-        const subRes = await getMySubscription();
+        let subRes;
+        try {
+          subRes = await getMySubscription();
+        } catch {
+          subRes = await getMySubscription();
+        }
         if (!cancelledEffect) setSubscription(subRes);
       } catch (err) {
         if (!cancelledEffect) {
