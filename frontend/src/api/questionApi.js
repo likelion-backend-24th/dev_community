@@ -32,3 +32,8 @@ export async function updateQuestion(id, payload) {
   const res = await client.put(`/api/questions/${id}`, payload)
   return res.data.data
 }
+
+export async function getQuestionSummary(id) {
+  const res = await client.get(`/api/questions/${id}/summary`)
+  return res.data.data
+}
