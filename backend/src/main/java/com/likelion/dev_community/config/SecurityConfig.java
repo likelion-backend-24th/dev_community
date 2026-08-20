@@ -39,6 +39,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // 실제 인증은 STOMP CONNECT 프레임에서 처리(StompAuthChannelInterceptor).
+                        // 핸드셰이크 단계는 Authorization 헤더를 실을 수 없어 여기서 막으면 안 됨.
+                        .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**",

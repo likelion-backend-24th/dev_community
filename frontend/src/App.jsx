@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import FloatingWriteButton from "./components/layout/FloatingWriteButton";
+import NotificationToast from "./components/layout/NotificationToast";
 import { useAuth } from "./hooks/useAuth";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import AdminRoute from "./components/auth/AdminRoute";
@@ -52,7 +53,7 @@ function App() {
           <Route path="/" element={<LoginPage />} />
           <Route path="/questions" element={<QuestionListPage key={location.key} />} />
           <Route path="/questions/premium" element={<PremiumQuestionListPage key={location.key} />} />
-          <Route path="/questions/:id" element={<QuestionDetailPage />} />
+          <Route path="/questions/:id" element={<QuestionDetailPage key={location.key} />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
@@ -83,6 +84,7 @@ function App() {
         </Routes>
       </main>
       {showFloatingWriteButton && <FloatingWriteButton />}
+      {isAuthenticated && <NotificationToast />}
       <Footer />
     </div>
   );
