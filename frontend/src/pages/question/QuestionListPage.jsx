@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
+import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -186,6 +187,7 @@ function QuestionListPage() {
 
               <div className="question-card__meta">
                 <span>{q.authorNickname}</span>
+                {q.authorIsExpert && <ExpertBadge />}
                 <span>조회 {q.viewCount}</span>
                 <span>추천 {q.likeCount}</span>
                 <span>답변 {q.answerCount}</span>

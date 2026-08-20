@@ -16,6 +16,7 @@ public class QuestionDetailResponse {
     private final Long id;
     private final Long authorId;
     private final String authorNickname;
+    private final boolean authorIsExpert;
 
     private final String title;
     private final String content;
@@ -36,6 +37,7 @@ public class QuestionDetailResponse {
                 question.getId(),
                 question.getAuthor().getId(),
                 question.isAnonymous() ? "익명" : question.getAuthor().getDisplayNickname(),
+                !question.isAnonymous() && question.getAuthor().isExpert(),
                 question.getTitle(),
                 question.getContent(),
                 question.getStatus(),

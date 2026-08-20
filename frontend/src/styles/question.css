@@ -99,6 +99,13 @@
   gap: var(--space-base);
 }
 
+.question-card__badges {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--space-xs);
+}
+
 .question-card__title {
   min-width: 0;
   font-size: 20px;

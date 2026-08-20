@@ -71,6 +71,15 @@
   background: #a12828;
 }
 
+.btn-warning {
+  background: var(--yellow);
+  color: #111214;
+}
+
+.btn-warning:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--text-normal);
@@ -161,6 +170,12 @@
 .badge-type {
   background: var(--blurple);
   color: #ffffff;
+}
+
+.expert-badge {
+  vertical-align: middle;
+  margin-left: var(--space-xs);
+  flex-shrink: 0;
 }
 
 .tag-chip {
@@ -264,6 +279,17 @@
   box-shadow: var(--shadow-modal);
   overflow: hidden;
   animation: modal-in var(--motion-standard) var(--ease-enter);
+}
+
+.modal--lg {
+  max-width: 720px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal--lg .modal__body {
+  overflow-y: auto;
 }
 
 @keyframes modal-in {

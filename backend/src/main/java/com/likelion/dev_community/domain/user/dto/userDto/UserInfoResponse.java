@@ -22,6 +22,7 @@ public class UserInfoResponse {
     private final LocalDateTime createdAt;
     private final int reputation;
     private final boolean isExpert;
+    private final boolean expertRequested;
 
     public static UserInfoResponse from(User user){
         return new UserInfoResponse(
@@ -33,7 +34,8 @@ public class UserInfoResponse {
                 user.getProvider(),
                 user.getCreatedAt(),
                 user.getReputation(),
-                user.isExpert()
+                user.isExpert(),
+                user.isExpertRequested()
         );
     }
 }

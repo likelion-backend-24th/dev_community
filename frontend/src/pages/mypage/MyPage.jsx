@@ -8,8 +8,10 @@ import {
   updateMyInfo,
   updatePassword,
   withdraw,
+  requestExpert,
 } from "../../api/userApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
+import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/mypage.css";
 
 function MyPage() {
@@ -28,6 +30,22 @@ function MyPage() {
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [toast, setToast] = useState("");
+  const [expertRequestSubmitting, setExpertRequestSubmitting] = useState(false);
+
+  const handleRequestExpert = async () => {
+    setExpertRequestSubmitting(true);
+    try {
+      const updated = await requestExpert();
+      setProfile((prev) => ({ ...prev, expertRequested: updated.expertRequested }));
+      setToast("전문가 등급 신청이 접수되었습니다.");
+      setTimeout(() => setToast(""), 3000);
+    } catch (err) {
+      setToast(err.response?.data?.message ?? "신청에 실패했습니다.");
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setExpertRequestSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -98,7 +116,10 @@ function MyPage() {
       <section className="profile-card card">
         <div className="profile-card__avatar">{profile.nickname[0]}</div>
         <div className="profile-card__info">
-          <p className="profile-card__nickname">{profile.nickname}</p>
+          <p className="profile-card__nickname">
+            {profile.nickname}
+            {profile.expert && <ExpertBadge />}
+          </p>
           <p className="profile-card__username">@{profile.username}</p>
           <p className="profile-card__joined">
             가입일 {profile.createdAt.slice(0, 10)}
@@ -107,37 +128,51 @@ function MyPage() {
             평판 {profile.reputation}점
           </p>
         </div>
-        <div className="profile-card__actions">
-          <Link to="/dashboard" className="btn btn-secondary btn-sm">
-            내 활동 대시보드
-          </Link>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setEditInfoOpen(true)}
-          >
-            내 정보 수정
-          </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setPasswordModalOpen(true)}
-          >
-            비밀번호 변경
-          </button>
-          {!isAdmin && (
+        <div className="profile-card__action-group">
+          <div className="profile-card__actions">
+            <Link to="/dashboard" className="btn btn-secondary btn-sm">
+              내 활동 대시보드
+            </Link>
             <button
               type="button"
-              className="btn btn-destructive btn-sm"
-              onClick={() => setWithdrawModalOpen(true)}
+              className="btn btn-secondary btn-sm"
+              onClick={() => setEditInfoOpen(true)}
             >
-              회원 탈퇴
+              내 정보 수정
             </button>
-          )}
-          {isAdmin && (
-            <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
-              관리자 대시보드
-            </Link>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setPasswordModalOpen(true)}
+            >
+              비밀번호 변경
+            </button>
+            {!isAdmin && (
+              <button
+                type="button"
+                className="btn btn-destructive btn-sm"
+                onClick={() => setWithdrawModalOpen(true)}
+              >
+                회원 탈퇴
+              </button>
+            )}
+            {isAdmin && (
+              <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
+                관리자 대시보드
+              </Link>
+            )}
+          </div>
+          {!isAdmin && !profile.expert && (
+            <div className="profile-card__expert-action">
+              <button
+                type="button"
+                className="btn btn-warning btn-sm"
+                onClick={handleRequestExpert}
+                disabled={profile.expertRequested || expertRequestSubmitting}
+              >
+                {profile.expertRequested ? "심사 중" : "전문가 등급 신청"}
+              </button>
+            </div>
           )}
         </div>
       </section>

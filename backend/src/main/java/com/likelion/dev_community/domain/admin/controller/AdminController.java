@@ -1,6 +1,11 @@
 package com.likelion.dev_community.domain.admin.controller;
 
 import com.likelion.dev_community.common.ApiResponse;
+import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
+import com.likelion.dev_community.domain.dashboard.dto.ActivityTimelineItem;
+import com.likelion.dev_community.domain.dashboard.dto.PersonalDashboardSummaryResponse;
+import com.likelion.dev_community.domain.dashboard.service.PersonalDashboardService;
+import com.likelion.dev_community.domain.question.dto.QuestionSummaryResponse;
 import com.likelion.dev_community.domain.report.dto.ReportProcessRequest;
 import com.likelion.dev_community.domain.report.dto.ReportResponse;
 import com.likelion.dev_community.domain.report.entity.ReportStatus;
@@ -26,6 +31,7 @@ public class AdminController {
 
     private final ReportService reportService;
     private final UserService userService;
+    private final PersonalDashboardService personalDashboardService;
 
     // 신고 목록 조회
     @GetMapping("/reports")
@@ -52,11 +58,12 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success(reportId + "신고 처리 성공",reportResponse));
     }
 
-    // 회원 목록 전체 조회
+    // 회원 목록 전체 조회 (expertRequested=true면 전문가 등급 요청한 유저만)
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<UserInfoResponse>>> getAllUsers(@ParameterObject @PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<ApiResponse<List<UserInfoResponse>>> getAllUsers(@RequestParam(required = false) Boolean expertRequested,
+                                                                            @ParameterObject @PageableDefault(size = 10) Pageable pageable){
 
-        Page<UserInfoResponse> allUsersInfo = userService.getAllUsersInfo(pageable);
+        Page<UserInfoResponse> allUsersInfo = userService.getAllUsersInfo(pageable, expertRequested);
 
         Map<String, Object> meta = Map.of(
                 "totalElements", allUsersInfo.getTotalElements(),
@@ -107,5 +114,45 @@ public class AdminController {
         UserInfoResponse userInfoResponse = userService.revokeExpert(userId);
 
         return ResponseEntity.ok(ApiResponse.success(userId + " 전문가 지정 해제", userInfoResponse));
+    }
+
+    // 전문가 등급 신청 거절
+    @PostMapping("/users/{id}/expert-request/reject")
+    public ResponseEntity<ApiResponse<UserInfoResponse>> rejectExpertRequest(@PathVariable(name = "id") Long userId){
+        UserInfoResponse userInfoResponse = userService.rejectExpertRequest(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(userId + " 전문가 등급 요청 거절", userInfoResponse));
+    }
+
+    // 관리자가 특정 유저의 활동 대시보드 조회 (전문가 등급 요청 심사용)
+    @GetMapping("/users/{id}/dashboard/summary")
+    public ResponseEntity<ApiResponse<PersonalDashboardSummaryResponse>> getUserDashboardSummary(@PathVariable(name = "id") Long userId){
+        userService.findUserById(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("유저 활동 요약 조회 성공", personalDashboardService.getSummary(userId)));
+    }
+
+    @GetMapping("/users/{id}/dashboard/timeline")
+    public ResponseEntity<ApiResponse<List<ActivityTimelineItem>>> getUserDashboardTimeline(@PathVariable(name = "id") Long userId){
+        userService.findUserById(userId);
+
+        return ResponseEntity.ok(ApiResponse.success("유저 활동 타임라인 조회 성공", personalDashboardService.getTimeline(userId)));
+    }
+
+    // 관리자가 특정 유저의 질문/답변 목록 조회 (활동 대시보드 드릴다운용)
+    @GetMapping("/users/{id}/questions")
+    public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> getUserQuestions(@PathVariable(name = "id") Long userId,
+                                                                                        @ParameterObject @PageableDefault(size = 10) Pageable pageable){
+        Page<QuestionSummaryResponse> questions = userService.getMyQuestions(userId, pageable);
+
+        return ResponseEntity.ok(ApiResponse.success("유저 질문 목록 조회 성공", questions.getContent()));
+    }
+
+    @GetMapping("/users/{id}/answers")
+    public ResponseEntity<ApiResponse<List<AnswerResponse>>> getUserAnswers(@PathVariable(name = "id") Long userId,
+                                                                             @ParameterObject @PageableDefault(size = 10) Pageable pageable){
+        Page<AnswerResponse> answers = userService.getMyAnswers(userId, pageable);
+
+        return ResponseEntity.ok(ApiResponse.success("유저 답변 목록 조회 성공", answers.getContent()));
     }
 }

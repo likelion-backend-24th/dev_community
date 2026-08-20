@@ -108,10 +108,12 @@ public class UserService {
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
-    // 모든 유저 조회 (관리자)
+    // 모든 유저 조회 (관리자) - expertRequested=true면 전문가 등급 요청한 유저만 조회
     @Transactional(readOnly = true)
-    public Page<UserInfoResponse> getAllUsersInfo(Pageable pageable){
-        Page<User> allUsers = userRepository.findAll(pageable);
+    public Page<UserInfoResponse> getAllUsersInfo(Pageable pageable, Boolean expertRequested){
+        Page<User> allUsers = Boolean.TRUE.equals(expertRequested)
+                ? userRepository.findAllByExpertRequestedTrue(pageable)
+                : userRepository.findAll(pageable);
 
         return allUsers.map(UserInfoResponse::from);
     }
@@ -128,6 +130,7 @@ public class UserService {
             throw new CustomException(ErrorCode.ALREADY_SUSPENDED_USER);
 
         user.suspend();
+        user.cancelExpertRequest(); // 정지된 유저의 전문가 등급 요청은 자동 거절 처리
 
         paymentService.revokeNextChargeForSuspension(userId); // 구독 중인 유저가 정지당하면 다음 회차 구독을 취소시킴
 
@@ -155,6 +158,9 @@ public class UserService {
     public UserInfoResponse grantExpert(Long userId){
         User user = findUserById(userId);
 
+        if(user.isExpert())
+            throw new CustomException(ErrorCode.ALREADY_EXPERT);
+
         user.grantExpert();
 
         return UserInfoResponse.from(user);
@@ -166,6 +172,35 @@ public class UserService {
         User user = findUserById(userId);
 
         user.revokeExpert();
+
+        return UserInfoResponse.from(user);
+    }
+
+    // 전문가 등급 신청 (본인)
+    @Transactional
+    public UserInfoResponse requestExpert(Long userId){
+        User user = findUserById(userId);
+
+        if(user.isExpert())
+            throw new CustomException(ErrorCode.ALREADY_EXPERT);
+
+        if(user.isExpertRequested())
+            throw new CustomException(ErrorCode.ALREADY_REQUESTED_EXPERT);
+
+        user.requestExpert();
+
+        return UserInfoResponse.from(user);
+    }
+
+    // 전문가 등급 신청 거절 (관리자)
+    @Transactional
+    public UserInfoResponse rejectExpertRequest(Long userId){
+        User user = findUserById(userId);
+
+        if(!user.isExpertRequested())
+            throw new CustomException(ErrorCode.NOT_REQUESTED_EXPERT);
+
+        user.cancelExpertRequest();
 
         return UserInfoResponse.from(user);
     }

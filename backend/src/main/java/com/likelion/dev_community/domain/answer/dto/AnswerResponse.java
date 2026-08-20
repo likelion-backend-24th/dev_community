@@ -14,6 +14,7 @@ public class AnswerResponse {
     private final Long questionId;
     private final Long authorId;
     private final String authorNickname;
+    private final boolean authorIsExpert;
     private final String content;
     private final boolean isAdopted;
     private final int likeCount;
@@ -25,6 +26,7 @@ public class AnswerResponse {
                 answer.getQuestion().getId(),
                 answer.getAuthor().getId(),
                 answer.getAuthor().getDisplayNickname(),
+                answer.getAuthor().isExpert(),
                 answer.getContent(),
                 answer.isAdopted(),
                 answer.getLikeCount(),

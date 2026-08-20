@@ -27,3 +27,8 @@ export async function updatePassword({ currentPassword, newPassword }) {
 export async function withdraw({ currentPassword }) {
   await client.delete('/api/members/me', { data: { currentPassword } })
 }
+
+export async function requestExpert() {
+  const res = await client.post('/api/members/me/expert-request')
+  return res.data.data
+}
