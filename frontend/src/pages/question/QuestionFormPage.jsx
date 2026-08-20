@@ -6,9 +6,11 @@ import {
   updateQuestion,
 } from "../../api/questionApi";
 import { getMySubscription } from "../../api/subscriptionApi";
+import { TYPE_CONTENT_TEMPLATE } from "../../constants/questionTemplates";
 import { uploadQuestionAttachments } from "../../api/attachmentApi";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
 import AttachmentList from "../../components/attachment/AttachmentList";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import "../../styles/question-form.css";
 
 const MAX_TAG_COUNT = 5;
@@ -34,6 +36,10 @@ function QuestionFormPage() {
 
   const [attachmentFiles, setAttachmentFiles] = useState([]);
   const [attachmentError, setAttachmentError] = useState("");
+
+  // 본문에 작성한 내용이 있는 상태에서 유형을 바꿨을 때, 템플릿 적용 여부를
+  // 확인받는 동안 대기 중인 다음 유형.
+  const [pendingTypeChange, setPendingTypeChange] = useState(null);
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -248,7 +254,21 @@ function QuestionFormPage() {
                 id="questionType"
                 className="select"
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => {
+                  const nextType = e.target.value;
+
+                  const isUntouched =
+                    !content.trim() || content === TYPE_CONTENT_TEMPLATE[type];
+
+                  if (isUntouched || !TYPE_CONTENT_TEMPLATE[nextType]) {
+                    setType(nextType);
+                    if (isUntouched) {
+                      setContent(TYPE_CONTENT_TEMPLATE[nextType] ?? "");
+                    }
+                    return;
+                  }
+                  setPendingTypeChange(nextType);
+                }}
               >
                 <option value="GENERAL">일반</option>
                 <option value="CODE_REVIEW">코드리뷰</option>
@@ -305,6 +325,22 @@ function QuestionFormPage() {
           </button>
         </div>
       </form>
+
+      {pendingTypeChange && (
+        <ConfirmModal
+          message="작성한 내용이 사라져요. 새 템플릿으로 변경할까요?"
+          confirmLabel="변경"
+          cancelLabel="취소"
+          onConfirm={() => {
+            setType(pendingTypeChange);
+            setContent(TYPE_CONTENT_TEMPLATE[pendingTypeChange]);
+            setPendingTypeChange(null);
+          }}
+          onCancel={() => {
+            setPendingTypeChange(null);
+          }}
+        />
+      )}
     </div>
   );
 }
