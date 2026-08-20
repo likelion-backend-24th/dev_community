@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface QuestionTagRepository extends JpaRepository<QuestionTag, Long> {
 
-    // 여러 질문의 태그를 한 번에 가져오기
+    // 여러 질문의 태그를 한 번에 가져오기 (등록 순서 보존)
     @EntityGraph(attributePaths = "tag")
-    List<QuestionTag> findByQuestionIdIn(List<Long> questionIds);
+    List<QuestionTag> findByQuestionIdInOrderBySortOrderAsc(List<Long> questionIds);
 }

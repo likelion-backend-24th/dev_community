@@ -187,7 +187,7 @@ public class UserService {
                 .map(Question::getId)
                 .toList();
 
-        Map<Long, List<String>> tagMap = questionTagRepository.findByQuestionIdIn(questionIds).stream()
+        Map<Long, List<String>> tagMap = questionTagRepository.findByQuestionIdInOrderBySortOrderAsc(questionIds).stream()
                 .collect(Collectors.groupingBy(
                         qt -> qt.getQuestion().getId(),
                         Collectors.mapping(qt -> qt.getTag().getName(), Collectors.toList())
