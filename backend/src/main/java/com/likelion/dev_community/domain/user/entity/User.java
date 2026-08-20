@@ -46,6 +46,9 @@ public class User extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isExpert;
 
+    @Column(nullable = false)
+    private boolean expertRequested;
+
     @Builder
     public User(String username, String password, String nickname, Role role, UserStatus status,
                 AuthProvider provider, String providerId) {
@@ -116,9 +119,18 @@ public class User extends BaseTimeEntity {
 
     public void grantExpert() {
         this.isExpert = true;
+        this.expertRequested = false;
     }
 
     public void revokeExpert() {
         this.isExpert = false;
+    }
+
+    public void requestExpert() {
+        this.expertRequested = true;
+    }
+
+    public void cancelExpertRequest() {
+        this.expertRequested = false;
     }
 }

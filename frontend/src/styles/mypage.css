@@ -54,11 +54,22 @@
   color: var(--yellow);
 }
 
+.profile-card__action-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
 .profile-card__actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-sm);
+}
+
+.profile-card__expert-action {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .tabs {
