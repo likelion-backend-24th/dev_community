@@ -7,6 +7,7 @@ import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
+import com.likelion.dev_community.domain.notification.service.NotificationService;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
@@ -47,11 +48,14 @@ class AnswerServiceImplTest {
     @Mock
     private ReputationService reputationService;
 
+    @Mock
+    private NotificationService notificationService;
+
     private AnswerServiceImpl answerService;
 
     @BeforeEach
     void setUp() {
-        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, new XssSanitizer(), reputationService);
+        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, new XssSanitizer(), reputationService, notificationService);
     }
 
     @Test

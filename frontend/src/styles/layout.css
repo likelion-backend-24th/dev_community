@@ -143,6 +143,35 @@
   transform: translateY(0);
 }
 
+.notification-toast {
+  position: fixed;
+  right: var(--space-xl);
+  bottom: 108px;
+  z-index: 21;
+  max-width: 240px;
+  padding: var(--space-md) var(--space-lg);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+  background: #ffffff;
+  color: var(--surface-primary);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: var(--shadow-high);
+  cursor: pointer;
+  animation: notification-toast-in var(--motion-emphasis) var(--ease-bounce);
+}
+
+@keyframes notification-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 640px) {
   .navbar {
     padding: var(--space-sm) var(--space-base);
@@ -155,5 +184,10 @@
   .floating-write-btn {
     right: var(--space-lg);
     bottom: var(--space-lg);
+  }
+
+  .notification-toast {
+    right: var(--space-lg);
+    bottom: 100px;
   }
 }

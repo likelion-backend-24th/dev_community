@@ -8,6 +8,7 @@ import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
+import com.likelion.dev_community.domain.notification.service.NotificationService;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
@@ -33,6 +34,7 @@ public class AnswerServiceImpl implements AnswerService {
     private final UserRepository userRepository;
     private final XssSanitizer xssSanitizer;
     private final ReputationService reputationService;
+    private final NotificationService notificationService;
 
     // F-12
     @Override
@@ -62,6 +64,7 @@ public class AnswerServiceImpl implements AnswerService {
                 .build();
 
         answerRepository.save(answer);
+        notificationService.notifyNewAnswer(question, answer);
 
         return AnswerResponse.from(answer);
     }
@@ -148,6 +151,7 @@ public class AnswerServiceImpl implements AnswerService {
         answer.adopt();
         question.resolve();
         reputationService.apply(answer.getAuthor().getId(), ReputationEvent.ANSWER_ADOPTED);
+        notificationService.notifyAnswerAdopted(answer);
 
         return AnswerResponse.from(answer);
     }

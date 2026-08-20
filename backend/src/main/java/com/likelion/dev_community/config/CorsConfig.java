@@ -11,7 +11,8 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    private static final List<String> ALLOWED_ORIGINS = List.of(
+    // WebSocketConfig의 STOMP endpoint도 같은 origin 목록을 쓰므로 패키지 내에서 재사용
+    static final List<String> ALLOWED_ORIGINS = List.of(
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:5500",
