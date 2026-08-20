@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Highlight } from "prism-react-renderer";
@@ -40,18 +40,6 @@ function CodeReviewBody({
   isAdmin,
 }) {
   const [comments, setComments] = useState([]);
-  const [hoveredLine, setHoveredLine] = useState(null);
-  const [openLine, setOpenLine] = useState(null);
-  const [draft, setDraft] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-
-  const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editDraft, setEditDraft] = useState("");
-  const [editSubmitting, setEditSubmitting] = useState(false);
-  const [editError, setEditError] = useState("");
-
-  const [deleteError, setDeleteError] = useState(null);
 
   useEffect(() => {
     if (!canComment) return;
@@ -74,6 +62,85 @@ function CodeReviewBody({
     return acc;
   }, {});
 
+  const handleCommentCreated = useCallback((comment) => {
+    setComments((prev) => [...prev, comment]);
+  }, []);
+
+  const handleCommentUpdated = useCallback((comment) => {
+    setComments((prev) => prev.map((c) => (c.id === comment.id ? comment : c)));
+  }, []);
+
+  const handleCommentDeleted = useCallback((commentId) => {
+    setComments((prev) => prev.filter((c) => c.id !== commentId));
+  }, []);
+
+  return (
+    <div className="markdown-body">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ node, className, children }) {
+            const isFenced =
+              node.position.start.line !== node.position.end.line;
+            if (!isFenced) {
+              return <code className={className}>{children}</code>;
+            }
+
+            const startLine = node.position.start.line + 1;
+            const codeText = String(children).replace(/\n$/, "");
+            const language =
+              /language-(\w+)/.exec(className ?? "")?.[1] ?? "text";
+
+            return (
+              <CodeFenceBlock
+                questionId={questionId}
+                code={codeText}
+                language={language}
+                startLine={startLine}
+                canComment={canComment}
+                currentUserId={currentUserId}
+                isAdmin={isAdmin}
+                commentsByLine={commentsByLine}
+                onCommentCreated={handleCommentCreated}
+                onCommentUpdated={handleCommentUpdated}
+                onCommentDeleted={handleCommentDeleted}
+              />
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function CodeFenceBlock({
+  questionId,
+  code,
+  language,
+  startLine,
+  canComment,
+  currentUserId,
+  isAdmin,
+  commentsByLine,
+  onCommentCreated,
+  onCommentUpdated,
+  onCommentDeleted,
+}) {
+  const [hoveredLine, setHoveredLine] = useState(null);
+  const [openLine, setOpenLine] = useState(null);
+  const [draft, setDraft] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editDraft, setEditDraft] = useState("");
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editError, setEditError] = useState("");
+
+  const [deleteError, setDeleteError] = useState(null);
+
   const handleToggleLine = (lineNumber) => {
     if (!canComment) return;
     setOpenLine((prev) => (prev === lineNumber ? null : lineNumber));
@@ -90,7 +157,7 @@ function CodeReviewBody({
         lineNumber,
         content: draft.trim(),
       });
-      setComments((prev) => [...prev, created]);
+      onCommentCreated(created);
       setDraft("");
       setOpenLine(null);
     } catch (err) {
@@ -124,9 +191,7 @@ function CodeReviewBody({
         comment.id,
         editDraft.trim(),
       );
-      setComments((prev) =>
-        prev.map((c) => (c.id === comment.id ? updated : c)),
-      );
+      onCommentUpdated(updated);
       setEditingCommentId(null);
       setEditDraft("");
     } catch (err) {
@@ -143,7 +208,7 @@ function CodeReviewBody({
     setDeleteError(null);
     try {
       await deleteCodeComment(questionId, comment.id);
-      setComments((prev) => prev.filter((c) => c.id !== comment.id));
+      onCommentDeleted(comment.id);
     } catch (err) {
       setDeleteError({
         commentId: comment.id,
@@ -152,84 +217,6 @@ function CodeReviewBody({
     }
   };
 
-  return (
-    <div className="markdown-body">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          code({ node, className, children }) {
-            const isFenced =
-              node.position.start.line !== node.position.end.line;
-            if (!isFenced) {
-              return <code className={className}>{children}</code>;
-            }
-
-            const startLine = node.position.start.line + 1;
-            const codeText = String(children).replace(/\n$/, "");
-            const language =
-              /language-(\w+)/.exec(className ?? "")?.[1] ?? "text";
-
-            return (
-              <CodeFenceBlock
-                code={codeText}
-                language={language}
-                startLine={startLine}
-                canComment={canComment}
-                currentUserId={currentUserId}
-                isAdmin={isAdmin}
-                commentsByLine={commentsByLine}
-                hoveredLine={hoveredLine}
-                onHoverLine={setHoveredLine}
-                openLine={openLine}
-                onToggleLine={handleToggleLine}
-                addForm={{
-                  draft,
-                  submitting,
-                  error: submitError,
-                  onDraftChange: setDraft,
-                  onSubmit: handleSubmit,
-                  onCancel: () => setOpenLine(null),
-                }}
-                editState={{
-                  commentId: editingCommentId,
-                  draft: editDraft,
-                  submitting: editSubmitting,
-                  error: editError,
-                  onDraftChange: setEditDraft,
-                  onStart: handleStartEdit,
-                  onCancel: handleCancelEdit,
-                  onSave: handleSaveEdit,
-                }}
-                onDelete={handleDelete}
-                deleteError={deleteError}
-              />
-            );
-          },
-        }}
-      >
-        {content}
-      </ReactMarkdown>
-    </div>
-  );
-}
-
-function CodeFenceBlock({
-  code,
-  language,
-  startLine,
-  canComment,
-  currentUserId,
-  isAdmin,
-  commentsByLine,
-  hoveredLine,
-  onHoverLine,
-  openLine,
-  onToggleLine,
-  addForm,
-  editState,
-  onDelete,
-  deleteError,
-}) {
   return (
     <Highlight
       prism={Prism}
@@ -252,9 +239,9 @@ function CodeFenceBlock({
                 <div
                   {...lineProps}
                   className={`code-review-line ${lineProps.className ?? ""}`}
-                  onMouseEnter={() => onHoverLine(lineNumber)}
-                  onMouseLeave={() => onHoverLine(null)}
-                  onClick={() => onToggleLine(lineNumber)}
+                  onMouseEnter={() => setHoveredLine(lineNumber)}
+                  onMouseLeave={() => setHoveredLine(null)}
+                  onClick={() => handleToggleLine(lineNumber)}
                 >
                   <span className="code-review-line__number">{lineNumber}</span>
                   <span className="code-review-line__content">
@@ -273,7 +260,7 @@ function CodeFenceBlock({
                       className="code-review-line__add"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onToggleLine(lineNumber);
+                        handleToggleLine(lineNumber);
                       }}
                       aria-label={`${lineNumber}번 줄에 코멘트 추가`}
                     >
@@ -290,7 +277,7 @@ function CodeFenceBlock({
                     {lineComments.map((comment) => {
                       const canManage =
                         isAdmin || comment.authorId === currentUserId;
-                      const isEditing = editState.commentId === comment.id;
+                      const isEditing = editingCommentId === comment.id;
 
                       return (
                         <li
@@ -302,31 +289,29 @@ function CodeFenceBlock({
                               <textarea
                                 className="textarea"
                                 rows={2}
-                                value={editState.draft}
-                                onChange={(e) =>
-                                  editState.onDraftChange(e.target.value)
-                                }
+                                value={editDraft}
+                                onChange={(e) => setEditDraft(e.target.value)}
                               />
-                              {editState.error && (
+                              {editError && (
                                 <p className="inline-error" role="alert">
-                                  {editState.error}
+                                  {editError}
                                 </p>
                               )}
                               <div className="code-review-thread__form-actions">
                                 <button
                                   type="button"
                                   className="btn btn-ghost btn-sm"
-                                  onClick={editState.onCancel}
+                                  onClick={handleCancelEdit}
                                 >
                                   취소
                                 </button>
                                 <button
                                   type="button"
                                   className="btn btn-primary btn-sm"
-                                  disabled={editState.submitting}
-                                  onClick={() => editState.onSave(comment)}
+                                  disabled={editSubmitting}
+                                  onClick={() => handleSaveEdit(comment)}
                                 >
-                                  {editState.submitting ? "저장 중..." : "저장"}
+                                  {editSubmitting ? "저장 중..." : "저장"}
                                 </button>
                               </div>
                             </div>
@@ -343,14 +328,14 @@ function CodeFenceBlock({
                                   <button
                                     type="button"
                                     className="code-review-thread__item-action"
-                                    onClick={() => editState.onStart(comment)}
+                                    onClick={() => handleStartEdit(comment)}
                                   >
                                     수정
                                   </button>
                                   <button
                                     type="button"
                                     className="code-review-thread__item-action"
-                                    onClick={() => onDelete(comment)}
+                                    onClick={() => handleDelete(comment)}
                                   >
                                     삭제
                                   </button>
@@ -377,30 +362,30 @@ function CodeFenceBlock({
                     <textarea
                       className="textarea"
                       rows={2}
-                      value={addForm.draft}
-                      onChange={(e) => addForm.onDraftChange(e.target.value)}
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
                       placeholder={`${lineNumber}번 줄에 코멘트 남기기`}
                     />
-                    {addForm.error && (
+                    {submitError && (
                       <p className="inline-error" role="alert">
-                        {addForm.error}
+                        {submitError}
                       </p>
                     )}
                     <div className="code-review-thread__form-actions">
                       <button
                         type="button"
                         className="btn btn-ghost btn-sm"
-                        onClick={addForm.onCancel}
+                        onClick={() => setOpenLine(null)}
                       >
                         취소
                       </button>
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
-                        disabled={addForm.submitting}
-                        onClick={() => addForm.onSubmit(lineNumber)}
+                        disabled={submitting}
+                        onClick={() => handleSubmit(lineNumber)}
                       >
-                        {addForm.submitting ? "등록 중..." : "등록"}
+                        {submitting ? "등록 중..." : "등록"}
                       </button>
                     </div>
                   </div>
