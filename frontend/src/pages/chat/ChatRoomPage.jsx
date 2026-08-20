@@ -9,6 +9,7 @@ import {
   sendChatMessage,
   acceptChat,
   adoptChat,
+  markChatRoomRead,
 } from "../../api/chatApi";
 import "../../styles/chat.css";
 
@@ -66,6 +67,9 @@ function ChatRoomPage() {
       setMessages((prev) =>
         prev.some((m) => m.id === message.id) ? prev : [...prev, message],
       );
+      // 이 방을 이미 보고 있는 중에 실시간으로 온 메시지이므로 곧바로 읽음 처리해서
+      // 내 채팅 목록에 안읽음으로 남지 않게 한다.
+      markChatRoomRead(id).then(refreshUnreadCount);
     },
     onRoomUpdate: (update) => {
       if (String(update.roomId) !== String(id)) return;

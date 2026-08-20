@@ -100,6 +100,12 @@ public class ChatService {
         return toDetail(chatRoom, userId);
     }
 
+    // 채팅방을 이미 열어둔 상태에서 실시간으로 새 메시지를 받았을 때, 그 메시지도 곧바로 읽음 처리하기 위한 엔드포인트
+    public void markRoomRead(Long userId, Long roomId) {
+        ChatRoom chatRoom = findRoomAndValidateAccess(roomId, userId);
+        markRead(chatRoom, userId);
+    }
+
     public ChatMessageResponse sendMessage(Long userId, Long roomId, ChatMessageRequest request) {
         ChatRoom chatRoom = findRoomAndValidateAccess(roomId, userId);
 

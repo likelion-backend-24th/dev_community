@@ -52,8 +52,11 @@ public class Question extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean isAnonymous;
 
+    // columnDefinition으로 varchar를 강제한다. 그냥 length만 지정하면 MySQL 네이티브 enum(...)으로
+    // 생성되는데, 이 네이티브 enum은 값이 정수 인덱스로 저장돼서 ddl-auto가 리터럴 순서를 다시 쓸 때마다
+    // 기존 행의 값이 통째로 뒤바뀌는 사고가 난다(실제로 겪음 - 기존 GENERAL 질문이 CAREER_CONSULT로 보였음).
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
+    @Column(nullable = false, length = 20, columnDefinition = "varchar(20)")
     private QuestionType type;
 
     // 커리어상담 채팅이 한 번이라도 개설되면 true로 고정되어 이후 글 유형을 바꿀 수 없다.
