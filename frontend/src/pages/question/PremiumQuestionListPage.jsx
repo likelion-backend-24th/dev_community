@@ -193,8 +193,10 @@ function PremiumQuestionListPage() {
               </div>
 
               <div className="question-card__meta">
-                <span>{q.authorNickname}</span>
-                {q.authorIsExpert && <ExpertBadge />}
+                <span className="author-with-badge">
+                  {q.authorNickname}
+                  {q.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+                </span>
                 <span>조회 {q.viewCount}</span>
                 <span>추천 {q.likeCount}</span>
                 <span>답변 {q.answerCount}</span>

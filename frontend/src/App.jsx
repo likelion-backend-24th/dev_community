@@ -2,6 +2,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
 import FloatingWriteButton from "./components/layout/FloatingWriteButton";
+import FloatingChatButton from "./components/layout/FloatingChatButton";
 import NotificationToast from "./components/layout/NotificationToast";
 import { useAuth } from "./hooks/useAuth";
 import PrivateRoute from "./components/auth/PrivateRoute";
@@ -14,6 +15,8 @@ import QuestionListPage from "./pages/question/QuestionListPage";
 import PremiumQuestionListPage from "./pages/question/PremiumQuestionListPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
 import QuestionFormPage from "./pages/question/QuestionFormPage";
+import ChatListPage from "./pages/chat/ChatListPage";
+import ChatRoomPage from "./pages/chat/ChatRoomPage";
 import MyPage from "./pages/mypage/MyPage";
 import MembershipPage from "./pages/membership/MembershipPage";
 import PersonalDashboardPage from "./pages/dashboard/PersonalDashboardPage";
@@ -34,6 +37,7 @@ const NO_NAVBAR_PATHS = [
 ];
 
 const NO_FLOATING_WRITE_BUTTON_PATHS = ["/questions/new"];
+const NO_FLOATING_CHAT_BUTTON_PREFIXES = ["/chats"];
 
 function App() {
   const location = useLocation();
@@ -44,6 +48,12 @@ function App() {
     isAuthenticated &&
     !NO_FLOATING_WRITE_BUTTON_PATHS.includes(location.pathname) &&
     !location.pathname.endsWith("/edit");
+  const showFloatingChatButton =
+    showNavbar &&
+    isAuthenticated &&
+    !NO_FLOATING_CHAT_BUTTON_PREFIXES.some((prefix) =>
+      location.pathname.startsWith(prefix),
+    );
 
   return (
     <div className="app-shell">
@@ -68,6 +78,8 @@ function App() {
             <Route path="/mypage" element={<MyPage />} />
             <Route path="/membership" element={<MembershipPage />} />
             <Route path="/dashboard" element={<PersonalDashboardPage />} />
+            <Route path="/chats" element={<ChatListPage key={location.key} />} />
+            <Route path="/chats/:id" element={<ChatRoomPage key={location.key} />} />
           </Route>
 
           <Route element={<AdminRoute />}>
@@ -84,6 +96,7 @@ function App() {
         </Routes>
       </main>
       {showFloatingWriteButton && <FloatingWriteButton />}
+      {showFloatingChatButton && <FloatingChatButton />}
       {isAuthenticated && <NotificationToast />}
       <Footer />
     </div>

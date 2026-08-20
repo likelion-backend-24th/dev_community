@@ -1,8 +1,8 @@
 // 전문가 표시 배지: 무지개색 원 안에 흰색 별
-function ExpertBadge() {
+function ExpertBadge({ className = "" }) {
   return (
     <svg
-      className="expert-badge"
+      className={`expert-badge${className ? ` ${className}` : ""}`}
       viewBox="0 0 20 20"
       width="18"
       height="18"

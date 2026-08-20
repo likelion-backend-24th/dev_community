@@ -31,8 +31,14 @@ public class QuestionDetailResponse {
     private final boolean isAnonymous;
 
     private final QuestionType type;
+    private final boolean typeLocked;
+    private final Long myChatRoomId;
 
     public static QuestionDetailResponse of(Question question, List<String> tags) {
+        return of(question, tags, null);
+    }
+
+    public static QuestionDetailResponse of(Question question, List<String> tags, Long myChatRoomId) {
         return new QuestionDetailResponse(
                 question.getId(),
                 question.getAuthor().getId(),
@@ -47,7 +53,9 @@ public class QuestionDetailResponse {
                 question.getCreatedAt(),
                 question.isPremium(),
                 question.isAnonymous(),
-                question.getType()
+                question.getType(),
+                question.isTypeLocked(),
+                myChatRoomId
         );
     }
 }
