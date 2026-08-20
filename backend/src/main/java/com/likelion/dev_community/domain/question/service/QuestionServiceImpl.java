@@ -14,6 +14,7 @@ import com.likelion.dev_community.domain.question.entity.QuestionSortType;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
+import com.likelion.dev_community.domain.question.entity.QuestionTag;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.question.repository.TagRepository;
@@ -21,6 +22,7 @@ import com.likelion.dev_community.domain.subscription.service.SubscriptionServic
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -136,7 +138,7 @@ public class QuestionServiceImpl implements QuestionService {
                 .map(Question::getId)
                 .toList();
 
-        Map<Long, List<String>> tagMap = questionTagRepository.findByQuestionIdIn(questionIds).stream()
+        Map<Long, List<String>> tagMap = questionTagRepository.findByQuestionIdInOrderBySortOrderAsc(questionIds).stream()
                 .collect(Collectors.groupingBy(
                         qt -> qt.getQuestion().getId(),
                         Collectors.mapping(qt -> qt.getTag().getName(), Collectors.toList())
@@ -182,7 +184,7 @@ public class QuestionServiceImpl implements QuestionService {
             question.increaseViewCount();
         }
 
-        List<String> tags = questionTagRepository.findByQuestionIdIn(List.of(questionId)).stream()
+        List<String> tags = questionTagRepository.findByQuestionIdInOrderBySortOrderAsc(List.of(questionId)).stream()
                 .map(qt -> qt.getTag().getName())
                 .toList();
 
@@ -241,38 +243,54 @@ public class QuestionServiceImpl implements QuestionService {
         Set<String> normalizedNames = normalizeAndValidateTagNames(tags);
 
         List<String> result = new ArrayList<>();
+        int order = 0;
         for (String name : normalizedNames) {
-            Tag tag = tagRepository.findByName(name)
-                    .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));
-
-            question.createTag(tag);
+            Tag tag = resolveTag(name);
+            question.createTag(tag, order++);
             result.add(tag.getName());
         }
 
         return result;
     }
 
-    // F-09 (수정) - 기존에 없던 태그만 추가하고 더 이상 없는 태그만 제거.
+    // F-09 (수정) - 기존에 없던 태그만 추가하고 더 이상 없는 태그는 제거하되,
+    // 남아있는 태그도 sortOrder를 다시 매겨서 요청한 순서가 항상 보존되게 한다.
     private List<String> syncTags(Question question, List<String> tags) {
         Set<String> normalizedNames = normalizeAndValidateTagNames(tags);
 
-        Set<String> existingNames = question.getQuestionTags().stream()
-                .map(qt -> qt.getTag().getName())
-                .collect(Collectors.toSet());
+        Map<String, QuestionTag> existingByName = question.getQuestionTags().stream()
+                .collect(Collectors.toMap(qt -> qt.getTag().getName(), qt -> qt));
 
         question.getQuestionTags().removeIf(qt -> !normalizedNames.contains(qt.getTag().getName()));
 
         List<String> result = new ArrayList<>();
+        int order = 0;
         for (String name : normalizedNames) {
-            if (!existingNames.contains(name)) {
-                Tag tag = tagRepository.findByName(name)
-                        .orElseGet(() -> tagRepository.save(Tag.builder().name(name).build()));
-                question.createTag(tag);
+            QuestionTag existing = existingByName.get(name);
+            if (existing != null) {
+                existing.changeOrder(order);
+            } else {
+                Tag tag = resolveTag(name);
+                question.createTag(tag, order);
             }
             result.add(name);
+            order++;
         }
 
         return result;
+    }
+
+    // 동시에 같은 신규 태그명을 저장하려는 요청이 겹치면 unique 제약 위반이 날 수 있어
+    // save 실패 시 한 번 더 조회해서 재사용한다.
+    private Tag resolveTag(String name) {
+        return tagRepository.findByName(name)
+                .orElseGet(() -> {
+                    try {
+                        return tagRepository.save(Tag.builder().name(name).build());
+                    } catch (DataIntegrityViolationException e) {
+                        return tagRepository.findByName(name).orElseThrow(() -> e);
+                    }
+                });
     }
 
     private Set<String> normalizeAndValidateTagNames(List<String> tags) {

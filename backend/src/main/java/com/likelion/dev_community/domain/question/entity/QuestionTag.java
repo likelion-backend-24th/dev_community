@@ -27,9 +27,17 @@ public class QuestionTag {
     @JoinColumn(name = "tag_id", nullable = false)
     private Tag tag;
 
+    @Column(name = "sort_order", nullable = false)
+    private int sortOrder;
+
     @Builder
-    public QuestionTag(Question question, Tag tag) {
+    public QuestionTag(Question question, Tag tag, int sortOrder) {
         this.question = question;
         this.tag = tag;
+        this.sortOrder = sortOrder;
+    }
+
+    public void changeOrder(int sortOrder) {
+        this.sortOrder = sortOrder;
     }
 }

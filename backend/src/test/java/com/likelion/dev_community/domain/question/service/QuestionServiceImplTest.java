@@ -260,6 +260,32 @@ class QuestionServiceImplTest {
         verify(tagRepository, times(1)).save(any(Tag.class));
     }
 
+    // ===== syncTags (F-09) =====
+
+    @Test
+    void 수정_시_기존_태그_사이에_새_태그를_끼워넣으면_순서가_유지된다() {
+        User author = createUser(1L, "author");
+        Question question = createQuestion(10L, author);
+
+        Tag javaTag = Tag.builder().name("java").build();
+        Tag springTag = Tag.builder().name("spring").build();
+        question.createTag(javaTag, 0);
+        question.createTag(springTag, 1);
+
+        QuestionUpdateRequest request = new QuestionUpdateRequest(
+                "제목", "내용", List.of("java", "react", "spring"), false, null);
+
+        when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
+        when(tagRepository.findByName("react")).thenReturn(Optional.empty());
+        when(tagRepository.save(any(Tag.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        QuestionResponse response = questionService.updateQuestion(10L, 1L, false, request);
+
+        assertThat(response.getTags()).containsExactly("java", "react", "spring");
+        verify(tagRepository, times(0)).findByName("java");
+        verify(tagRepository, times(0)).findByName("spring");
+    }
+
     // ===== 게시글 유형 세분화 (F-42) =====
 
     @Test

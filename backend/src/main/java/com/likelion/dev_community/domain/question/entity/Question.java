@@ -105,10 +105,11 @@ public class Question extends BaseTimeEntity {
         this.likeCount = Math.max(0, this.likeCount - 1);
     }
 
-    public void createTag(Tag tag) {
+    public void createTag(Tag tag, int sortOrder) {
         QuestionTag questionTag = QuestionTag.builder()
                 .question(this)
                 .tag(tag)
+                .sortOrder(sortOrder)
                 .build();
         this.questionTags.add(questionTag);
     }
