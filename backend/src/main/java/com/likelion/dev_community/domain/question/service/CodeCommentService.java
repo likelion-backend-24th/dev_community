@@ -1,9 +1,11 @@
 package com.likelion.dev_community.domain.question.service;
 
+import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.question.dto.CodeCommentRequest;
 import com.likelion.dev_community.domain.question.dto.CodeCommentResponse;
+import com.likelion.dev_community.domain.question.dto.CodeCommentUpdateRequest;
 import com.likelion.dev_community.domain.question.entity.CodeComment;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
@@ -61,6 +63,43 @@ public class CodeCommentService{
         return codeCommentRepository.findByQuestionIdOrderByLineNumberAscCreatedAtAsc(questionId).stream()
                 .map(CodeCommentResponse::from)
                 .toList();
+    }
+
+    // 코드 코멘트 수정
+    public CodeCommentResponse updateComment(Long userId, boolean isAdmin, Long questionId, Long commentId, CodeCommentUpdateRequest request) {
+
+        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+
+        validateCodeReviewQuestion(question, userId, isAdmin);
+
+        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다."));
+
+        if (!comment.getQuestion().getId().equals(questionId)) {
+            throw new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다.");
+        }
+
+        AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 수정 가능");
+
+        comment.update(request.getContent());
+
+        return CodeCommentResponse.from(comment);
+    }
+
+    // 코드 코멘트 삭제
+    public void deleteComment(Long userId, boolean isAdmin, Long questionId, Long commentId){
+        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+
+        validateCodeReviewQuestion(question, userId, isAdmin);
+
+        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다."));
+
+        if (!comment.getQuestion().getId().equals(questionId)) {
+            throw new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다.");
+        }
+
+        AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 삭제 가능");
+
+        codeCommentRepository.delete(comment);
     }
 
     private void validateCodeReviewQuestion(Question question, Long userId, boolean isAdmin) {

@@ -39,4 +39,8 @@ public class CodeComment extends BaseTimeEntity {
         this.lineNumber = lineNumber;
         this.content = content;
     }
+
+    public void update(String content){
+        this.content = content;
+    }
 }

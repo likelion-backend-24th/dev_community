@@ -9,6 +9,7 @@ import { STATUS_LABEL } from "../../constants/questionStatus";
 import { TYPE_LABEL } from "../../constants/questionType";
 import ReportButton from "../../components/question/ReportButton";
 import AnswerItem from "../../components/question/AnswerItem";
+import CodeReviewBody from "../../components/question/CodeReviewBody";
 import AlertModal from "../../components/common/AlertModal";
 import ExpertBadge from "../../components/common/ExpertBadge";
 import AttachmentList from "../../components/attachment/AttachmentList";
@@ -271,7 +272,17 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      <p className="question-detail__body">{question.content}</p>
+      {question.type === "CODE_REVIEW" ? (
+        <CodeReviewBody
+          questionId={id}
+          content={question.content}
+          canComment={Boolean(user)}
+          currentUserId={user?.id}
+          isAdmin={isAdmin}
+        />
+      ) : (
+        <p className="question-detail__body">{question.content}</p>
+      )}
 
       <AttachmentList targetType="QUESTION" targetId={id} canDelete={canEdit} />
 
