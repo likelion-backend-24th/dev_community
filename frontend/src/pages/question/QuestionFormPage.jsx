@@ -26,6 +26,7 @@ function QuestionFormPage() {
   const [isPremium, setIsPremium] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [type, setType] = useState("GENERAL");
+  const [typeLocked, setTypeLocked] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
 
   const [error, setError] = useState("");
@@ -55,6 +56,7 @@ function QuestionFormPage() {
         setIsPremium(question.premium ?? false);
         setIsAnonymous(question.anonymous ?? false);
         setType(question.type ?? "GENERAL");
+        setTypeLocked(question.typeLocked ?? false);
       } catch {
         if (!cancelled) setError("질문 정보를 불러오지 못했습니다.");
       } finally {
@@ -248,12 +250,25 @@ function QuestionFormPage() {
                 id="questionType"
                 className="select"
                 value={type}
-                onChange={(e) => setType(e.target.value)}
+                onChange={(e) => {
+                  if (typeLocked) {
+                    window.alert(
+                      "채팅이 시작된 질문은 글 유형을 변경할 수 없어요.",
+                    );
+                    return;
+                  }
+                  setType(e.target.value);
+                }}
               >
                 <option value="GENERAL">일반</option>
                 <option value="CODE_REVIEW">코드리뷰</option>
                 <option value="CAREER_CONSULT">커리어상담</option>
               </select>
+              {typeLocked && (
+                <p className="form-field__hint">
+                  채팅이 시작된 질문은 글 유형을 변경할 수 없어요.
+                </p>
+              )}
             </div>
 
             <div className="form-field">

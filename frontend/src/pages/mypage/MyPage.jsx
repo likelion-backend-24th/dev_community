@@ -116,9 +116,9 @@ function MyPage() {
       <section className="profile-card card">
         <div className="profile-card__avatar">{profile.nickname[0]}</div>
         <div className="profile-card__info">
-          <p className="profile-card__nickname">
+          <p className="profile-card__nickname author-with-badge">
             {profile.nickname}
-            {profile.expert && <ExpertBadge />}
+            {profile.expert && <ExpertBadge className="expert-badge--sm" />}
           </p>
           <p className="profile-card__username">@{profile.username}</p>
           <p className="profile-card__joined">

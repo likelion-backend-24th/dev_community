@@ -1,0 +1,130 @@
+/* 1:1 채팅 (커리어상담) */
+
+.chat-room-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-base);
+}
+
+.chat-room-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background: var(--surface-secondary);
+  border-radius: var(--radius-md);
+  padding: var(--space-base) var(--space-lg);
+  border: 1px solid transparent;
+  transition: border-color var(--motion-fast) var(--ease-standard);
+}
+
+.chat-room-card:hover {
+  border-color: rgba(88, 101, 242, 0.4);
+}
+
+.chat-room-card--unread {
+  border-color: #4dd8ff;
+  box-shadow: 0 0 8px 1px rgba(77, 216, 255, 0.6), 0 0 16px rgba(77, 216, 255, 0.3);
+}
+
+.chat-room-card--unread:hover {
+  border-color: #4dd8ff;
+}
+
+.chat-room-card__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.chat-room-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-header);
+  overflow-wrap: break-word;
+}
+
+.chat-room-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px var(--space-md);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chat-room__counterpart {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 14px;
+  color: var(--text-normal);
+  margin-bottom: var(--space-base);
+}
+
+.chat-message-list {
+  list-style: none;
+  margin: 0 0 var(--space-lg);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.chat-message {
+  display: flex;
+}
+
+.chat-message--mine {
+  justify-content: flex-end;
+}
+
+.chat-message__bubble {
+  max-width: 70%;
+  background: var(--surface-secondary);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
+  padding: var(--space-sm) var(--space-base);
+}
+
+.chat-message--mine .chat-message__bubble {
+  background: var(--blurple);
+  color: #ffffff;
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
+}
+
+.chat-message__sender {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.75;
+}
+
+.chat-message__content {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.375;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+.chat-message__time {
+  margin: 4px 0 0;
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.chat-room__actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-base);
+}
+
+.chat-message-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}

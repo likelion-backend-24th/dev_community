@@ -4,6 +4,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { getQuestion, deleteQuestion } from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
 import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
+import { openChat } from "../../api/chatApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import { TYPE_LABEL } from "../../constants/questionType";
 import ReportButton from "../../components/question/ReportButton";
@@ -35,6 +36,10 @@ function QuestionDetailPage() {
   const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
   const [answerAttachmentFiles, setAnswerAttachmentFiles] = useState([]);
   const [answerAttachmentError, setAnswerAttachmentError] = useState("");
+
+  const [chatContent, setChatContent] = useState("");
+  const [chatSubmitting, setChatSubmitting] = useState(false);
+  const [chatError, setChatError] = useState("");
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
@@ -161,6 +166,20 @@ function QuestionDetailPage() {
     }
   };
 
+  const handleOpenChat = async (e) => {
+    e.preventDefault();
+    setChatSubmitting(true);
+    setChatError("");
+    try {
+      const room = await openChat(id, chatContent);
+      navigate(`/chats/${room.id}`);
+    } catch (err) {
+      setChatError(err.response?.data?.message ?? "채팅 개설에 실패했습니다.");
+    } finally {
+      setChatSubmitting(false);
+    }
+  };
+
   if (loading) return <p className="state-text">불러오는 중...</p>;
   if (notFound)
     return (
@@ -210,8 +229,10 @@ function QuestionDetailPage() {
       </div>
 
       <div className="question-detail__meta">
-        <span>{question.authorNickname}</span>
-        {question.authorIsExpert && <ExpertBadge />}
+        <span className="author-with-badge">
+          {question.authorNickname}
+          {question.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+        </span>
         <span>조회 {question.viewCount}</span>
         <span>추천 {question.likeCount}</span>
         <span>{new Date(question.createdAt).toLocaleString()}</span>
@@ -285,7 +306,47 @@ function QuestionDetailPage() {
         )}
       </div>
 
-      {user ? (
+      {user && question.type === "CAREER_CONSULT" ? (
+        <>
+          <h2 className="answers-heading">1:1 채팅</h2>
+          {isOwner ? (
+            <p className="state-text state-text--plain">
+              이 질문은 1:1 채팅으로 답변을 받아요. 받은 채팅은{" "}
+              <Link to="/chats">내 채팅</Link>에서 확인할 수 있어요.
+            </p>
+          ) : question.myChatRoomId ? (
+            <Link
+              to={`/chats/${question.myChatRoomId}`}
+              className="btn btn-primary"
+            >
+              채팅으로 이동
+            </Link>
+          ) : (
+            <form className="answer-form" onSubmit={handleOpenChat}>
+              <p className="state-text state-text--plain">1:1 채팅으로 답변해 보세요</p>
+              <textarea
+                className="textarea"
+                value={chatContent}
+                onChange={(e) => setChatContent(e.target.value)}
+                placeholder="채팅으로 보낼 첫 메시지를 입력하세요"
+                required
+              />
+              {chatError && (
+                <p className="inline-error" role="alert">
+                  {chatError}
+                </p>
+              )}
+              <button
+                type="submit"
+                className="btn btn-primary"
+                disabled={chatSubmitting}
+              >
+                {chatSubmitting ? "전송 중..." : "1:1 채팅 보내기"}
+              </button>
+            </form>
+          )}
+        </>
+      ) : user ? (
         <>
           <h2 className="answers-heading">답변 {answers.length}개</h2>
           <ul className="answer-list">

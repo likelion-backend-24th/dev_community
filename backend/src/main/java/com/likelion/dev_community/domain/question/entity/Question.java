@@ -1,6 +1,8 @@
 package com.likelion.dev_community.domain.question.entity;
 
 import com.likelion.dev_community.common.entity.BaseTimeEntity;
+import com.likelion.dev_community.common.exception.CustomException;
+import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -54,6 +56,10 @@ public class Question extends BaseTimeEntity {
     @Column(nullable = false, length = 20)
     private QuestionType type;
 
+    // 커리어상담 채팅이 한 번이라도 개설되면 true로 고정되어 이후 글 유형을 바꿀 수 없다.
+    @Column(nullable = false)
+    private boolean typeLocked;
+
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -73,10 +79,17 @@ public class Question extends BaseTimeEntity {
     }
 
     public void update(String title, String content, boolean isAnonymous, QuestionType type) {
+        if (this.typeLocked && this.type != type) {
+            throw new CustomException(ErrorCode.QUESTION_TYPE_LOCKED);
+        }
         this.title = title;
         this.content = content;
         this.isAnonymous = isAnonymous;
         this.type = type;
+    }
+
+    public void lockType() {
+        this.typeLocked = true;
     }
 
     // F-09

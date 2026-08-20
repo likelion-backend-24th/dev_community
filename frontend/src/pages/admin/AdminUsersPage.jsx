@@ -200,8 +200,10 @@ function AdminUsersPage() {
                 >
                   <td>{u.username}</td>
                   <td>
-                    {u.nickname}
-                    {u.expert && <ExpertBadge />}
+                    <span className="author-with-badge">
+                      {u.nickname}
+                      {u.expert && <ExpertBadge className="expert-badge--sm" />}
+                    </span>
                     {u.expertRequested && (
                       <span className="badge badge-pending badge--spaced">전문가 신청</span>
                     )}
