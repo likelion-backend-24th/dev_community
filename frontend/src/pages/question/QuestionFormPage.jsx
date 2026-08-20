@@ -6,11 +6,13 @@ import {
   updateQuestion,
 } from "../../api/questionApi";
 import { getMySubscription } from "../../api/subscriptionApi";
+import { getCodeComments } from "../../api/codeCommentApi";
 import { TYPE_CONTENT_TEMPLATE } from "../../constants/questionTemplates";
 import { uploadQuestionAttachments } from "../../api/attachmentApi";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
 import AttachmentList from "../../components/attachment/AttachmentList";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import AlertModal from "../../components/common/AlertModal";
 import "../../styles/question-form.css";
 
 const MAX_TAG_COUNT = 5;
@@ -29,6 +31,7 @@ function QuestionFormPage() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [type, setType] = useState("GENERAL");
   const [typeLocked, setTypeLocked] = useState(false);
+  const [contentLocked, setContentLocked] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
 
   const [error, setError] = useState("");
@@ -41,6 +44,8 @@ function QuestionFormPage() {
   // 본문에 작성한 내용이 있는 상태에서 유형을 바꿨을 때, 템플릿 적용 여부를
   // 확인받는 동안 대기 중인 다음 유형.
   const [pendingTypeChange, setPendingTypeChange] = useState(null);
+
+  const [alertMessage, setAlertMessage] = useState("");
 
   useEffect(() => {
     if (!isEditMode) return;
@@ -63,6 +68,13 @@ function QuestionFormPage() {
         setIsAnonymous(question.anonymous ?? false);
         setType(question.type ?? "GENERAL");
         setTypeLocked(question.typeLocked ?? false);
+
+        if (question.type === "CODE_REVIEW") {
+          try {
+            const comments = await getCodeComments(id);
+            if (!cancelled) setContentLocked(comments.length > 0);
+          } catch {}
+        }
       } catch {
         if (!cancelled) setError("질문 정보를 불러오지 못했습니다.");
       } finally {
@@ -192,6 +204,7 @@ function QuestionFormPage() {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="질문 내용을 자세히 작성해주세요"
+            disabled={contentLocked}
           />
         </div>
 
@@ -258,8 +271,14 @@ function QuestionFormPage() {
                 value={type}
                 onChange={(e) => {
                   if (typeLocked) {
-                    window.alert(
+                    setAlertMessage(
                       "채팅이 시작된 질문은 글 유형을 변경할 수 없어요.",
+                    );
+                    return;
+                  }
+                  if (contentLocked) {
+                    setAlertMessage(
+                      "코드 코멘트가 달려있어 글 유형을 변경할 수 없어요.",
                     );
                     return;
                   }
@@ -286,6 +305,22 @@ function QuestionFormPage() {
               {typeLocked && (
                 <p className="form-field__hint">
                   채팅이 시작된 질문은 글 유형을 변경할 수 없어요.
+                </p>
+              )}
+              {type === "CODE_REVIEW" && (
+                <p className="inline-error" role="alert">
+                  {contentLocked ? (
+                    "코드 코멘트가 달려있어 지금은 본문을 수정할 수 없어요!"
+                  ) : (
+                    <>
+                      코드리뷰 유형은 코드 코멘트가 하나라도 달리면 이후 본문을
+                      수정할 수 없어요!!
+                      <br />
+                      <br />
+                      코드 블록을 삽입하는 경우 등록 전 다시 한번 더 본문 내용을
+                      확인해주세요.
+                    </>
+                  )}
                 </p>
               )}
             </div>
@@ -353,6 +388,13 @@ function QuestionFormPage() {
           onCancel={() => {
             setPendingTypeChange(null);
           }}
+        />
+      )}
+
+      {alertMessage && (
+        <AlertModal
+          message={alertMessage}
+          onClose={() => setAlertMessage("")}
         />
       )}
     </div>

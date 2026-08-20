@@ -17,6 +17,7 @@ import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.entity.Tag;
 import com.likelion.dev_community.domain.question.entity.QuestionTag;
+import com.likelion.dev_community.domain.question.repository.CodeCommentRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
 import com.likelion.dev_community.domain.question.repository.TagRepository;
@@ -48,6 +49,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final TagRepository tagRepository;
     private final SubscriptionService subscriptionService;
     private final ChatRoomRepository chatRoomRepository;
+    private final CodeCommentRepository codeCommentRepository;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
 
@@ -218,6 +220,13 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         QuestionType type = question.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
+
+        if (question.getType() == QuestionType.CODE_REVIEW
+                && !question.getContent().equals(request.getContent())
+                && codeCommentRepository.existsByQuestionId(questionId)) {
+
+            throw new CustomException(ErrorCode.QUESTION_CONTENT_LOCKED);
+        }
 
         // String title = xssSanitizer.sanitize(request.getTitle());
         // String content = xssSanitizer.sanitize(request.getContent());

@@ -10,4 +10,6 @@ public interface CodeCommentRepository extends JpaRepository<CodeComment, Long> 
 
     @EntityGraph(attributePaths = "author")
     List<CodeComment> findByQuestionIdOrderByLineNumberAscCreatedAtAsc(Long questionId);
+
+    boolean existsByQuestionId(Long questionId);
 }

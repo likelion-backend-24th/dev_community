@@ -53,7 +53,8 @@ public enum ErrorCode {
     CHAT_NOT_ACTIVE(HttpStatus.CONFLICT, "CHAT_NOT_ACTIVE", "진행 중인 채팅이 아닙니다."),
     CHAT_ALREADY_ACCEPTED(HttpStatus.CONFLICT, "CHAT_ALREADY_ACCEPTED", "이미 수락된 채팅입니다."),
     CHAT_NOT_ACCEPTED(HttpStatus.CONFLICT, "CHAT_NOT_ACCEPTED", "아직 수락되지 않은 채팅입니다."),
-    QUESTION_TYPE_LOCKED(HttpStatus.CONFLICT, "QUESTION_TYPE_LOCKED", "채팅이 시작된 질문은 글 유형을 변경할 수 없습니다.");
+    QUESTION_TYPE_LOCKED(HttpStatus.CONFLICT, "QUESTION_TYPE_LOCKED", "채팅이 시작된 질문은 글 유형을 변경할 수 없습니다."),
+    QUESTION_CONTENT_LOCKED(HttpStatus.CONFLICT, "QUESTION_CONTENT_LOCKED", "코드 코멘트가 달린 질문은 본문을 수정할 수 없습니다.");
 
     private final HttpStatus status;
     private final String code;
