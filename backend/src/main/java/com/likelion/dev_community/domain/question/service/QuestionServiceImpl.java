@@ -1,6 +1,7 @@
 package com.likelion.dev_community.domain.question.service;
 
 import com.likelion.dev_community.common.AuthorizationValidator;
+import com.likelion.dev_community.common.ai.GeminiClient;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
@@ -50,6 +51,7 @@ public class QuestionServiceImpl implements QuestionService {
     private final SubscriptionService subscriptionService;
     private final ChatRoomRepository chatRoomRepository;
     private final CodeCommentRepository codeCommentRepository;
+    private final GeminiClient geminiClient;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
 
@@ -250,6 +252,31 @@ public class QuestionServiceImpl implements QuestionService {
                 .forEach(Answer::cascadeSoftDelete);
 
         question.softDelete();
+    }
+
+    private static final int AI_SUMMARY_MIN_LENGTH = 300;
+
+    // 질문 글 AI 요약(멤버십 구독자 전용). 최초 요청 시에만 Gemini를 호출하고 이후로는 캐시된 결과를 반환한다.
+    @Override
+    public String getSummary(Long questionId, Long userId, boolean isAdmin) {
+
+        subscriptionService.requireActiveSubscriber(userId, isAdmin);
+
+        Question question = questionRepository.findById(questionId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+
+        if (question.getSummary() != null) {
+            return question.getSummary();
+        }
+
+        if (question.getContent().length() < AI_SUMMARY_MIN_LENGTH) {
+            throw new CustomException(ErrorCode.AI_SUMMARY_TOO_SHORT);
+        }
+
+        String summary = geminiClient.summarize(question.getTitle(), question.getContent());
+        question.updateSummary(summary);
+
+        return summary;
     }
 
     private void checkUpdate(Question question, Long userId, boolean isAdmin) {

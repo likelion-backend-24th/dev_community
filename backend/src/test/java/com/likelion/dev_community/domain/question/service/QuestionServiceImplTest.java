@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.question.service;
 
+import com.likelion.dev_community.common.ai.GeminiClient;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
@@ -77,13 +78,16 @@ class QuestionServiceImplTest {
     @Mock
     private ChatRoomRepository chatRoomRepository;
 
+    @Mock
+    private GeminiClient geminiClient;
+
     private QuestionServiceImpl questionService;
 
     @BeforeEach
     void setUp() {
         questionService = new QuestionServiceImpl(
                 questionRepository, questionTagRepository, answerRepository, userRepository,
-                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository
+                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository, geminiClient
         );
     }
 

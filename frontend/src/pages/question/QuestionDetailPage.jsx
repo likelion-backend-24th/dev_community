@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { getQuestion, deleteQuestion } from "../../api/questionApi";
+import { getQuestion, deleteQuestion, getQuestionSummary } from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
 import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
 import { openChat } from "../../api/chatApi";
+import { getMySubscription } from "../../api/subscriptionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import { TYPE_LABEL } from "../../constants/questionType";
 import ReportButton from "../../components/question/ReportButton";
@@ -21,6 +22,8 @@ import rehypeHighlight from "rehype-highlight";
 
 import "../../styles/question.css";
 import "../../styles/error.css";
+
+const AI_SUMMARY_MIN_LENGTH = 300;
 
 function QuestionDetailPage() {
   const { id } = useParams();
@@ -45,6 +48,39 @@ function QuestionDetailPage() {
   const [chatContent, setChatContent] = useState("");
   const [chatSubmitting, setChatSubmitting] = useState(false);
   const [chatError, setChatError] = useState("");
+
+  const [summary, setSummary] = useState(null);
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+  const [summaryQuestionId, setSummaryQuestionId] = useState(id);
+  if (summaryQuestionId !== id) {
+    setSummaryQuestionId(id);
+    setSummary(null);
+    setSummaryError("");
+  }
+
+  const [isSubscriber, setIsSubscriber] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        let subscription;
+        try {
+          subscription = await getMySubscription();
+        } catch {
+          subscription = await getMySubscription();
+        }
+        if (!cancelled) setIsSubscriber(Boolean(subscription));
+      } catch {
+        if (!cancelled) setIsSubscriber(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const [reloadKey, setReloadKey] = useState(0);
   const reload = () => setReloadKey((k) => k + 1);
@@ -171,6 +207,19 @@ function QuestionDetailPage() {
     }
   };
 
+  const handleSummarize = async () => {
+    setSummaryLoading(true);
+    setSummaryError("");
+    try {
+      const result = await getQuestionSummary(id);
+      setSummary(result);
+    } catch (err) {
+      setSummaryError(err.response?.data?.message ?? "AI 요약에 실패했습니다.");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
+
   const handleOpenChat = async (e) => {
     e.preventDefault();
     setChatSubmitting(true);
@@ -280,6 +329,31 @@ function QuestionDetailPage() {
           <span className="question-card__meta">태그 없음</span>
         )}
       </div>
+
+      {question.content.length >= AI_SUMMARY_MIN_LENGTH && (isAdmin || isSubscriber) && (
+        <div className="ai-summary">
+          {summary ? (
+            <>
+              <p className="ai-summary__label">AI 요약</p>
+              <p className="ai-summary__text">{summary}</p>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={handleSummarize}
+              disabled={summaryLoading}
+            >
+              {summaryLoading ? "요약 생성 중..." : "AI 요약 보기"}
+            </button>
+          )}
+          {summaryError && (
+            <p className="inline-error" role="alert">
+              {summaryError}
+            </p>
+          )}
+        </div>
+      )}
 
       {question.type === "CODE_REVIEW" ? (
         <CodeReviewBody

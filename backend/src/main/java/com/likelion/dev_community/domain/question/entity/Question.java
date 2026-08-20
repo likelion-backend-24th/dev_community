@@ -63,6 +63,10 @@ public class Question extends BaseTimeEntity {
     @Column(nullable = false)
     private boolean typeLocked;
 
+    // AI 요약 결과 캐시. 최초 요청 시 생성해서 저장해두고 이후에는 재호출 없이 재사용한다.
+    @Column(columnDefinition = "TEXT")
+    private String summary;
+
     private LocalDateTime deletedAt;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -89,10 +93,15 @@ public class Question extends BaseTimeEntity {
         this.content = content;
         this.isAnonymous = isAnonymous;
         this.type = type;
+        this.summary = null;
     }
 
     public void lockType() {
         this.typeLocked = true;
+    }
+
+    public void updateSummary(String summary) {
+        this.summary = summary;
     }
 
     // F-09

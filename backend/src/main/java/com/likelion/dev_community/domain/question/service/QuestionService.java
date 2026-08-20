@@ -22,4 +22,7 @@ public interface QuestionService {
 
     // F-09 (삭제)
     void deleteQuestion(Long questionId, Long userId, boolean isAdmin);
+
+    // 질문 글 AI 요약 (멤버십 구독자 전용)
+    String getSummary(Long questionId, Long userId, boolean isAdmin);
 }
