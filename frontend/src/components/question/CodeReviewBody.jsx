@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   getCodeComments,
   createCodeComment,
@@ -6,8 +8,13 @@ import {
   deleteCodeComment,
 } from "../../api/codeCommentApi";
 
-// 코드리뷰 유형 질문 본문 줄 단위로 렌더링, 각 줄에 코멘트.
-function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmin }) {
+function CodeReviewBody({
+  questionId,
+  content,
+  canComment,
+  currentUserId,
+  isAdmin,
+}) {
   const [comments, setComments] = useState([]);
   const [hoveredLine, setHoveredLine] = useState(null);
   const [openLine, setOpenLine] = useState(null);
@@ -41,11 +48,38 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
     };
   }, [questionId, canComment]);
 
-  const lines = content.split("\n");
   const commentsByLine = comments.reduce((acc, comment) => {
     (acc[comment.lineNumber] ??= []).push(comment);
     return acc;
   }, {});
+
+  const handleToggleLine = (lineNumber) => {
+    if (!canComment) return;
+    setOpenLine((prev) => (prev === lineNumber ? null : lineNumber));
+    setDraft("");
+    setSubmitError("");
+  };
+
+  const handleSubmit = async (lineNumber) => {
+    if (!draft.trim() || submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const created = await createCodeComment(questionId, {
+        lineNumber,
+        content: draft.trim(),
+      });
+      setComments((prev) => [...prev, created]);
+      setDraft("");
+      setOpenLine(null);
+    } catch (err) {
+      setSubmitError(
+        err.response?.data?.message ?? "코멘트 등록에 실패했습니다.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleStartEdit = (comment) => {
     setEditingCommentId(comment.id);
@@ -97,38 +131,84 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
     }
   };
 
-  const handleToggleLine = (lineNumber) => {
-    if (!canComment) return;
-    setOpenLine((prev) => (prev === lineNumber ? null : lineNumber));
-    setDraft("");
-    setSubmitError("");
-  };
+  return (
+    <div className="markdown-body">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          code({ node, className, children }) {
+            const isFenced =
+              node.position.start.line !== node.position.end.line;
+            if (!isFenced) {
+              return <code className={className}>{children}</code>;
+            }
 
-  const handleSubmit = async (lineNumber) => {
-    if (!draft.trim() || submitting) return;
-    setSubmitting(true);
-    setSubmitError("");
-    try {
-      const created = await createCodeComment(questionId, {
-        lineNumber,
-        content: draft.trim(),
-      });
-      setComments((prev) => [...prev, created]);
-      setDraft("");
-      setOpenLine(null);
-    } catch (err) {
-      setSubmitError(
-        err.response?.data?.message ?? "코멘트 등록에 실패했습니다.",
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
+            const startLine = node.position.start.line + 1;
+            const codeText = String(children).replace(/\n$/, "");
 
+            return (
+              <CodeFenceBlock
+                lines={codeText.split("\n")}
+                startLine={startLine}
+                canComment={canComment}
+                currentUserId={currentUserId}
+                isAdmin={isAdmin}
+                commentsByLine={commentsByLine}
+                hoveredLine={hoveredLine}
+                onHoverLine={setHoveredLine}
+                openLine={openLine}
+                onToggleLine={handleToggleLine}
+                addForm={{
+                  draft,
+                  submitting,
+                  error: submitError,
+                  onDraftChange: setDraft,
+                  onSubmit: handleSubmit,
+                  onCancel: () => setOpenLine(null),
+                }}
+                editState={{
+                  commentId: editingCommentId,
+                  draft: editDraft,
+                  submitting: editSubmitting,
+                  error: editError,
+                  onDraftChange: setEditDraft,
+                  onStart: handleStartEdit,
+                  onCancel: handleCancelEdit,
+                  onSave: handleSaveEdit,
+                }}
+                onDelete={handleDelete}
+                deleteError={deleteError}
+              />
+            );
+          },
+        }}
+      >
+        {content}
+      </ReactMarkdown>
+    </div>
+  );
+}
+
+function CodeFenceBlock({
+  lines,
+  startLine,
+  canComment,
+  currentUserId,
+  isAdmin,
+  commentsByLine,
+  hoveredLine,
+  onHoverLine,
+  openLine,
+  onToggleLine,
+  addForm,
+  editState,
+  onDelete,
+  deleteError,
+}) {
   return (
     <div className="code-review-body">
       {lines.map((line, index) => {
-        const lineNumber = index + 1;
+        const lineNumber = startLine + index;
         const lineComments = commentsByLine[lineNumber] ?? [];
         const showAddButton =
           canComment && (hoveredLine === lineNumber || openLine === lineNumber);
@@ -137,13 +217,13 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
           <div key={lineNumber} className="code-review-line-wrap">
             <div
               className="code-review-line"
-              onMouseEnter={() => setHoveredLine(lineNumber)}
-              onMouseLeave={() => setHoveredLine(null)}
-              onClick={() => handleToggleLine(lineNumber)}
+              onMouseEnter={() => onHoverLine(lineNumber)}
+              onMouseLeave={() => onHoverLine(null)}
+              onClick={() => onToggleLine(lineNumber)}
             >
               <span className="code-review-line__number">{lineNumber}</span>
               <span className="code-review-line__content">
-                {line.length > 0 ? line : " "}
+                {line.length > 0 ? line : " "}
               </span>
               {showAddButton && (
                 <button
@@ -151,7 +231,7 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
                   className="code-review-line__add"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleToggleLine(lineNumber);
+                    onToggleLine(lineNumber);
                   }}
                   aria-label={`${lineNumber}번 줄에 코멘트 추가`}
                 >
@@ -168,7 +248,7 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
                 {lineComments.map((comment) => {
                   const canManage =
                     isAdmin || comment.authorId === currentUserId;
-                  const isEditing = editingCommentId === comment.id;
+                  const isEditing = editState.commentId === comment.id;
 
                   return (
                     <li key={comment.id} className="code-review-thread__item">
@@ -177,29 +257,31 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
                           <textarea
                             className="textarea"
                             rows={2}
-                            value={editDraft}
-                            onChange={(e) => setEditDraft(e.target.value)}
+                            value={editState.draft}
+                            onChange={(e) =>
+                              editState.onDraftChange(e.target.value)
+                            }
                           />
-                          {editError && (
+                          {editState.error && (
                             <p className="inline-error" role="alert">
-                              {editError}
+                              {editState.error}
                             </p>
                           )}
                           <div className="code-review-thread__form-actions">
                             <button
                               type="button"
                               className="btn btn-ghost btn-sm"
-                              onClick={handleCancelEdit}
+                              onClick={editState.onCancel}
                             >
                               취소
                             </button>
                             <button
                               type="button"
                               className="btn btn-primary btn-sm"
-                              disabled={editSubmitting}
-                              onClick={() => handleSaveEdit(comment)}
+                              disabled={editState.submitting}
+                              onClick={() => editState.onSave(comment)}
                             >
-                              {editSubmitting ? "저장 중..." : "저장"}
+                              {editState.submitting ? "저장 중..." : "저장"}
                             </button>
                           </div>
                         </div>
@@ -216,14 +298,14 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
                               <button
                                 type="button"
                                 className="code-review-thread__item-action"
-                                onClick={() => handleStartEdit(comment)}
+                                onClick={() => editState.onStart(comment)}
                               >
                                 수정
                               </button>
                               <button
                                 type="button"
                                 className="code-review-thread__item-action"
-                                onClick={() => handleDelete(comment)}
+                                onClick={() => onDelete(comment)}
                               >
                                 삭제
                               </button>
@@ -250,30 +332,30 @@ function CodeReviewBody({ questionId, content, canComment, currentUserId, isAdmi
                 <textarea
                   className="textarea"
                   rows={2}
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
+                  value={addForm.draft}
+                  onChange={(e) => addForm.onDraftChange(e.target.value)}
                   placeholder={`${lineNumber}번 줄에 코멘트 남기기`}
                 />
-                {submitError && (
+                {addForm.error && (
                   <p className="inline-error" role="alert">
-                    {submitError}
+                    {addForm.error}
                   </p>
                 )}
                 <div className="code-review-thread__form-actions">
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm"
-                    onClick={() => setOpenLine(null)}
+                    onClick={addForm.onCancel}
                   >
                     취소
                   </button>
                   <button
                     type="button"
                     className="btn btn-primary btn-sm"
-                    disabled={submitting}
-                    onClick={() => handleSubmit(lineNumber)}
+                    disabled={addForm.submitting}
+                    onClick={() => addForm.onSubmit(lineNumber)}
                   >
-                    {submitting ? "등록 중..." : "등록"}
+                    {addForm.submitting ? "등록 중..." : "등록"}
                   </button>
                 </div>
               </div>

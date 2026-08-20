@@ -290,7 +290,6 @@ function QuestionDetailPage() {
           isAdmin={isAdmin}
         />
       ) : (
-        // <p className="question-detail__body">{question.content}</p>
         <div className="question-detail__body markdown-body">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
