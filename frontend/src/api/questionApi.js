@@ -37,3 +37,8 @@ export async function getQuestionSummary(id) {
   const res = await client.get(`/api/questions/${id}/summary`)
   return res.data.data
 }
+
+export async function suggestQuestionTags(title, content) {
+  const res = await client.post('/api/questions/tags/suggest', { title, content })
+  return res.data.data
+}

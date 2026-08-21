@@ -57,7 +57,10 @@ public enum ErrorCode {
     QUESTION_CONTENT_LOCKED(HttpStatus.CONFLICT, "QUESTION_CONTENT_LOCKED", "코드 코멘트가 달린 질문은 본문을 수정할 수 없습니다."),
 
     AI_SUMMARY_TOO_SHORT(HttpStatus.BAD_REQUEST, "AI_SUMMARY_TOO_SHORT", "요약하기엔 너무 짧은 질문입니다."),
-    AI_SUMMARY_FAILED(HttpStatus.BAD_GATEWAY, "AI_SUMMARY_FAILED", "AI 요약 생성에 실패했습니다.");
+    AI_SUMMARY_FAILED(HttpStatus.BAD_GATEWAY, "AI_SUMMARY_FAILED", "AI 요약 생성에 실패했습니다."),
+
+    AI_TAG_SUGGESTION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AI_TAG_SUGGESTION_TOO_SHORT", "태그를 추천하기엔 본문이 너무 짧습니다."),
+    AI_TAG_SUGGESTION_FAILED(HttpStatus.BAD_GATEWAY, "AI_TAG_SUGGESTION_FAILED", "AI 태그 추천에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;

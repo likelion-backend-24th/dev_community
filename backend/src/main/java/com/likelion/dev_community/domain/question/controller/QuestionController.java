@@ -127,4 +127,16 @@ public class QuestionController {
 
         return ResponseEntity.ok(ApiResponse.success(summary));
     }
+
+    // 질문 작성 중 본문 기준 AI 태그 추천 (멤버십 구독자 전용)
+    @PostMapping("/tags/suggest")
+    public ResponseEntity<ApiResponse<List<String>>> suggestTags(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody TagSuggestRequest request
+    ) {
+        List<String> tags = questionService.suggestTags(
+                userDetails.getId(), userDetails.isAdmin(), request.getTitle(), request.getContent());
+
+        return ResponseEntity.ok(ApiResponse.success(tags));
+    }
 }
