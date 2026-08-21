@@ -50,6 +50,7 @@ services:
       PORTONE_CHANNEL_KEY: ${PORTONE_CHANNEL_KEY}
       PORTONE_WEBHOOK_SECRET: ${PORTONE_WEBHOOK_SECRET}
       PORTONE_WEBHOOK_NOTICE_URL: ${PORTONE_WEBHOOK_NOTICE_URL}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
     depends_on:
       mysql:
         condition: service_healthy
