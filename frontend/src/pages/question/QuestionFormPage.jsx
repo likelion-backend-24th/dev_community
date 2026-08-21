@@ -4,7 +4,9 @@ import {
   createQuestion,
   getQuestion,
   updateQuestion,
+  suggestQuestionTags,
 } from "../../api/questionApi";
+import { useAuth } from "../../hooks/useAuth";
 import { getMySubscription } from "../../api/subscriptionApi";
 import { getCodeComments } from "../../api/codeCommentApi";
 import { TYPE_CONTENT_TEMPLATE } from "../../constants/questionTemplates";
@@ -21,6 +23,7 @@ function QuestionFormPage() {
   const { id } = useParams();
   const isEditMode = Boolean(id);
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -134,6 +137,34 @@ function QuestionFormPage() {
     setTags((prev) => prev.filter((t) => t !== target));
   };
 
+  const [tagSuggestLoading, setTagSuggestLoading] = useState(false);
+  const [tagSuggestError, setTagSuggestError] = useState("");
+
+  const handleSuggestTags = async () => {
+    setTagSuggestLoading(true);
+    setTagSuggestError("");
+    try {
+      const suggested = await suggestQuestionTags(title, content);
+      setTags((prev) => {
+        const existingLower = new Set(prev.map((t) => t.toLowerCase()));
+        const merged = [...prev];
+        for (const tag of suggested) {
+          if (merged.length >= MAX_TAG_COUNT) break;
+          if (existingLower.has(tag.toLowerCase())) continue;
+          merged.push(tag);
+          existingLower.add(tag.toLowerCase());
+        }
+        return merged;
+      });
+    } catch (err) {
+      setTagSuggestError(
+        err.response?.data?.message ?? "태그 추천에 실패했습니다.",
+      );
+    } finally {
+      setTagSuggestLoading(false);
+    }
+  };
+
   const handleCancel = () => {
     navigate(-1);
   };
@@ -234,6 +265,26 @@ function QuestionFormPage() {
               disabled={tags.length >= MAX_TAG_COUNT}
             />
           </div>
+
+          {(isAdmin || isSubscriber) && (
+            <>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleSuggestTags}
+                disabled={
+                  tagSuggestLoading || !content.trim() || tags.length >= MAX_TAG_COUNT
+                }
+              >
+                {tagSuggestLoading ? "추천 태그 생성 중..." : "추천 태그"}
+              </button>
+              {tagSuggestError && (
+                <p className="inline-error" role="alert">
+                  {tagSuggestError}
+                </p>
+              )}
+            </>
+          )}
         </div>
 
         {(isSubscriber || isEditMode) && (
