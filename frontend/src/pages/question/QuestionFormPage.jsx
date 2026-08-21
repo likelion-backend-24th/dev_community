@@ -145,17 +145,7 @@ function QuestionFormPage() {
     setTagSuggestError("");
     try {
       const suggested = await suggestQuestionTags(title, content);
-      setTags((prev) => {
-        const existingLower = new Set(prev.map((t) => t.toLowerCase()));
-        const merged = [...prev];
-        for (const tag of suggested) {
-          if (merged.length >= MAX_TAG_COUNT) break;
-          if (existingLower.has(tag.toLowerCase())) continue;
-          merged.push(tag);
-          existingLower.add(tag.toLowerCase());
-        }
-        return merged;
-      });
+      setTags(suggested);
     } catch (err) {
       setTagSuggestError(
         err.response?.data?.message ?? "태그 추천에 실패했습니다.",
@@ -272,9 +262,7 @@ function QuestionFormPage() {
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={handleSuggestTags}
-                disabled={
-                  tagSuggestLoading || !content.trim() || tags.length >= MAX_TAG_COUNT
-                }
+                disabled={tagSuggestLoading || !content.trim()}
               >
                 {tagSuggestLoading ? "추천 태그 생성 중..." : "추천 태그"}
               </button>
