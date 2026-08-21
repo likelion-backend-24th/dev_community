@@ -21,6 +21,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 
 import "../../styles/question.css";
+import "../../styles/markdown.css";
 import "../../styles/error.css";
 
 const AI_SUMMARY_MIN_LENGTH = 300;

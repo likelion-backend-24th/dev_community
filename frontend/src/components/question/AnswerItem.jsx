@@ -14,6 +14,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import "../../styles/question.css";
+import "../../styles/markdown.css";
 
 function AnswerItem({
   answer,
