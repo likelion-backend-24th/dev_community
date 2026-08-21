@@ -3,6 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "../../hooks/useNotification";
 import { logout as logoutApi } from "../../api/authApi";
+import {
+  getRecentNotifications,
+  markAllNotificationsRead,
+} from "../../api/notificationApi";
 
 function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -12,21 +16,50 @@ function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
+  const [notifMenuOpen, setNotifMenuOpen] = useState(false);
+  const [notifItems, setNotifItems] = useState([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+  const notifMenuRef = useRef(null);
+
   useEffect(() => {
-    if (!menuOpen) return undefined;
+    if (!menuOpen && !notifMenuOpen) return undefined;
     const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false);
+      }
+      if (
+        notifMenuOpen &&
+        notifMenuRef.current &&
+        !notifMenuRef.current.contains(e.target)
+      ) {
+        setNotifMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [menuOpen]);
+  }, [menuOpen, notifMenuOpen]);
 
-  const handleBellClick = () => {
-    if (!notification) return;
-    navigate(notification.link);
+  const handleBellClick = async () => {
+    const opening = !notifMenuOpen;
+    setNotifMenuOpen(opening);
+    if (!opening) return;
+
     dismiss();
+    setNotifLoading(true);
+    try {
+      const items = await getRecentNotifications();
+      setNotifItems(items);
+      await markAllNotificationsRead();
+    } catch {
+      setNotifItems([]);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  const handleNotifItemClick = (link) => {
+    setNotifMenuOpen(false);
+    navigate(link);
   };
 
   const handleLogout = async () => {
@@ -57,25 +90,57 @@ function Navbar() {
               + 질문 작성
             </Link>
 
-            <button
-              type="button"
-              className="navbar__icon-btn"
-              onClick={handleBellClick}
-              aria-label="알림"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            <div className="navbar__notif-wrap" ref={notifMenuRef}>
+              <button
+                type="button"
+                className="navbar__icon-btn"
+                onClick={handleBellClick}
+                aria-label="알림"
+                aria-haspopup="true"
+                aria-expanded={notifMenuOpen}
               >
-                <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.7 21a2 2 0 0 1-3.4 0" />
-              </svg>
-              {notification && <span className="navbar__dot" />}
-            </button>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+                </svg>
+                {notification && <span className="navbar__dot" />}
+              </button>
+
+              {notifMenuOpen && (
+                <div className="navbar__notif-menu">
+                  <p className="navbar__notif-menu-title">알림</p>
+                  {notifLoading && (
+                    <p className="navbar__notif-empty">불러오는 중...</p>
+                  )}
+                  {!notifLoading && notifItems.length === 0 && (
+                    <p className="navbar__notif-empty">새 알림이 없어요.</p>
+                  )}
+                  {!notifLoading &&
+                    notifItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`navbar__notif-item${item.isRead ? "" : " navbar__notif-item--unread"}`}
+                        onClick={() => handleNotifItemClick(item.link)}
+                      >
+                        <span className="navbar__notif-item-message">
+                          {item.message}
+                        </span>
+                        <span className="navbar__notif-item-time">
+                          {new Date(item.createdAt).toLocaleString()}
+                        </span>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
 
             <div className="navbar__avatar-wrap" ref={menuRef}>
               <button

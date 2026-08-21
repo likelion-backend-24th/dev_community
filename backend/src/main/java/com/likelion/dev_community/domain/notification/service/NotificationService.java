@@ -1,5 +1,7 @@
 package com.likelion.dev_community.domain.notification.service;
 
+import com.likelion.dev_community.common.exception.CustomException;
+import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.chat.entity.ChatRoom;
 import com.likelion.dev_community.domain.notification.dto.NotificationPayload;
@@ -8,10 +10,13 @@ import com.likelion.dev_community.domain.notification.entity.NotificationType;
 import com.likelion.dev_community.domain.notification.repository.NotificationRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.user.entity.User;
+import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +24,26 @@ import org.springframework.transaction.annotation.Transactional;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+
+    // 벨 드롭다운에 보여줄 최근 알림 5개
+    @Transactional(readOnly = true)
+    public List<NotificationPayload> getRecentNotifications(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+
+        return notificationRepository.findTop5ByRecipientOrderByCreatedAtDesc(user).stream()
+                .map(NotificationPayload::from)
+                .toList();
+    }
+
+    // 벨 드롭다운 열람 시 알림 전부 읽음 처리
+    public void markAllAsRead(Long userId) {
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+
+        notificationRepository.findByRecipientAndIsReadFalse(user)
+                .forEach(Notification::markAsRead);
+    }
 
     // 내 질문에 새 답변이 달렸을 때, 질문 작성자에게 알림
     public void notifyNewAnswer(Question question, Answer answer) {

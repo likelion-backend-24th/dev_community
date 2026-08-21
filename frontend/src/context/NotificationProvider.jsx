@@ -7,6 +7,7 @@ import { resolveWsUrl } from "../utils/wsUrl";
 export function NotificationProvider({ children }) {
   const { accessToken } = useAuth();
   const [notification, setNotification] = useState(null);
+  const [toastVisible, setToastVisible] = useState(false);
   const clientRef = useRef(null);
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export function NotificationProvider({ children }) {
       onConnect: () => {
         client.subscribe("/user/queue/notifications", (message) => {
           setNotification(JSON.parse(message.body));
+          setToastVisible(true);
         });
       },
     });
@@ -35,10 +37,16 @@ export function NotificationProvider({ children }) {
     };
   }, [accessToken]);
 
-  const dismiss = () => setNotification(null);
+  const hideToast = () => setToastVisible(false);
+  const dismiss = () => {
+    setToastVisible(false);
+    setNotification(null);
+  };
 
   return (
-    <NotificationContext.Provider value={{ notification, dismiss }}>
+    <NotificationContext.Provider
+      value={{ notification, toastVisible, hideToast, dismiss }}
+    >
       {children}
     </NotificationContext.Provider>
   );
