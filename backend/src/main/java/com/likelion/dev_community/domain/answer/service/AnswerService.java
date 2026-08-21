@@ -8,7 +8,7 @@ import java.util.List;
 public interface AnswerService {
 
     // F-12
-    AnswerResponse createAnswer(Long userId, Long questionId, AnswerRequest request);
+    AnswerResponse createAnswer(Long userId, boolean isAdmin, Long questionId, AnswerRequest request);
 
     // 답변 목록 조회
     List<AnswerResponse> readAnswers(Long questionId);

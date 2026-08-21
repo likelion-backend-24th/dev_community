@@ -44,6 +44,7 @@ public enum ErrorCode {
 
     CAREER_CONSULT_ANSWER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CAREER_CONSULT_ANSWER_NOT_ALLOWED", "커리어상담 게시글에는 답변을 등록할 수 없습니다."),
     CODE_REVIEW_ONLY(HttpStatus.BAD_REQUEST, "CODE_REVIEW_ONLY", "코드리뷰 게시글에만 라인 코멘트를 남길 수 있습니다."),
+    ANONYMOUS_ANSWER_NOT_ALLOWED(HttpStatus.FORBIDDEN, "ANONYMOUS_ANSWER_NOT_ALLOWED", "멤버십 게시판의 질문에만 익명으로 답변할 수 있습니다."),
 
     CHAT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CHAT_NOT_ALLOWED", "커리어상담 게시글에서만 1:1 채팅을 사용할 수 있습니다."),
     CHAT_SELF_NOT_ALLOWED(HttpStatus.FORBIDDEN, "CHAT_SELF_NOT_ALLOWED", "본인의 글에는 채팅을 개설할 수 없습니다."),

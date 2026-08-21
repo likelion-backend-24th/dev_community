@@ -13,6 +13,7 @@ import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.reputation.service.ReputationService;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.entity.UserStatus;
@@ -51,23 +52,26 @@ class AnswerServiceImplTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock
+    private SubscriptionService subscriptionService;
+
     private AnswerServiceImpl answerService;
 
     @BeforeEach
     void setUp() {
-        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, new XssSanitizer(), reputationService, notificationService);
+        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, new XssSanitizer(), reputationService, notificationService, subscriptionService);
     }
 
     @Test
     void 정상적으로_답변을_작성한다() {
         User author = createUser(1L, "answerer");
         Question question = createQuestion(10L, createUser(2L, "asker"));
-        AnswerRequest request = new AnswerRequest("정말 좋은 질문이네요.");
+        AnswerRequest request = new AnswerRequest("정말 좋은 질문이네요.", false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
 
-        AnswerResponse response = answerService.createAnswer(1L, 10L, request);
+        AnswerResponse response = answerService.createAnswer(1L, false, 10L, request);
 
         assertThat(response.getContent()).isEqualTo("정말 좋은 질문이네요.");
         assertThat(response.getQuestionId()).isEqualTo(10L);
@@ -80,12 +84,12 @@ class AnswerServiceImplTest {
     @Test
     void 존재하지_않는_질문이면_예외가_발생한다() {
         User author = createUser(1L, "answerer");
-        AnswerRequest request = new AnswerRequest("내용");
+        AnswerRequest request = new AnswerRequest("내용", false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(questionRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> answerService.createAnswer(1L, 999L, request))
+        assertThatThrownBy(() -> answerService.createAnswer(1L, false, 999L, request))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.NOT_FOUND));
     }
@@ -134,12 +138,12 @@ class AnswerServiceImplTest {
     void 커리어상담_질문에는_답변을_등록할_수_없다() {
         User author = createUser(1L, "answerer");
         Question question = createQuestion(10L, createUser(2L, "asker"), QuestionType.CAREER_CONSULT);
-        AnswerRequest request = new AnswerRequest("답변 시도");
+        AnswerRequest request = new AnswerRequest("답변 시도", false);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(author));
         when(questionRepository.findById(10L)).thenReturn(Optional.of(question));
 
-        assertThatThrownBy(() -> answerService.createAnswer(1L, 10L, request))
+        assertThatThrownBy(() -> answerService.createAnswer(1L, false, 10L, request))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.CAREER_CONSULT_ANSWER_NOT_ALLOWED));
     }
@@ -180,7 +184,7 @@ class AnswerServiceImplTest {
         User author = createUser(1L, "answerer");
         Question question = createQuestion(10L, createUser(2L, "asker"));
         Answer answer = createAnswer(100L, question, author, "원래 내용");
-        AnswerRequest request = new AnswerRequest("수정된 내용");
+        AnswerRequest request = new AnswerRequest("수정된 내용", false);
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
@@ -194,7 +198,7 @@ class AnswerServiceImplTest {
         User author = createUser(1L, "answerer");
         Question question = createQuestion(10L, createUser(2L, "asker"));
         Answer answer = createAnswer(100L, question, author, "원래 내용");
-        AnswerRequest request = new AnswerRequest("수정된 내용");
+        AnswerRequest request = new AnswerRequest("수정된 내용", false);
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
@@ -208,7 +212,7 @@ class AnswerServiceImplTest {
         User author = createUser(1L, "answerer");
         Question question = createQuestion(10L, createUser(2L, "asker"));
         Answer answer = createAnswer(100L, question, author, "원래 내용");
-        AnswerRequest request = new AnswerRequest("관리자가 수정한 내용");
+        AnswerRequest request = new AnswerRequest("관리자가 수정한 내용", false);
 
         when(answerRepository.findById(100L)).thenReturn(Optional.of(answer));
 
@@ -219,7 +223,7 @@ class AnswerServiceImplTest {
 
     @Test
     void 존재하지_않는_답변_수정시_예외가_발생한다() {
-        AnswerRequest request = new AnswerRequest("수정된 내용");
+        AnswerRequest request = new AnswerRequest("수정된 내용", false);
 
         when(answerRepository.findById(999L)).thenReturn(Optional.empty());
 

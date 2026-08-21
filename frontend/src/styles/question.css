@@ -325,6 +325,19 @@
   gap: var(--space-sm);
 }
 
+.answer-form__checkbox {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 14px;
+  color: var(--text-normal);
+  cursor: pointer;
+}
+
+.answer-form__checkbox input {
+  accent-color: var(--blurple);
+}
+
 .report-widget form {
   display: inline-flex;
   align-items: center;

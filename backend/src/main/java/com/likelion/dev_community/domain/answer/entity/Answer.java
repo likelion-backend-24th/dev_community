@@ -42,15 +42,19 @@ public class Answer extends BaseTimeEntity {
     @Column(nullable = false)
     private int likeCount;
 
+    @Column(nullable = false)
+    private boolean isAnonymous;
+
     private LocalDateTime deletedAt;
 
     @Builder
-    public Answer(Question question, User author, String content) {
+    public Answer(Question question, User author, String content, boolean isAnonymous) {
         this.question = question;
         this.author = author;
         this.content = content;
         this.isAdopted = false;
         this.likeCount = 0;
+        this.isAnonymous = isAnonymous;
     }
 
     public void update(String content) {

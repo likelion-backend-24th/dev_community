@@ -27,7 +27,7 @@ public class AnswerController {
             @PathVariable Long questionId,
             @Valid @RequestBody AnswerRequest request
     ) {
-        AnswerResponse response = answerService.createAnswer(userDetails.getId(), questionId, request);
+        AnswerResponse response = answerService.createAnswer(userDetails.getId(), userDetails.isAdmin(), questionId, request);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("답변 등록 완료", response));

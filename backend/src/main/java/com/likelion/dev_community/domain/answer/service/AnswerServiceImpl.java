@@ -15,6 +15,7 @@ import com.likelion.dev_community.domain.question.entity.QuestionType;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.reputation.entity.ReputationEvent;
 import com.likelion.dev_community.domain.reputation.service.ReputationService;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
 import com.likelion.dev_community.domain.user.entity.User;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +36,11 @@ public class AnswerServiceImpl implements AnswerService {
     private final XssSanitizer xssSanitizer;
     private final ReputationService reputationService;
     private final NotificationService notificationService;
+    private final SubscriptionService subscriptionService;
 
     // F-12
     @Override
-    public AnswerResponse createAnswer(Long userId, Long questionId, AnswerRequest request) {
+    public AnswerResponse createAnswer(Long userId, boolean isAdmin, Long questionId, AnswerRequest request) {
 
         User author = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
@@ -55,12 +57,21 @@ public class AnswerServiceImpl implements AnswerService {
             throw new CustomException(ErrorCode.SELF_ANSWER_NOT_ALLOWED);
         }
 
+        // 익명 답변은 멤버십 게시판 질문, 구독자에 한해 허용
+        if (request.isAnonymous()) {
+            if (!question.isPremium()) {
+                throw new CustomException(ErrorCode.ANONYMOUS_ANSWER_NOT_ALLOWED);
+            }
+            subscriptionService.requireActiveSubscriber(userId, isAdmin);
+        }
+
         // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
         // String content = xssSanitizer.sanitize(request.getContent());
         Answer answer = Answer.builder()
                 .question(question)
                 .author(author)
                 .content(request.getContent())
+                .isAnonymous(request.isAnonymous())
                 .build();
 
         answerRepository.save(answer);

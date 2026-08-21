@@ -35,7 +35,7 @@ class AnswerRequestTest {
     @NullAndEmptySource
     @ValueSource(strings = {" ", "\n", "\t"})
     void content가_비어있으면_검증에_실패한다(String blankContent) {
-        AnswerRequest request = new AnswerRequest(blankContent);
+        AnswerRequest request = new AnswerRequest(blankContent, false);
 
         Set<ConstraintViolation<AnswerRequest>> violations = validator.validate(request);
 
@@ -45,7 +45,7 @@ class AnswerRequestTest {
 
     @Test
     void content가_존재하면_검증을_통과한다() {
-        AnswerRequest request = new AnswerRequest("정상적인 답변 내용입니다.");
+        AnswerRequest request = new AnswerRequest("정상적인 답변 내용입니다.", false);
 
         Set<ConstraintViolation<AnswerRequest>> violations = validator.validate(request);
 
