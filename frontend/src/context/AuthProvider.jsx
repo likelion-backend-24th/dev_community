@@ -55,6 +55,16 @@ export function AuthProvider({ children }) {
           return Promise.reject(error);
         }
 
+        // 미구독자가 멤버십 게시판 접근 시 403 페이지 대신 멤버십 가입 페이지로 안내해 가입 유도.
+        const isPremiumBoardEndpoint = url.includes("/api/questions/premium");
+
+        if (status === 403 && isPremiumBoardEndpoint) {
+          navigate("/membership", {
+            state: { message: "멤버십 가입 후 이용할 수 있어요." },
+          });
+          return Promise.reject(error);
+        }
+
         if (status === 403) {
           navigate("/403");
           return Promise.reject(error);

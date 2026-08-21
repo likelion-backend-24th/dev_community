@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getMySubscription } from "../../api/subscriptionApi";
 import {
@@ -156,6 +157,8 @@ const FAQ_ITEMS = [
 
 function MembershipPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const [toast, setToast] = useState(location.state?.message ?? "");
   const [subscription, setSubscription] = useState(null);
   const [latestPayment, setLatestPayment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -167,6 +170,12 @@ function MembershipPage() {
   const [showCancelForm, setShowCancelForm] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     let cancelledEffect = false;
@@ -537,6 +546,8 @@ function MembershipPage() {
           </p>
         </>
       )}
+
+      {toast && <div className="toast" role="status">{toast}</div>}
     </div>
   );
 }
