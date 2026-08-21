@@ -79,8 +79,14 @@ public class SubscriptionService {
     // 구독자 전용 기능 접근 체크
     @Transactional
     public void requireActiveSubscriber(Long userId, boolean isAdmin){
-        if(!isAdmin && !isActiveSubscriber(userId))
+        if (isAdmin)
+            return;
+        if (userId == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED, "로그인이 필요합니다.");
+        }
+        if (!isActiveSubscriber(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN, "구독자 전용 기능입니다.");
+        }
     }
 
     // 만료일 지연 갱신

@@ -1,26 +1,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "./AuthContext";
-import client from "../api/client";
-import { reissue } from "../api/authApi";
+import client, { refreshAccessToken } from "../api/client";
+import {
+  getAccessToken,
+  setAccessToken as persistAccessToken,
+  subscribeAccessToken,
+} from "../api/tokenStore";
 import { decodeToken } from "../utils/jwt";
 
-let refreshPromise = null;
-
 export function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(() =>
-    localStorage.getItem("accessToken"),
-  );
+  const [accessToken, setAccessToken] = useState(() => getAccessToken());
   const navigate = useNavigate();
 
+  useEffect(() => subscribeAccessToken(setAccessToken), []);
+
   const login = useCallback((token) => {
-    localStorage.setItem("accessToken", token);
-    setAccessToken(token);
+    persistAccessToken(token);
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem("accessToken");
-    setAccessToken(null);
+    persistAccessToken(null);
   }, []);
 
   useEffect(() => {
@@ -55,6 +55,16 @@ export function AuthProvider({ children }) {
           return Promise.reject(error);
         }
 
+        // 미구독자가 멤버십 게시판 접근 시 403 페이지 대신 멤버십 가입 페이지로 안내해 가입 유도.
+        const isPremiumBoardEndpoint = url.includes("/api/questions/premium");
+
+        if (status === 403 && isPremiumBoardEndpoint) {
+          navigate("/membership", {
+            state: { message: "멤버십 가입 후 이용할 수 있어요." },
+          });
+          return Promise.reject(error);
+        }
+
         if (status === 403) {
           navigate("/403");
           return Promise.reject(error);
@@ -69,13 +79,7 @@ export function AuthProvider({ children }) {
         if (!error.config._retry) {
           error.config._retry = true;
           try {
-            if (!refreshPromise) {
-              refreshPromise = reissue().finally(() => {
-                refreshPromise = null;
-              });
-            }
-            const { accessToken: newAccessToken } = await refreshPromise;
-            login(newAccessToken);
+            await refreshAccessToken();
             return client(error.config);
           } catch {
             // 재발급 실패 -> 아래 로그아웃 처리로 진행
