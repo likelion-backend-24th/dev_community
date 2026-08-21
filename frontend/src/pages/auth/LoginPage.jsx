@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { login } from "../../api/authApi";
 import AuthHeader from "../../components/layout/AuthHeader";
 import "../../styles/auth.css";
 
+const OAUTH_ERROR_MESSAGES = {
+  SUSPENDED_ACCOUNT: "정지된 계정입니다.",
+  WITHDRAWN_ACCOUNT: "탈퇴한 계정입니다.",
+  OAUTH_LOGIN_FAILED: "소셜 로그인에 실패했습니다.",
+};
+
 function LoginPage() {
   const { login: setAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(
-    location.state?.signupSuccess
-      ? "회원가입이 완료되었습니다."
-      : (location.state?.message ?? ""),
+    location.state?.signupSuccess ? "회원가입이 완료되었습니다." : "",
   );
 
   useEffect(() => {
@@ -24,6 +29,14 @@ function LoginPage() {
     const timer = setTimeout(() => setToast(""), 3000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  // 소셜 로그인 실패/정지·탈퇴 계정으로 리다이렉트돼서 돌아온 경우, 쿼리스트링의 error 코드를 메시지로 보여줌
+  useEffect(() => {
+    const errorCode = searchParams.get("error");
+    if (errorCode) {
+      setError(OAUTH_ERROR_MESSAGES[errorCode] ?? "로그인에 실패했습니다.");
+    }
+  }, [searchParams]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -46,13 +59,14 @@ function LoginPage() {
     }
   };
 
-  // GitHub 인증 화면으로 리다이렉트. 콜백은 GitHub OAuth App에 등록한
-  // "/login/oauth2/code/github" 경로로 돌아오고, 그 라우트(OAuthCallbackPage)가 나머지를 처리함
+  // 백엔드가 GitHub 인증을 시작하는 엔드포인트로 이동 (Spring Security OAuth2 Client가 자동 생성)
+  // 인가 코드 교환/콜백 처리까지 전부 백엔드가 하고, 끝나면 /oauth/callback으로 다시 리다이렉트해줌
   const handleGithubLogin = () => {
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID;
-    const redirectUri = `${window.location.origin}/login/oauth2/code/github`;
-    const url = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=read:user`;
-    window.location.href = url;
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/github`;
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   };
 
   return (
@@ -120,6 +134,15 @@ function LoginPage() {
           >
             <i className="ti ti-brand-github" aria-hidden="true"></i>
             GitHub로 로그인
+          </button>
+
+          <button
+            type="button"
+            className="auth-oauth-btn"
+            onClick={handleGoogleLogin}
+          >
+            <i className="ti ti-brand-google" aria-hidden="true"></i>
+            Google로 로그인
           </button>
 
           <div className="auth-links">

@@ -14,12 +14,6 @@ app:
   upload:
     dir: uploads
 
-oauth:
-  github:
-    client-id: ${GITHUB_CLIENT_ID:}
-    client-secret: ${GITHUB_CLIENT_SECRET:}
-    redirect-uri: ${GITHUB_REDIRECT_URI:}
-
 jwt:
   expirationMs: 900000
   refreshExpirationMs: 1209600000

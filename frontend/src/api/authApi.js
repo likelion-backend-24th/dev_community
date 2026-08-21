@@ -37,11 +37,6 @@ export async function reissue() {
   return res.data.data
 }
 
-export async function oauthLogin(provider, code) {
-  const res = await client.post(`/api/auth/oauth/${provider}`, { code })
-  return res.data.data
-}
-
 export async function oauthComplete(signupToken, nickname) {
   const res = await client.post('/api/auth/oauth/complete', { signupToken, nickname })
   return res.data.data
