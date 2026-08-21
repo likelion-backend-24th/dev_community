@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "./AuthContext";
 import client, { refreshAccessToken } from "../api/client";
@@ -10,7 +16,10 @@ import {
 import { decodeToken } from "../utils/jwt";
 
 export function AuthProvider({ children }) {
-  const [accessToken, setAccessToken] = useState(() => getAccessToken());
+  const accessToken = useSyncExternalStore(
+    subscribeAccessToken,
+    getAccessToken,
+  );
   const navigate = useNavigate();
 
   // navigate가 라우팅할 때마다 새 참조로 바뀌어서(react-router 버전 이슈로 보임),
@@ -23,8 +32,6 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     navigateRef.current = navigate;
   }, [navigate]);
-
-  useEffect(() => subscribeAccessToken(setAccessToken), []);
 
   const login = useCallback((token) => {
     persistAccessToken(token);
