@@ -42,4 +42,9 @@ portone:
 
 gemini:
   api-key: ${GEMINI_API_KEY:}
-  model: gemini-3.6-flash
+  # gemini-3.6-flash 같은 "thinking" 모델은 무료 티어 일일 요청 한도가 20회로 낮고,
+  # 사고(thinking) 토큰까지 써서 응답도 느림. 요약/태그 추천처럼 깊은 추론이
+  # 필요 없는 작업은 사고 과정이 없는 flash-lite 계열로도 품질 차이가 없어서
+  # 이쪽으로 전환 — 별도 할당량 버킷이라 더 여유롭고 응답도 더 빠름.
+  # latest 별칭이라 모델 지원 종료로 갈아타야 할 일도 줄어듦.
+  model: gemini-flash-lite-latest
