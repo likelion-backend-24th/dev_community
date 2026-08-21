@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.dev_community.security.handler.RestAccessDeniedHandler;
 import com.likelion.dev_community.security.handler.RestAuthenticationEntryPoint;
 import com.likelion.dev_community.security.jwt.JwtAuthenticationFilter;
+import com.likelion.dev_community.security.oauth.OAuth2FailureHandler;
+import com.likelion.dev_community.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -36,20 +40,17 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        // 실제 인증은 STOMP CONNECT 프레임에서 처리(StompAuthChannelInterceptor).
-                        // 핸드셰이크 단계는 Authorization 헤더를 실을 수 없어 여기서 막으면 안 됨.
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/api/auth/logout").authenticated()
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**",
                                 "/v3/api-docs", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
-                        // 답변 목록은 로그인한 사용자만 조회 가능 (비로그인 시 프론트에서 블러 처리와 함께 회원가입 유도)
                         .requestMatchers(HttpMethod.GET, "/api/questions/*/answers").authenticated()
-                        // AI 요약은 멤버십 구독자 전용 기능(서비스 계층에서 구독 여부 재검증)
                         .requestMatchers(HttpMethod.GET, "/api/questions/*/summary").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/questions/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/answers/**").permitAll()
@@ -60,6 +61,10 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler(restAccessDeniedHandler)
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
+                )
+                .oauth2Login(oauth2 -> oauth2                      // 추가
+                        .successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

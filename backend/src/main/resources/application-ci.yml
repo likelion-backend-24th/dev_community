@@ -12,6 +12,19 @@ spring:
     redis:
       host: localhost
       port: 6379
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ci-dummy-github-client-id
+            client-secret: ci-dummy-github-client-secret
+          google:
+            client-id: ci-dummy-google-client-id
+            client-secret: ci-dummy-google-client-secret
+
+app:
+  frontend-url: http://localhost:5173
 
 jwt:
   secret: G+6kqk1HfUM/SeQldaZr7C7TEzP9v63eugSEqOMDong=

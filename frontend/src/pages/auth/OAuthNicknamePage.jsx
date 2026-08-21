@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { useLocation, useNavigate, Navigate } from "react-router-dom";
+import { useSearchParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { checkNickname, oauthComplete } from "../../api/authApi";
 import "../../styles/auth.css";
 
 function OAuthNicknamePage() {
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { login: setAuth } = useAuth();
 
-  const { signupToken, suggestedNickname } = location.state ?? {};
+  const signupToken = searchParams.get("signupToken");
+  const suggestedNickname = searchParams.get("nickname");
 
   const [nickname, setNickname] = useState(suggestedNickname ?? "");
   const [error, setError] = useState("");
@@ -31,7 +32,7 @@ function OAuthNicknamePage() {
     setError("");
 
     try {
-      await checkNickname(nickname); // 기존 회원가입 폼이랑 같은 중복확인 API 재사용
+      await checkNickname(nickname);
     } catch (err) {
       setSubmitting(false);
       setError(err.response?.data?.message ?? "사용할 수 없는 닉네임입니다.");

@@ -3,14 +3,12 @@ package com.likelion.dev_community.domain.user.service;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.user.dto.authDto.*;
-import com.likelion.dev_community.domain.user.dto.oauthDto.GithubUserInfo;
 import com.likelion.dev_community.domain.user.entity.*;
 import com.likelion.dev_community.domain.user.repository.OAuthSignupInfoRepository;
 import com.likelion.dev_community.domain.user.repository.RefreshTokenRepository;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import com.likelion.dev_community.security.jwt.CookieProvider;
 import com.likelion.dev_community.security.jwt.JwtProvider;
-import com.likelion.dev_community.security.oauth.GithubOAuthClient;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -24,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -36,7 +33,6 @@ public class AuthService {
     private final JwtProvider jwtProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final CookieProvider cookieProvider;
-    private final GithubOAuthClient githubOAuthClient;
     private final OAuthSignupInfoRepository oauthSignupInfoRepository;
 
     // 회원가입
@@ -145,35 +141,6 @@ public class AuthService {
             throw new CustomException(ErrorCode.DUPLICATE_RESOURCE, "사용중인 닉네임입니다." + nickname);
     }
 
-    // github 로그인
-    @Transactional
-    public OAuthLoginResponse oauthLogin(AuthProvider provider, String code, HttpServletResponse httpServletResponse) {
-
-        GithubUserInfo info = switch (provider) {
-            case GITHUB -> githubOAuthClient.getUserInfo(code);
-            default -> throw new CustomException(ErrorCode.INVALID_INPUT, "지원하지 않는 로그인 방식입니다.");
-        };
-
-        Optional<User> existing = userRepository.findByProviderAndProviderId(provider, info.getId());
-
-        if (existing.isPresent()) {
-            User user = existing.get();
-
-            if (user.getStatus() == UserStatus.WITHDRAWN)
-                throw new CustomException(ErrorCode.WITHDRAWN_ACCOUNT);
-            if (user.getStatus() == UserStatus.SUSPENDED)
-                throw new CustomException(ErrorCode.SUSPENDED_ACCOUNT);
-
-            return OAuthLoginResponse.ofExistingUser(issueToken(user, httpServletResponse));
-        }
-
-        String signupToken = UUID.randomUUID().toString();
-        oauthSignupInfoRepository.save(new OAuthSignupInfo(signupToken, provider.name(), info.getId()));
-
-        return OAuthLoginResponse.ofNewUser(signupToken, info.getLogin());
-    }
-
-    // 닉네임 입력받은 뒤 실제 회원가입 + 로그인
     @Transactional
     public TokenResponse oauthComplete(String signupToken, String nickname, HttpServletResponse httpServletResponse) {
 

@@ -32,7 +32,7 @@ const NO_NAVBAR_PATHS = [
   "/",
   "/login",
   "/signup",
-  "/login/oauth2/code/github",
+  "/oauth/callback",
   "/oauth/nickname",
 ];
 
@@ -67,9 +67,10 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
-          {/* GitHub OAuth 콜백. GitHub App의 Authorization callback URL이랑 경로 정확히 일치해야 함 */}
-          <Route path="/login/oauth2/code/github" element={<OAuthCallbackPage />} />
-          {/* 처음 인증하는 GitHub 계정이면 여기서 닉네임 입력받고 가입 완료 */}
+          {/* Spring Security OAuth2 Client가 백엔드(8080)에서 인증 처리를 끝낸 뒤
+              accessToken을 쿼리스트링에 실어 이 경로로 리다이렉트시켜줌 (provider 구분 없이 공용) */}
+          <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+          {/* 처음 인증하는 소셜 계정(GitHub/Google)이면 여기서 닉네임 입력받고 가입 완료 */}
           <Route path="/oauth/nickname" element={<OAuthNicknamePage />} />
 
           <Route element={<PrivateRoute />}>

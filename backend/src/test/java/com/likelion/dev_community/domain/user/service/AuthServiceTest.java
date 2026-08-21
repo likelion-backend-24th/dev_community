@@ -16,7 +16,6 @@ import com.likelion.dev_community.domain.user.repository.RefreshTokenRepository;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
 import com.likelion.dev_community.security.jwt.CookieProvider;
 import com.likelion.dev_community.security.jwt.JwtProvider;
-import com.likelion.dev_community.security.oauth.GithubOAuthClient;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -63,17 +62,13 @@ class AuthServiceTest {
     private Claims claims;
 
     @Mock
-    private GithubOAuthClient githubOAuthClient;
-
-    @Mock
     private OAuthSignupInfoRepository oAuthSignupInfoRepository;
 
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider,
-                githubOAuthClient, oAuthSignupInfoRepository);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider, oAuthSignupInfoRepository);
     }
 
     // ===== signUp (F-01) =====
