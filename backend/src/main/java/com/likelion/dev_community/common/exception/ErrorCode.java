@@ -44,6 +44,7 @@ public enum ErrorCode {
 
     CAREER_CONSULT_ANSWER_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CAREER_CONSULT_ANSWER_NOT_ALLOWED", "커리어상담 게시글에는 답변을 등록할 수 없습니다."),
     CODE_REVIEW_ONLY(HttpStatus.BAD_REQUEST, "CODE_REVIEW_ONLY", "코드리뷰 게시글에만 라인 코멘트를 남길 수 있습니다."),
+    ANONYMOUS_ANSWER_NOT_ALLOWED(HttpStatus.FORBIDDEN, "ANONYMOUS_ANSWER_NOT_ALLOWED", "멤버십 게시판의 질문에만 익명으로 답변할 수 있습니다."),
 
     CHAT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "CHAT_NOT_ALLOWED", "커리어상담 게시글에서만 1:1 채팅을 사용할 수 있습니다."),
     CHAT_SELF_NOT_ALLOWED(HttpStatus.FORBIDDEN, "CHAT_SELF_NOT_ALLOWED", "본인의 글에는 채팅을 개설할 수 없습니다."),
@@ -57,7 +58,10 @@ public enum ErrorCode {
     QUESTION_CONTENT_LOCKED(HttpStatus.CONFLICT, "QUESTION_CONTENT_LOCKED", "코드 코멘트가 달린 질문은 본문을 수정할 수 없습니다."),
 
     AI_SUMMARY_TOO_SHORT(HttpStatus.BAD_REQUEST, "AI_SUMMARY_TOO_SHORT", "요약하기엔 너무 짧은 질문입니다."),
-    AI_SUMMARY_FAILED(HttpStatus.BAD_GATEWAY, "AI_SUMMARY_FAILED", "AI 요약 생성에 실패했습니다.");
+    AI_SUMMARY_FAILED(HttpStatus.BAD_GATEWAY, "AI_SUMMARY_FAILED", "AI 요약 생성에 실패했습니다."),
+
+    AI_TAG_SUGGESTION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AI_TAG_SUGGESTION_TOO_SHORT", "태그를 추천하기엔 본문이 너무 짧습니다."),
+    AI_TAG_SUGGESTION_FAILED(HttpStatus.BAD_GATEWAY, "AI_TAG_SUGGESTION_FAILED", "AI 태그 추천에 실패했습니다.");
 
     private final HttpStatus status;
     private final String code;

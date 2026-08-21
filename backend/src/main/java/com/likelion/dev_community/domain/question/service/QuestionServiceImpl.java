@@ -279,6 +279,28 @@ public class QuestionServiceImpl implements QuestionService {
         return summary;
     }
 
+    private static final int AI_TAG_SUGGESTION_MIN_LENGTH = 20;
+
+    // 질문 작성 중 본문 기준 AI 태그 추천(멤버십 구독자 전용). 작성 중인 임시 내용이라 캐싱하지 않고 매 요청마다 새로 호출한다.
+    @Override
+    public List<String> suggestTags(Long userId, boolean isAdmin, String title, String content) {
+
+        subscriptionService.requireActiveSubscriber(userId, isAdmin);
+
+        if (content.trim().length() < AI_TAG_SUGGESTION_MIN_LENGTH) {
+            throw new CustomException(ErrorCode.AI_TAG_SUGGESTION_TOO_SHORT);
+        }
+
+        List<String> suggested = geminiClient.suggestTags(title, content);
+
+        return suggested.stream()
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank() && tag.length() <= MAX_TAG_LENGTH)
+                .distinct()
+                .limit(MAX_TAG_COUNT)
+                .toList();
+    }
+
     private void checkUpdate(Question question, Long userId, boolean isAdmin) {
         AuthorizationValidator.validateAuthorOrAdmin(question.getAuthor().getId(), userId, isAdmin, "본인이 작성한 질문만 수정 가능");
     }

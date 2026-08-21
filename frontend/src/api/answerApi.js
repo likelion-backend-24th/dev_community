@@ -10,9 +10,10 @@ export async function getAnswer(answerId) {
   return res.data.data
 }
 
-export async function createAnswer(questionId, content) {
+export async function createAnswer(questionId, content, isAnonymous = false) {
   const res = await client.post(`/api/questions/${questionId}/answers`, {
     content,
+    isAnonymous,
   })
   return res.data.data
 }

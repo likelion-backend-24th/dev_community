@@ -3,6 +3,8 @@ package com.likelion.dev_community.domain.question.service;
 import com.likelion.dev_community.domain.question.dto.*;
 import org.springframework.data.domain.Page;
 
+import java.util.List;
+
 public interface QuestionService {
 
     // F-06
@@ -25,4 +27,7 @@ public interface QuestionService {
 
     // 질문 글 AI 요약 (멤버십 구독자 전용)
     String getSummary(Long questionId, Long userId, boolean isAdmin);
+
+    // 질문 작성 중 본문 기준 AI 태그 추천 (멤버십 구독자 전용)
+    List<String> suggestTags(Long userId, boolean isAdmin, String title, String content);
 }

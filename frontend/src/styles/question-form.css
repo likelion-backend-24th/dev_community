@@ -49,6 +49,10 @@
   opacity: 0.5;
 }
 
+.tag-input + .btn {
+  margin-top: var(--space-sm);
+}
+
 .tag-chip--removable {
   gap: var(--space-xs);
   padding-right: 6px;

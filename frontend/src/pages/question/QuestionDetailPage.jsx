@@ -21,6 +21,7 @@ import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 
 import "../../styles/question.css";
+import "../../styles/markdown.css";
 import "../../styles/error.css";
 
 const AI_SUMMARY_MIN_LENGTH = 300;
@@ -39,6 +40,7 @@ function QuestionDetailPage() {
   const [notFound, setNotFound] = useState(false);
 
   const [answerContent, setAnswerContent] = useState("");
+  const [answerIsAnonymous, setAnswerIsAnonymous] = useState(false);
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
   const [answerError, setAnswerError] = useState("");
   const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
@@ -191,11 +193,12 @@ function QuestionDetailPage() {
     setAnswerSubmitting(true);
     setAnswerError("");
     try {
-      const created = await createAnswer(id, answerContent);
+      const created = await createAnswer(id, answerContent, answerIsAnonymous);
       if (answerAttachmentFiles.length > 0) {
         await uploadAnswerAttachments(created.id, answerAttachmentFiles);
       }
       setAnswerContent("");
+      setAnswerIsAnonymous(false);
       setAnswerAttachmentFiles([]);
       reload();
     } catch (err) {
@@ -479,6 +482,16 @@ function QuestionDetailPage() {
               placeholder="답변을 입력하세요"
               required
             />
+            {question.premium && (isAdmin || isSubscriber) && (
+              <label className="answer-form__checkbox">
+                <input
+                  type="checkbox"
+                  checked={answerIsAnonymous}
+                  onChange={(e) => setAnswerIsAnonymous(e.target.checked)}
+                />
+                익명으로 작성
+              </label>
+            )}
             <AttachmentPicker
               files={answerAttachmentFiles}
               onChange={setAnswerAttachmentFiles}

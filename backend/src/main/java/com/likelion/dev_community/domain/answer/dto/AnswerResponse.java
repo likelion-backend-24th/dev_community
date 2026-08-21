@@ -19,18 +19,20 @@ public class AnswerResponse {
     private final boolean isAdopted;
     private final int likeCount;
     private final LocalDateTime createdAt;
+    private final boolean isAnonymous;
 
     public static AnswerResponse from(Answer answer) {
         return new AnswerResponse(
                 answer.getId(),
                 answer.getQuestion().getId(),
                 answer.getAuthor().getId(),
-                answer.getAuthor().getDisplayNickname(),
-                answer.getAuthor().isExpert(),
+                answer.isAnonymous() ? "익명" : answer.getAuthor().getDisplayNickname(),
+                !answer.isAnonymous() && answer.getAuthor().isExpert(),
                 answer.getContent(),
                 answer.isAdopted(),
                 answer.getLikeCount(),
-                answer.getCreatedAt()
+                answer.getCreatedAt(),
+                answer.isAnonymous()
         );
     }
 }

@@ -23,6 +23,7 @@ import "prismjs/components/prism-bash";
 import "prismjs/components/prism-json";
 import "prismjs/components/prism-yaml";
 import "../../styles/prism.css";
+import "../../styles/markdown.css";
 import {
   getCodeComments,
   createCodeComment,

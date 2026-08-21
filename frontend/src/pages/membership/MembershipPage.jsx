@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { getMySubscription } from "../../api/subscriptionApi";
 import {
@@ -156,6 +157,8 @@ const FAQ_ITEMS = [
 
 function MembershipPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const [toast, setToast] = useState(location.state?.message ?? "");
   const [subscription, setSubscription] = useState(null);
   const [latestPayment, setLatestPayment] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -167,6 +170,12 @@ function MembershipPage() {
   const [showCancelForm, setShowCancelForm] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(""), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     let cancelledEffect = false;
@@ -344,6 +353,10 @@ function MembershipPage() {
                   <CheckIcon />
                   추천 · 신고 기능
                 </li>
+                <li>
+                  <CheckIcon />
+                  마크다운, 코드 하이라이팅 지원
+                </li>
               </ul>
 
               <div className="plan-card__foot">
@@ -384,7 +397,7 @@ function MembershipPage() {
                 </li>
                 <li>
                   <CheckIcon />
-                  마크다운, 코드 하이라이팅 지원
+                  멤버십 게시판에 익명으로 글/답변 작성 가능
                 </li>
                 <li>
                   <CheckIcon />
@@ -536,6 +549,12 @@ function MembershipPage() {
             카드 결제는 PortOne을 통해 안전하게 처리돼요
           </p>
         </>
+      )}
+
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
       )}
     </div>
   );
