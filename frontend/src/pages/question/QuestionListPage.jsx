@@ -11,6 +11,7 @@ const PAGE_SIZE = 10;
 function QuestionListPage() {
   const [searchParams] = useSearchParams();
   const initialTag = searchParams.get("tag") ?? "";
+  const initialKeyword = searchParams.get("keyword") ?? "";
 
   const [questions, setQuestions] = useState([]);
   const [meta, setMeta] = useState({
@@ -21,9 +22,9 @@ function QuestionListPage() {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState("");
   const [status, setStatus] = useState("");
-  const [appliedKeyword, setAppliedKeyword] = useState("");
+  const [appliedKeyword, setAppliedKeyword] = useState(initialKeyword);
   const [appliedTag, setAppliedTag] = useState(initialTag);
-  const [keywordInput, setKeywordInput] = useState("");
+  const [keywordInput, setKeywordInput] = useState(initialKeyword);
   const [tagInput, setTagInput] = useState(initialTag);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -79,33 +80,58 @@ function QuestionListPage() {
     <div className="page">
       <div className="page__header">
         <h1 className="page__title">질문 목록</h1>
+        <span className="page__count">전체 글 {meta.totalElements}개</span>
       </div>
 
       <QuestionBoardTabs />
 
       <form className="filter-bar" onSubmit={handleSearchSubmit}>
-        <input
-          type="text"
-          className="input"
-          placeholder="검색어"
-          value={keywordInput}
-          onChange={(e) => setKeywordInput(e.target.value)}
-        />
-        <input
-          type="text"
-          className="input"
-          placeholder="태그"
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-        />
-        <button type="submit" className="btn btn-secondary">
+        <div className="filter-bar__field filter-bar__field--keyword">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="text"
+            className="input"
+            placeholder="검색어를 입력하세요"
+            value={keywordInput}
+            onChange={(e) => setKeywordInput(e.target.value)}
+          />
+        </div>
+        <div className="filter-bar__field filter-bar__field--tag">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
+            <circle cx="7.5" cy="7.5" r="1.5" />
+          </svg>
+          <input
+            type="text"
+            className="input"
+            placeholder="태그"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary">
           검색
         </button>
       </form>
 
       <div className="filter-row">
         <div className="select-group">
-          <label htmlFor="status">상태</label>
+          <label htmlFor="status">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            상태
+          </label>
           <select
             id="status"
             className="select"
@@ -122,7 +148,19 @@ function QuestionListPage() {
         </div>
 
         <div className="select-group">
-          <label htmlFor="sort">정렬</label>
+          <label htmlFor="sort">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18M6 12h12M10 18h4" />
+            </svg>
+            정렬
+          </label>
           <select
             id="sort"
             className="select"
@@ -187,12 +225,54 @@ function QuestionListPage() {
 
               <div className="question-card__meta">
                 <span className="author-with-badge">
+                  <span className="question-card__avatar" aria-hidden="true">
+                    {q.authorNickname?.[0] ?? "?"}
+                  </span>
                   {q.authorNickname}
-                  {q.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
+                  {q.authorIsExpert && (
+                    <ExpertBadge className="expert-badge--sm" />
+                  )}
                 </span>
-                <span>조회 {q.viewCount}</span>
-                <span>추천 {q.likeCount}</span>
-                <span>답변 {q.answerCount}</span>
+                <span className="question-card__stat">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  {q.viewCount}
+                </span>
+                <span className="question-card__stat">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z" />
+                  </svg>
+                  {q.likeCount}
+                </span>
+                <span className="question-card__stat">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                  </svg>
+                  {q.answerCount}
+                </span>
                 <span>{new Date(q.createdAt).toLocaleString()}</span>
               </div>
             </li>

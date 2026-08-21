@@ -14,12 +14,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-base);
-  padding: var(--space-base) var(--space-xxl);
+  min-height: 64px;
+  padding: var(--space-sm) var(--space-xxl);
   background: var(--surface-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .auth-header__brand {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--text-header);
 }
