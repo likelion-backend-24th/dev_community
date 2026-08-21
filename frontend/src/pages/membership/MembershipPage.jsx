@@ -353,6 +353,10 @@ function MembershipPage() {
                   <CheckIcon />
                   추천 · 신고 기능
                 </li>
+                <li>
+                  <CheckIcon />
+                  마크다운, 코드 하이라이팅 지원
+                </li>
               </ul>
 
               <div className="plan-card__foot">
@@ -393,7 +397,7 @@ function MembershipPage() {
                 </li>
                 <li>
                   <CheckIcon />
-                  마크다운, 코드 하이라이팅 지원
+                  멤버십 게시판에 익명으로 글/답변 작성 가능
                 </li>
                 <li>
                   <CheckIcon />
@@ -547,7 +551,11 @@ function MembershipPage() {
         </>
       )}
 
-      {toast && <div className="toast" role="status">{toast}</div>}
+      {toast && (
+        <div className="toast" role="status">
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
