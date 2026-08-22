@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { getQuestion, deleteQuestion, getQuestionSummary } from "../../api/questionApi";
+import {
+  getQuestion,
+  deleteQuestion,
+  getQuestionSummary,
+} from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
 import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
 import { openChat } from "../../api/chatApi";
@@ -267,8 +271,13 @@ function QuestionDetailPage() {
   const canEdit = isOwner || isAdmin;
   const canDelete = isOwner || isAdmin;
 
+  const sortedAnswers = [...answers].sort((a, b) => {
+    if (a.adopted !== b.adopted) return a.adopted ? -1 : 1;
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
+
   return (
-    <div className="page">
+    <div className="page page--reading">
       <Link
         to={question.premium ? "/questions/premium" : "/questions"}
         className="back-link"
@@ -277,8 +286,7 @@ function QuestionDetailPage() {
       </Link>
 
       <div className="question-detail__title-row">
-        <h1 className="question-detail__title">{question.title}</h1>
-        <span className="badge badge-type">
+        <span className="badge badge-type-tint">
           {TYPE_LABEL[question.type] ?? question.type}
         </span>
         <span
@@ -287,16 +295,45 @@ function QuestionDetailPage() {
           {STATUS_LABEL[question.status] ?? question.status}
         </span>
       </div>
+      <h1 className="question-detail__title">{question.title}</h1>
 
       <div className="question-detail__meta">
         <span className="author-with-badge">
+          <span className="avatar-circle avatar-circle--lg" aria-hidden="true">
+            {question.authorNickname?.[0] ?? "?"}
+          </span>
           {question.authorNickname}
           {question.authorIsExpert && (
             <ExpertBadge className="expert-badge--sm" />
           )}
         </span>
-        <span>조회 {question.viewCount}</span>
-        <span>추천 {question.likeCount}</span>
+        <span className="question-card__stat">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          조회 {question.viewCount}
+        </span>
+        <span className="question-card__stat">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z" />
+          </svg>
+          추천 {question.likeCount}
+        </span>
         <span>{new Date(question.createdAt).toLocaleString()}</span>
       </div>
 
@@ -329,34 +366,49 @@ function QuestionDetailPage() {
             </span>
           ))
         ) : (
-          <span className="question-card__meta">태그 없음</span>
+          <span className="question-card__meta"></span>
         )}
       </div>
 
-      {question.content.length >= AI_SUMMARY_MIN_LENGTH && (isAdmin || isSubscriber) && (
-        <div className="ai-summary">
-          {summary ? (
-            <>
-              <p className="ai-summary__label">AI 요약</p>
-              <p className="ai-summary__text">{summary}</p>
-            </>
-          ) : (
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={handleSummarize}
-              disabled={summaryLoading}
-            >
-              {summaryLoading ? "요약 생성 중..." : "AI 요약 보기"}
-            </button>
-          )}
-          {summaryError && (
-            <p className="inline-error" role="alert">
-              {summaryError}
-            </p>
-          )}
-        </div>
-      )}
+      {question.content.length >= AI_SUMMARY_MIN_LENGTH &&
+        (isAdmin || isSubscriber) && (
+          <div className="ai-summary">
+            {summary ? (
+              <div className="ai-summary__card">
+                <svg
+                  className="ai-summary__icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M12 2 2 7l10 5 10-5-10-5z" />
+                  <path d="m2 17 10 5 10-5M2 12l10 5 10-5" />
+                </svg>
+                <div>
+                  <p className="ai-summary__label">AI 요약</p>
+                  <p className="ai-summary__text">{summary}</p>
+                </div>
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleSummarize}
+                disabled={summaryLoading}
+              >
+                {summaryLoading ? "요약 생성 중..." : "AI 요약 보기"}
+              </button>
+            )}
+            {summaryError && (
+              <p className="inline-error" role="alert">
+                {summaryError}
+              </p>
+            )}
+          </div>
+        )}
 
       {question.type === "CODE_REVIEW" ? (
         <CodeReviewBody
@@ -460,7 +512,7 @@ function QuestionDetailPage() {
         <>
           <h2 className="answers-heading">답변 {answers.length}개</h2>
           <ul className="answer-list">
-            {answers.map((answer) => (
+            {sortedAnswers.map((answer) => (
               <AnswerItem
                 key={answer.id}
                 answer={answer}

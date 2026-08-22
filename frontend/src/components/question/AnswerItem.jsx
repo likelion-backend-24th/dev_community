@@ -72,7 +72,7 @@ function AnswerItem({
 
   return (
     <li className={`answer-card${answer.adopted ? " is-adopted" : ""}`}>
-      {answer.adopted && <span className="badge badge-resolved">채택됨</span>}
+      {answer.adopted && <span className="badge badge-resolved">✔ 채택됨</span>}
 
       {editing ? (
         <form onSubmit={handleUpdate}>
@@ -123,6 +123,9 @@ function AnswerItem({
 
       <div className="answer-card__meta">
         <span className="author-with-badge">
+          <span className="avatar-circle" aria-hidden="true">
+            {answer.authorNickname?.[0] ?? "?"}
+          </span>
           {answer.authorNickname}
           {answer.authorIsExpert && (
             <ExpertBadge className="expert-badge--sm" />

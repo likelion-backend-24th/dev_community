@@ -49,7 +49,9 @@ function ChatRoomPage() {
         refreshUnreadCount();
       } catch (err) {
         if (!cancelled) {
-          setError(err.response?.data?.message ?? "채팅방을 불러오지 못했습니다.");
+          setError(
+            err.response?.data?.message ?? "채팅방을 불러오지 못했습니다.",
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -87,14 +89,20 @@ function ChatRoomPage() {
       setMessages((prev) => [...prev, message]);
       setContent("");
     } catch (err) {
-      setActionError(err.response?.data?.message ?? "메시지 전송에 실패했습니다.");
+      setActionError(
+        err.response?.data?.message ?? "메시지 전송에 실패했습니다.",
+      );
     } finally {
       setSending(false);
     }
   };
 
   const handleAccept = async () => {
-    if (!window.confirm("이 채팅을 수락하시겠습니까? 이후 자유롭게 대화할 수 있어요."))
+    if (
+      !window.confirm(
+        "이 채팅을 수락하시겠어요? 이후 자유롭게 대화할 수 있어요.",
+      )
+    )
       return;
     setActionBusy(true);
     setActionError("");
@@ -103,14 +111,20 @@ function ChatRoomPage() {
       setRoom(updated);
       refreshUnreadCount();
     } catch (err) {
-      setActionError(err.response?.data?.message ?? "채팅 수락에 실패했습니다.");
+      setActionError(
+        err.response?.data?.message ?? "채팅 수락에 실패했습니다.",
+      );
     } finally {
       setActionBusy(false);
     }
   };
 
   const handleAdopt = async () => {
-    if (!window.confirm("이 채팅을 답변으로 채택하시겠습니까? 질문이 해결 처리됩니다."))
+    if (
+      !window.confirm(
+        "이 채팅을 답변으로 채택하시겠습니까? 질문이 해결 처리됩니다.",
+      )
+    )
       return;
     setActionBusy(true);
     setActionError("");
@@ -149,7 +163,9 @@ function ChatRoomPage() {
         <h1 className="page__title">
           <Link to={`/questions/${room.questionId}`}>{room.questionTitle}</Link>
         </h1>
-        <span className={`badge ${room.status === "ADOPTED" ? "badge-resolved" : "badge-open"}`}>
+        <span
+          className={`badge ${room.status === "ADOPTED" ? "badge-resolved" : "badge-open"}`}
+        >
           {STATUS_LABEL[room.status] ?? room.status}
         </span>
       </div>
@@ -159,7 +175,9 @@ function ChatRoomPage() {
           <>
             <span className="author-with-badge">
               {room.answererNickname}
-              {room.answererIsExpert && <ExpertBadge className="expert-badge--sm" />}
+              {room.answererIsExpert && (
+                <ExpertBadge className="expert-badge--sm" />
+              )}
             </span>
             <span>평판 {room.answererReputation}</span>
           </>
@@ -170,18 +188,24 @@ function ChatRoomPage() {
 
       {isQuestioner && room.status === "PENDING" && (
         <p className="state-text state-text--plain">
-          답변자의 첫 메시지를 확인한 뒤 채팅을 수락하면 대화를 이어갈 수 있어요.
+          답변자의 첫 메시지를 확인한 뒤 채팅을 수락하면 대화를 이어갈 수
+          있어요.
         </p>
       )}
       {!isQuestioner && room.status === "PENDING" && (
-        <p className="state-text state-text--plain">질문자가 채팅을 수락하면 대화를 이어갈 수 있어요.</p>
+        <p className="state-text state-text--plain">
+          질문자가 채팅을 수락하면 대화를 이어갈 수 있어요.
+        </p>
       )}
       {room.status === "ADOPTED" && (
-        <p className="state-text state-text--plain">이 채팅이 답변으로 채택되었어요.</p>
+        <p className="state-text state-text--plain">
+          이 채팅이 답변으로 채택되었어요.
+        </p>
       )}
       {room.status === "CLOSED" && (
         <p className="state-text state-text--plain">
-          다른 답변자의 채팅이 채택되어 이 질문은 해결되었어요. 채팅이 종료되었습니다.
+          다른 답변자의 채팅이 채택되어 이 질문은 해결되었어요. 채팅이
+          종료되었습니다.
         </p>
       )}
 
