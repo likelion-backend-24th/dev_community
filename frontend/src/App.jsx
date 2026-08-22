@@ -24,6 +24,7 @@ import AdminReportsPage from "./pages/admin/AdminReportsPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import TermsPage from "./pages/legal/TermsPage";
+import PrivacyPolicyPage from "./pages/legal/PrivacyPolicyPage";
 import ForbiddenPage from "./pages/error/ForbiddenPage";
 import UnauthorizedPage from "./pages/error/UnauthorizedPage";
 import NotFoundPage from "./pages/error/NotFoundPage";
@@ -90,6 +91,7 @@ function App() {
           </Route>
 
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
           <Route path="/401" element={<UnauthorizedPage />} />
           <Route path="/403" element={<ForbiddenPage />} />

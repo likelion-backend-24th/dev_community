@@ -7,6 +7,7 @@ function Footer() {
         <span className="footer__brand">Dev_Community</span>
         <nav className="footer__links">
           <Link to="/terms">이용약관</Link>
+          <Link to="/privacy">개인정보처리방침</Link>
         </nav>
       </div>
     </footer>
