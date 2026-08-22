@@ -276,8 +276,8 @@ function QuestionFormPage() {
         </div>
 
         {(isSubscriber || isEditMode) && (
-          <div className="form-field">
-            <label className="question-form__checkbox">
+          <div className="board-settings">
+            <label className="board-settings__gate">
               <input
                 type="checkbox"
                 checked={isPremium}
@@ -293,88 +293,91 @@ function QuestionFormPage() {
               멤버십(구독자 전용) 게시판에 작성
             </label>
             {isEditMode && (
-              <p className="form-field__hint">
+              <p className="board-settings__hint">
                 게시판 구분은 작성 후에는 바꿀 수 없어요.
               </p>
             )}
-          </div>
-        )}
 
-        {isPremium && (
-          <>
-            <div className="form-field">
-              <label htmlFor="questionType">글 유형</label>
-              <select
-                id="questionType"
-                className="select"
-                value={type}
-                onChange={(e) => {
-                  if (typeLocked) {
-                    setAlertMessage(
-                      "채팅이 시작된 질문은 글 유형을 변경할 수 없어요.",
-                    );
-                    return;
-                  }
-                  if (contentLocked) {
-                    setAlertMessage(
-                      "코드 코멘트가 달려있어 글 유형을 변경할 수 없어요.",
-                    );
-                    return;
-                  }
+            {isPremium && (
+              <div className="board-settings__dependents">
+                <div className="board-settings__field">
+                  <label htmlFor="questionType">글 유형</label>
+                  <select
+                    id="questionType"
+                    className="select"
+                    value={type}
+                    onChange={(e) => {
+                      if (typeLocked) {
+                        setAlertMessage(
+                          "채팅이 시작된 질문은 글 유형을 변경할 수 없어요.",
+                        );
+                        return;
+                      }
+                      if (contentLocked) {
+                        setAlertMessage(
+                          "코드 코멘트가 달려있어 글 유형을 변경할 수 없어요.",
+                        );
+                        return;
+                      }
 
-                  const nextType = e.target.value;
+                      const nextType = e.target.value;
 
-                  const isUntouched =
-                    !content.trim() || content === TYPE_CONTENT_TEMPLATE[type];
+                      const isUntouched =
+                        !content.trim() ||
+                        content === TYPE_CONTENT_TEMPLATE[type];
 
-                  if (isUntouched || !TYPE_CONTENT_TEMPLATE[nextType]) {
-                    setType(nextType);
-                    if (isUntouched) {
-                      setContent(TYPE_CONTENT_TEMPLATE[nextType] ?? "");
-                    }
-                    return;
-                  }
-                  setPendingTypeChange(nextType);
-                }}
-              >
-                <option value="GENERAL">일반</option>
-                <option value="CODE_REVIEW">코드리뷰</option>
-                <option value="CAREER_CONSULT">커리어상담</option>
-              </select>
-              {typeLocked && (
-                <p className="form-field__hint">
-                  채팅이 시작된 질문은 글 유형을 변경할 수 없어요.
-                </p>
-              )}
-              {type === "CODE_REVIEW" && (
-                <p className="inline-error" role="alert">
-                  {contentLocked ? (
-                    "코드 코멘트가 달려있어 지금은 본문을 수정할 수 없어요!"
-                  ) : (
-                    <>
-                      코드리뷰 유형은 코드 코멘트가 하나라도 달리면 이후 본문을
-                      수정할 수 없어요!!
-                      <br />
-                      <br />
-                      코드 블록을 삽입하는 경우 등록 전 다시 한번 더 본문 내용을
-                      확인해주세요.
-                    </>
+                      if (isUntouched || !TYPE_CONTENT_TEMPLATE[nextType]) {
+                        setType(nextType);
+                        if (isUntouched) {
+                          setContent(TYPE_CONTENT_TEMPLATE[nextType] ?? "");
+                        }
+                        return;
+                      }
+                      setPendingTypeChange(nextType);
+                    }}
+                  >
+                    <option value="GENERAL">일반</option>
+                    <option value="CODE_REVIEW">코드리뷰</option>
+                    <option value="CAREER_CONSULT">커리어상담</option>
+                  </select>
+                  {typeLocked && (
+                    <p className="board-settings__hint">
+                      채팅이 시작된 질문은 글 유형을 변경할 수 없어요.
+                    </p>
                   )}
-                </p>
-              )}
-            </div>
+                  {type === "CODE_REVIEW" && (
+                    <p className="inline-error" role="alert">
+                      {contentLocked ? (
+                        "코드 코멘트가 달려있어 지금은 본문을 수정할 수 없어요!"
+                      ) : (
+                        <>
+                          코드리뷰 유형은 코드 코멘트가 하나라도 달리면 이후
+                          본문을 수정할 수 없어요!!
+                          <br />
+                          <br />
+                          코드 블록을 삽입하는 경우 등록 전 다시 한번 더 본문
+                          내용을 확인해주세요.
+                        </>
+                      )}
+                    </p>
+                  )}
+                </div>
 
-            <div className="form-field">
-              <label className="question-form__checkbox">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                />
-                익명으로 작성
-              </label>
-            </div>
-          </>
+                <label className="board-settings__checkbox">
+                  <input
+                    type="checkbox"
+                    checked={isAnonymous}
+                    onChange={(e) => setIsAnonymous(e.target.checked)}
+                  />
+                  익명으로 작성
+                </label>
+
+                <p className="board-settings__hint">
+                  멤버십 게시판 글에만 적용되는 설정이에요.
+                </p>
+              </div>
+            )}
+          </div>
         )}
 
         <div className="form-field">
