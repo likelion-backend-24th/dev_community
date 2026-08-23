@@ -115,20 +115,30 @@ function MyPage() {
 
       <section className="profile-card card">
         <div className="profile-card__avatar">{profile.nickname[0]}</div>
-        <div className="profile-card__info">
-          <p className="profile-card__nickname author-with-badge">
-            {profile.nickname}
+        <div className="profile-card__body">
+          <div className="profile-card__name-row">
+            <span className="profile-card__name">{profile.nickname}</span>
             {profile.expert && <ExpertBadge className="expert-badge--sm" />}
+          </div>
+          <p className="profile-card__handle">
+            @{profile.username} · 가입일 {profile.createdAt.slice(0, 10)}
           </p>
-          <p className="profile-card__username">@{profile.username}</p>
-          <p className="profile-card__joined">
-            가입일 {profile.createdAt.slice(0, 10)}
-          </p>
-          <p className="profile-card__reputation">
-            평판 {profile.reputation}점
-          </p>
-        </div>
-        <div className="profile-card__action-group">
+
+          <div className="profile-card__stats">
+            <div className="stat">
+              <span className="stat__value">{questions.length}</span>
+              <span className="stat__label">질문</span>
+            </div>
+            <div className="stat">
+              <span className="stat__value">{answerCount}</span>
+              <span className="stat__label">답변</span>
+            </div>
+            <div className="stat">
+              <span className="stat__value">{profile.reputation}점</span>
+              <span className="stat__label">평판</span>
+            </div>
+          </div>
+
           <div className="profile-card__actions">
             <Link to="/dashboard" className="btn btn-secondary btn-sm">
               내 활동 대시보드
@@ -142,11 +152,26 @@ function MyPage() {
             </button>
             <button
               type="button"
-              className="btn btn-secondary btn-sm"
+              className="btn btn-ghost btn-sm"
               onClick={() => setPasswordModalOpen(true)}
             >
               비밀번호 변경
             </button>
+            {!isAdmin && !profile.expert && (
+              <button
+                type="button"
+                className="btn btn-expert-outline btn-sm"
+                onClick={handleRequestExpert}
+                disabled={profile.expertRequested || expertRequestSubmitting}
+              >
+                {profile.expertRequested ? "심사 중" : "전문가 등급 신청"}
+              </button>
+            )}
+            {isAdmin && (
+              <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
+                관리자 대시보드
+              </Link>
+            )}
             {!isAdmin && (
               <button
                 type="button"
@@ -156,24 +181,7 @@ function MyPage() {
                 회원 탈퇴
               </button>
             )}
-            {isAdmin && (
-              <Link to="/admin/dashboard" className="btn btn-secondary btn-sm">
-                관리자 대시보드
-              </Link>
-            )}
           </div>
-          {!isAdmin && !profile.expert && (
-            <div className="profile-card__expert-action">
-              <button
-                type="button"
-                className="btn btn-warning btn-sm"
-                onClick={handleRequestExpert}
-                disabled={profile.expertRequested || expertRequestSubmitting}
-              >
-                {profile.expertRequested ? "심사 중" : "전문가 등급 신청"}
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
