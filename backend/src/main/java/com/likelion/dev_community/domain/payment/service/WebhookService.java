@@ -5,6 +5,7 @@ import com.likelion.dev_community.domain.payment.repository.WebhookEventReposito
 import io.portone.sdk.server.errors.WebhookVerificationException;
 import io.portone.sdk.server.webhook.Webhook;
 import io.portone.sdk.server.webhook.WebhookTransaction;
+import io.portone.sdk.server.webhook.WebhookTransactionCancelledCancelled;
 import io.portone.sdk.server.webhook.WebhookTransactionPaid;
 import io.portone.sdk.server.webhook.WebhookVerifier;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.UUID;
 public class WebhookService {
 
     private static final String PAID_EVENT_TYPE = "Transaction.Paid";
+    private static final String CANCELLED_EVENT_TYPE = "Transaction.Cancelled";
 
     private final WebhookVerifier webhookVerifier;
     private final WebhookEventRepository webhookEventRepository;
@@ -55,6 +57,13 @@ public class WebhookService {
                 // 재검증 실패 시에도 웹훅 자체는 정상 수신
                 log.warn("웹훅 결제 동기화 실패: paymentId={}, reason={}", paymentId, e.getMessage());
             }
+        } else if (webhook instanceof WebhookTransactionCancelledCancelled && paymentId != null) {
+            try {
+                paymentService.syncCancelFromWebhook(paymentId);
+                event.markProcessed();
+            } catch (RuntimeException e) {
+                log.warn("웹훅 결제취소 동기화 실패: paymentId={}, reason={}", paymentId, e.getMessage());
+            }
         } else {
             event.markIgnored();
         }
@@ -76,16 +85,27 @@ public class WebhookService {
 
         WebhookEvent event = webhookEventRepository.save(WebhookEvent.receive("unverified-" + UUID.randomUUID(), type != null ? type : "UNKNOWN", paymentId, rawBody));
 
-        if (!PAID_EVENT_TYPE.equals(type) || paymentId == null) {
+        if (paymentId == null) {
             event.markIgnored();
             return;
         }
 
-        try {
-            paymentService.syncPaymentFromWebhook(paymentId);
-            event.markProcessed();
-        } catch (RuntimeException e) {
-            log.warn("no Signature 웹훅 결제 동기화 실패: paymentId={}, reason={}", paymentId, e.getMessage());
+        if (PAID_EVENT_TYPE.equals(type)) {
+            try {
+                paymentService.syncPaymentFromWebhook(paymentId);
+                event.markProcessed();
+            } catch (RuntimeException e) {
+                log.warn("no Signature 웹훅 결제 동기화 실패: paymentId={}, reason={}", paymentId, e.getMessage());
+            }
+        } else if (CANCELLED_EVENT_TYPE.equals(type)) {
+            try {
+                paymentService.syncCancelFromWebhook(paymentId);
+                event.markProcessed();
+            } catch (RuntimeException e) {
+                log.warn("no Signature 웹훅 결제취소 동기화 실패: paymentId={}, reason={}", paymentId, e.getMessage());
+            }
+        } else {
+            event.markIgnored();
         }
     }
 }
