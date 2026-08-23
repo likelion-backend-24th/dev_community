@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { checkNickname, oauthComplete } from "../../api/authApi";
+import { checkNickname, checkEmail, oauthComplete } from "../../api/authApi";
 import "../../styles/auth.css";
+
+const IDLE = { status: "idle", message: "" };
 
 function OAuthNicknamePage() {
   const [searchParams] = useSearchParams();
@@ -11,8 +13,11 @@ function OAuthNicknamePage() {
 
   const signupToken = searchParams.get("signupToken");
   const suggestedNickname = searchParams.get("nickname");
+  const providerEmail = searchParams.get("email");
 
   const [nickname, setNickname] = useState(suggestedNickname ?? "");
+  const [email, setEmail] = useState(providerEmail ?? "");
+  const [emailCheck, setEmailCheck] = useState(providerEmail ? { status: "available", message: "" } : IDLE);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -20,11 +25,30 @@ function OAuthNicknamePage() {
     return <Navigate to="/login" replace />;
   }
 
+  const handleCheckEmail = async () => {
+    if (!email.trim()) return;
+    setEmailCheck({ status: "checking", message: "" });
+    try {
+      const res = await checkEmail(email);
+      setEmailCheck({ status: "available", message: res.message });
+    } catch (err) {
+      setEmailCheck({
+        status: "unavailable",
+        message: err.response?.data?.message ?? "이미 사용중인 이메일입니다.",
+      });
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!nickname.trim()) {
       setError("닉네임을 입력해주세요.");
+      return;
+    }
+
+    if (!providerEmail && emailCheck.status !== "available") {
+      setError("이메일 중복 확인을 먼저 진행해주세요.");
       return;
     }
 
@@ -40,7 +64,7 @@ function OAuthNicknamePage() {
     }
 
     try {
-      const { accessToken } = await oauthComplete(signupToken, nickname);
+      const { accessToken } = await oauthComplete(signupToken, nickname, email);
       setAuth(accessToken);
       navigate("/questions", { replace: true });
     } catch (err) {
@@ -67,6 +91,42 @@ function OAuthNicknamePage() {
                 onChange={(e) => setNickname(e.target.value)}
                 autoFocus
               />
+            </div>
+
+            <div className="field">
+              <label className="field__label" htmlFor="email">이메일</label>
+              {providerEmail ? (
+                <input
+                  id="email"
+                  className="field__input"
+                  value={email}
+                  disabled
+                />
+              ) : (
+                <div className="field__row">
+                  <input
+                    id="email"
+                    type="email"
+                    className={`field__input${emailCheck.status === "unavailable" ? " is-error" : ""}`}
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setEmailCheck(IDLE);
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="field__check-btn"
+                    onClick={handleCheckEmail}
+                    disabled={emailCheck.status === "checking"}
+                  >
+                    중복 확인
+                  </button>
+                </div>
+              )}
+              {emailCheck.message && (
+                <p className={`field__hint is-${emailCheck.status}`}>{emailCheck.message}</p>
+              )}
             </div>
 
             {error && <p className="auth-error" role="alert">{error}</p>}
