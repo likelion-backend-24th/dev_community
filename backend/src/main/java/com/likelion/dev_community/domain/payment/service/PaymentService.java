@@ -23,7 +23,9 @@ import io.portone.sdk.server.common.Currency;
 import io.portone.sdk.server.common.PaymentAmountInput;
 import io.portone.sdk.server.payment.CancelPaymentResponse;
 import io.portone.sdk.server.payment.CancelRequester;
+import io.portone.sdk.server.payment.CancelledPayment;
 import io.portone.sdk.server.payment.PaidPayment;
+import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PayWithBillingKeyResponse;
 import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PaymentClient;
@@ -267,6 +269,47 @@ public class PaymentService {
         }
 
         verifyAndMarkPayment(payment, payment.getOrder());
+    }
+
+    // 웹훅(Transaction.Cancelled) 취소 상태 동기화
+    @Transactional(noRollbackFor = CustomException.class)
+    public void syncCancelFromWebhook(String paymentId) {
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+
+        // 이미 취소 반영된 결제면 재처리 x
+        if (payment.getStatus() == PaymentStatus.CANCELLED) {
+            return;
+        }
+
+        io.portone.sdk.server.payment.Payment portonePayment;
+        try {
+            portonePayment = paymentClient.getPayment(payment.getPaymentId()).join();
+        } catch (CompletionException e) {
+            log.warn("PortOne 결제 조회 실패(취소 동기화): paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 결제 정보를 확인할 수 없습니다.");
+        }
+
+        // 재조회 결과가 실제로 취소 상태 아니면 반영 x
+        if (!(portonePayment instanceof CancelledPayment cancelled) || !cancelled.getStoreId().equals(storeId)) {
+            return;
+        }
+
+        Order order = payment.getOrder();
+        LocalDateTime cancelledAt = LocalDateTime.ofInstant(cancelled.getCancelledAt(), ZoneId.systemDefault());
+
+        payment.cancel(cancelledAt, latestCancelReason(cancelled));
+        order.cancel();
+
+        cancelSubscriptionAndSchedule(order.getUser());
+    }
+
+    // 가장 최근 취소 사유
+    private String latestCancelReason(CancelledPayment cancelled) {
+        return cancelled.getCancellations().stream()
+                .filter(c -> c instanceof PaymentCancellation.Recognized)
+                .map(c -> ((PaymentCancellation.Recognized) c).getReason())
+                .reduce((first, second) -> second)
+                .orElse("PortOne 콘솔에서 취소됨");
     }
 
     // 가장 최근 결제완료 건 조회
