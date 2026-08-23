@@ -49,6 +49,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         AuthProvider provider = AuthProvider.valueOf(oauthToken.getAuthorizedClientRegistrationId().toUpperCase());
         String providerId = extractProviderId(provider, oAuth2User);
         String suggestedNickname = extractNickname(provider, oAuth2User);
+        String email = extractEmail(provider, oAuth2User);
 
         Optional<User> existing = userRepository.findByProviderAndProviderId(provider, providerId);
 
@@ -73,10 +74,14 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
         }
 
         String signupToken = UUID.randomUUID().toString();
-        oauthSignupInfoRepository.save(new OAuthSignupInfo(signupToken, provider.name(), providerId));
+        oauthSignupInfoRepository.save(new OAuthSignupInfo(signupToken, provider.name(), providerId, email));
 
-        response.sendRedirect(frontendUrl + "/oauth/nickname?signupToken=" + signupToken
-                + "&nickname=" + URLEncoder.encode(suggestedNickname, StandardCharsets.UTF_8));
+        String redirectUrl = frontendUrl + "/oauth/nickname?signupToken=" + signupToken
+                + "&nickname=" + URLEncoder.encode(suggestedNickname, StandardCharsets.UTF_8);
+        if (email != null) {
+            redirectUrl += "&email=" + URLEncoder.encode(email, StandardCharsets.UTF_8);
+        }
+        response.sendRedirect(redirectUrl);
     }
 
     private String extractProviderId(AuthProvider provider, OAuth2User user) {
@@ -84,6 +89,16 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
             case GITHUB -> String.valueOf(user.getAttributes().get("id"));
             case GOOGLE -> String.valueOf(user.getAttributes().get("sub"));
             default -> throw new IllegalStateException("지원하지 않는 provider입니다.");
+        };
+    }
+
+    // 구글은 항상 이메일을 내려주지만, 깃허브는 CustomOAuth2UserService가 /user/emails로 보강한
+    // 경우에만 값이 있고, 그마저 실패하면 null일 수 있다(가입 완료 화면에서 직접 입력받는다).
+    private String extractEmail(AuthProvider provider, OAuth2User user) {
+        return switch (provider) {
+            case GOOGLE -> (String) user.getAttributes().get("email");
+            case GITHUB -> (String) user.getAttributes().get("email");
+            default -> null;
         };
     }
 
