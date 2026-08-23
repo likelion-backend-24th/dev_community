@@ -254,6 +254,10 @@
   padding: var(--space-xxl) var(--space-base) var(--space-section);
 }
 
+.page.page--reading {
+  max-width: 760px;
+}
+
 .page__header {
   display: flex;
   align-items: center;

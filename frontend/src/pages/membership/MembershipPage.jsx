@@ -153,6 +153,18 @@ const FAQ_ITEMS = [
     q: "회원 탈퇴하면 구독은 어떻게 되나요?",
     a: "탈퇴 즉시 구독이 해지되고, 예약된 다음 회차 자동결제도 함께 취소돼요. 이미 결제한 금액은 자동 환불되지 않으니, 환불을 원하시면 탈퇴 전에 결제 취소(7일 이내)를 먼저 진행해주세요.",
   },
+  {
+    q: "AI 요약은 모든 질문에 나오나요?",
+    a: "아니요, 본문 길이가 일정 글자 수 이상인 질문에만 'AI 요약 보기' 버튼이 나타나요. 짧은 질문은 굳이 요약할 필요가 없어서 버튼 자체가 표시되지 않아요.",
+  },
+  {
+    q: "멤버십 게시판에서 익명으로 글을 쓸 수 있나요?",
+    a: "네, 멤버십 게시판에서는 답변을 작성할 때 '익명으로 작성' 체크박스를 선택하면 닉네임 대신 익명으로 등록할 수 있어요.",
+  },
+  {
+    q: "커리어 상담 1:1 채팅은 어떻게 시작하나요?",
+    a: "커리어 상담 유형으로 등록된 질문에서 채팅 시작 버튼을 누르면 질문자와 1:1 채팅방이 열려요. 질문자가 채팅을 수락하면 대화를 이어갈 수 있어요.",
+  },
 ];
 
 function MembershipPage() {
@@ -508,6 +520,33 @@ function MembershipPage() {
                 </tr>
                 <tr>
                   <td>멤버십 전용 게시판</td>
+                  <td className="compare__no">
+                    <CrossIcon />
+                  </td>
+                  <td className="compare__yes">
+                    <CheckIcon />
+                  </td>
+                </tr>
+                <tr>
+                  <td>멤버십 게시판 익명 작성</td>
+                  <td className="compare__no">
+                    <CrossIcon />
+                  </td>
+                  <td className="compare__yes">
+                    <CheckIcon />
+                  </td>
+                </tr>
+                <tr>
+                  <td>AI 기반 글 내용 요약</td>
+                  <td className="compare__no">
+                    <CrossIcon />
+                  </td>
+                  <td className="compare__yes">
+                    <CheckIcon />
+                  </td>
+                </tr>
+                <tr>
+                  <td>커리어 상담 1:1 채팅</td>
                   <td className="compare__no">
                     <CrossIcon />
                   </td>

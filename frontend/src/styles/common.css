@@ -172,6 +172,11 @@
   color: #ffffff;
 }
 
+.badge-type-tint {
+  background: rgba(88, 101, 242, 0.16);
+  color: #a5b1ff;
+}
+
 .expert-badge {
   vertical-align: middle;
   margin-left: var(--space-xs);
@@ -187,6 +192,27 @@
 .author-with-badge {
   display: inline-flex;
   align-items: center;
+}
+
+.avatar-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--blurple);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.avatar-circle--lg {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
 }
 
 .tag-chip {
