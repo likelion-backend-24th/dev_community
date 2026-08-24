@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { signup, checkUsername, checkNickname } from '../../api/authApi'
+import { signup, checkUsername, checkNickname, checkEmail } from '../../api/authApi'
 import AuthHeader from '../../components/layout/AuthHeader'
 import hideIcon from '../../assets/hide.png'
 import showIcon from '../../assets/show.png'
@@ -28,9 +28,11 @@ function SignupPage() {
     password: '',
     passwordConfirm: '',
     nickname: '',
+    email: '',
   })
   const [usernameCheck, setUsernameCheck] = useState(IDLE)
   const [nicknameCheck, setNicknameCheck] = useState(IDLE)
+  const [emailCheck, setEmailCheck] = useState(IDLE)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -42,6 +44,7 @@ function SignupPage() {
     setForm((prev) => ({ ...prev, [name]: value }))
     if (name === 'username') setUsernameCheck(IDLE)
     if (name === 'nickname') setNicknameCheck(IDLE)
+    if (name === 'email') setEmailCheck(IDLE)
   }
 
   const handleCheckUsername = async () => {
@@ -68,6 +71,20 @@ function SignupPage() {
       setNicknameCheck({
         status: 'unavailable',
         message: err.response?.data?.message ?? '이미 사용중인 닉네임입니다.',
+      })
+    }
+  }
+
+  const handleCheckEmail = async () => {
+    if (!form.email.trim()) return
+    setEmailCheck({ status: 'checking', message: '' })
+    try {
+      const res = await checkEmail(form.email)
+      setEmailCheck({ status: 'available', message: res.message })
+    } catch (err) {
+      setEmailCheck({
+        status: 'unavailable',
+        message: err.response?.data?.message ?? '이미 사용중인 이메일입니다.',
       })
     }
   }
@@ -173,6 +190,37 @@ function SignupPage() {
             </div>
 
             <div className="field">
+              <label className="field__label" htmlFor="email">
+                이메일
+              </label>
+              <div className="field__row">
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  className={`field__input${emailCheck.status === 'unavailable' ? ' is-error' : ''}`}
+                  value={form.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  required
+                />
+                <button
+                  type="button"
+                  className="field__check-btn"
+                  onClick={handleCheckEmail}
+                  disabled={emailCheck.status === 'checking'}
+                >
+                  중복 확인
+                </button>
+              </div>
+              {emailCheck.message && (
+                <p className={`field__hint is-${emailCheck.status}`}>
+                  {emailCheck.message}
+                </p>
+              )}
+            </div>
+
+            <div className="field">
               <label className="field__label" htmlFor="password">
                 비밀번호
               </label>
@@ -254,6 +302,7 @@ function SignupPage() {
                 submitting ||
                 usernameCheck.status !== 'available' ||
                 nicknameCheck.status !== 'available' ||
+                emailCheck.status !== 'available' ||
                 !agreeTerms
               }
             >

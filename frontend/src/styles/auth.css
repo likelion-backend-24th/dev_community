@@ -92,6 +92,16 @@
   gap: var(--space-sm);
 }
 
+.field__forgot-link {
+  align-self: flex-end;
+  color: var(--text-link);
+  font-size: 12px;
+}
+
+.field__forgot-link:hover {
+  text-decoration: underline;
+}
+
 .field__input {
   flex: 1;
   min-width: 0;

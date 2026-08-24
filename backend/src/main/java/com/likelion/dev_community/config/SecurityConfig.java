@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.likelion.dev_community.security.handler.RestAccessDeniedHandler;
 import com.likelion.dev_community.security.handler.RestAuthenticationEntryPoint;
 import com.likelion.dev_community.security.jwt.JwtAuthenticationFilter;
+import com.likelion.dev_community.security.oauth.CustomOAuth2UserService;
 import com.likelion.dev_community.security.oauth.OAuth2FailureHandler;
 import com.likelion.dev_community.security.oauth.OAuth2SuccessHandler;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class SecurityConfig {
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final OAuth2SuccessHandler oAuth2SuccessHandler;
     private final OAuth2FailureHandler oAuth2FailureHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -63,6 +65,7 @@ public class SecurityConfig {
                         .authenticationEntryPoint(restAuthenticationEntryPoint)
                 )
                 .oauth2Login(oauth2 -> oauth2                      // 추가
+                        .userInfoEndpoint(info -> info.userService(customOAuth2UserService))
                         .successHandler(oAuth2SuccessHandler)
                         .failureHandler(oAuth2FailureHandler)
                 )

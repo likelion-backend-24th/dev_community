@@ -21,7 +21,11 @@ function LoginPage() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(
-    location.state?.signupSuccess ? "회원가입이 완료되었습니다." : "",
+    location.state?.signupSuccess
+      ? "회원가입이 완료되었습니다."
+      : location.state?.passwordResetSuccess
+        ? "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
+        : "",
   );
 
   useEffect(() => {
@@ -110,6 +114,9 @@ function LoginPage() {
                 autoComplete="current-password"
                 required
               />
+              <Link to="/forgot-password" className="field__forgot-link">
+                비밀번호를 잊으셨나요?
+              </Link>
             </div>
 
             {error && (

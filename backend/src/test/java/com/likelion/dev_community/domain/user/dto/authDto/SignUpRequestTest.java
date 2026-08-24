@@ -33,7 +33,7 @@ class SignUpRequestTest {
 
     @Test
     void username이_50자를_초과하면_검증에_실패한다() {
-        SignUpRequest request = new SignUpRequest("a".repeat(51), "password123", "nickname");
+        SignUpRequest request = new SignUpRequest("a".repeat(51), "password123", "nickname", "test@test.com");
 
         Set<ConstraintViolation<SignUpRequest>> violations = validator.validate(request);
 
@@ -42,7 +42,7 @@ class SignUpRequestTest {
 
     @Test
     void username이_50자이면_검증을_통과한다() {
-        SignUpRequest request = new SignUpRequest("a".repeat(50), "password123", "nickname");
+        SignUpRequest request = new SignUpRequest("a".repeat(50), "password123", "nickname", "test@test.com");
 
         Set<ConstraintViolation<SignUpRequest>> violations = validator.validate(request);
 
@@ -51,7 +51,7 @@ class SignUpRequestTest {
 
     @Test
     void nickname이_30자를_초과하면_검증에_실패한다() {
-        SignUpRequest request = new SignUpRequest("username", "password123", "n".repeat(31));
+        SignUpRequest request = new SignUpRequest("username", "password123", "n".repeat(31), "test@test.com");
 
         Set<ConstraintViolation<SignUpRequest>> violations = validator.validate(request);
 
@@ -60,7 +60,7 @@ class SignUpRequestTest {
 
     @Test
     void nickname이_30자이면_검증을_통과한다() {
-        SignUpRequest request = new SignUpRequest("username", "password123", "n".repeat(30));
+        SignUpRequest request = new SignUpRequest("username", "password123", "n".repeat(30), "test@test.com");
 
         Set<ConstraintViolation<SignUpRequest>> violations = validator.validate(request);
 
@@ -72,7 +72,7 @@ class SignUpRequestTest {
     @NullAndEmptySource
     @ValueSource(strings = {" ", "\n", "\t"})
     void nickname이_비어있으면_검증에_실패한다(String blankNickname) {
-        SignUpRequest request = new SignUpRequest("username", "password123", blankNickname);
+        SignUpRequest request = new SignUpRequest("username", "password123", blankNickname, "test@test.com");
 
         Set<ConstraintViolation<SignUpRequest>> violations = validator.validate(request);
 

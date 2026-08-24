@@ -72,13 +72,31 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("사용 가능한 닉네임입니다", null));
     }
 
+    @GetMapping("/check-email")
+    public ResponseEntity<ApiResponse<Void>> checkEmail(@RequestParam @NotBlank String email){
+        authService.checkEmail(email);
+        return ResponseEntity.ok(ApiResponse.success("사용 가능한 이메일입니다", null));
+    }
+
     @Operation(summary = "소셜 로그인 회원가입 완료(닉네임 등록)")
     @PostMapping("/oauth/complete")
     public ResponseEntity<ApiResponse<TokenResponse>> oauthComplete(
             @Valid @RequestBody OAuthCompleteRequest request,
             HttpServletResponse httpServletResponse
     ) {
-        TokenResponse tokenResponse = authService.oauthComplete(request.getSignupToken(), request.getNickname(), httpServletResponse);
+        TokenResponse tokenResponse = authService.oauthComplete(request.getSignupToken(), request.getNickname(), request.getEmail(), httpServletResponse);
         return ResponseEntity.ok(ApiResponse.success("회원가입 및 로그인 성공", tokenResponse));
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<ApiResponse<Void>> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
+        authService.requestPasswordReset(request.getUsername(), request.getEmail());
+        return ResponseEntity.ok(ApiResponse.success("입력하신 정보와 일치하는 계정이 있다면 이메일로 재설정 링크를 보냈습니다.", null));
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<ApiResponse<Void>> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
+        authService.confirmPasswordReset(request.getToken(), request.getNewPassword());
+        return ResponseEntity.ok(ApiResponse.success("비밀번호가 재설정되었습니다.", null));
     }
 }

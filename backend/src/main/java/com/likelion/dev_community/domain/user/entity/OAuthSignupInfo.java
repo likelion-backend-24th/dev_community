@@ -12,10 +12,12 @@ public class OAuthSignupInfo {
     private String signupToken;
     private String provider;
     private String providerId;
+    private String email;
 
-    public OAuthSignupInfo(String signupToken, String provider, String providerId) {
+    public OAuthSignupInfo(String signupToken, String provider, String providerId, String email) {
         this.signupToken = signupToken;
         this.provider = provider;
         this.providerId = providerId;
+        this.email = email;
     }
 }

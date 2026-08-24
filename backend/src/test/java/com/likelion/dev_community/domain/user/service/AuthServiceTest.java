@@ -7,6 +7,8 @@ import com.likelion.dev_community.domain.user.dto.authDto.SignInRequest;
 import com.likelion.dev_community.domain.user.dto.authDto.SignUpRequest;
 import com.likelion.dev_community.domain.user.dto.authDto.SignUpResponse;
 import com.likelion.dev_community.domain.user.dto.authDto.TokenResponse;
+import com.likelion.dev_community.domain.user.entity.AuthProvider;
+import com.likelion.dev_community.domain.user.entity.PasswordResetToken;
 import com.likelion.dev_community.domain.user.entity.RefreshToken;
 import com.likelion.dev_community.domain.user.entity.Role;
 import com.likelion.dev_community.domain.user.entity.User;
@@ -14,8 +16,12 @@ import com.likelion.dev_community.domain.user.entity.UserStatus;
 import com.likelion.dev_community.domain.user.repository.OAuthSignupInfoRepository;
 import com.likelion.dev_community.domain.user.repository.RefreshTokenRepository;
 import com.likelion.dev_community.domain.user.repository.UserRepository;
+import com.likelion.dev_community.common.mail.MailService;
+import com.likelion.dev_community.domain.user.repository.PasswordResetTokenRepository;
+import com.likelion.dev_community.security.LoginAttemptService;
 import com.likelion.dev_community.security.jwt.CookieProvider;
 import com.likelion.dev_community.security.jwt.JwtProvider;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -25,6 +31,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseCookie;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -64,21 +71,37 @@ class AuthServiceTest {
     @Mock
     private OAuthSignupInfoRepository oAuthSignupInfoRepository;
 
+    @Mock
+    private LoginAttemptService loginAttemptService;
+
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
+
+    @Mock
+    private MailService mailService;
+
+    @Mock
+    private StringRedisTemplate redisTemplate;
+
+    @Mock
+    private ValueOperations<String, String> valueOperations;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider, oAuthSignupInfoRepository);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider, oAuthSignupInfoRepository, loginAttemptService, passwordResetTokenRepository, mailService, redisTemplate);
     }
 
     // ===== signUp (F-01) =====
 
     @Test
     void 정상적으로_회원가입한다() {
-        SignUpRequest request = new SignUpRequest("newuser", "password123", "newnick");
+        SignUpRequest request = new SignUpRequest("newuser", "password123", "newnick", "newuser@test.com");
 
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByNickname("newnick")).thenReturn(false);
+        when(userRepository.existsByEmail("newuser@test.com")).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("encoded-password");
 
         SignUpResponse response = authService.signUp(request);
@@ -90,7 +113,7 @@ class AuthServiceTest {
 
     @Test
     void 아이디가_중복이면_회원가입에_실패한다() {
-        SignUpRequest request = new SignUpRequest("dupuser", "password123", "newnick");
+        SignUpRequest request = new SignUpRequest("dupuser", "password123", "newnick", "dupuser@test.com");
 
         when(userRepository.existsByUsername("dupuser")).thenReturn(true);
 
@@ -101,10 +124,23 @@ class AuthServiceTest {
 
     @Test
     void 닉네임이_중복이면_회원가입에_실패한다() {
-        SignUpRequest request = new SignUpRequest("newuser", "password123", "dupnick");
+        SignUpRequest request = new SignUpRequest("newuser", "password123", "dupnick", "newuser@test.com");
 
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByNickname("dupnick")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.signUp(request))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.DUPLICATE_RESOURCE));
+    }
+
+    @Test
+    void 이메일이_중복이면_회원가입에_실패한다() {
+        SignUpRequest request = new SignUpRequest("newuser", "password123", "newnick", "dup@test.com");
+
+        when(userRepository.existsByUsername("newuser")).thenReturn(false);
+        when(userRepository.existsByNickname("newnick")).thenReturn(false);
+        when(userRepository.existsByEmail("dup@test.com")).thenReturn(true);
 
         assertThatThrownBy(() -> authService.signUp(request))
                 .isInstanceOf(CustomException.class)
@@ -131,6 +167,7 @@ class AuthServiceTest {
 
         assertThat(response.getAccessToken()).isEqualTo("access-token");
         verify(refreshTokenRepository).save(any(RefreshToken.class));
+        verify(loginAttemptService).reset("tester");
     }
 
     @Test
@@ -142,6 +179,8 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_CREDENTIALS));
+
+        verify(loginAttemptService).recordFailure("no-such-user");
     }
 
     // 존재하지 않는 계정과 동일한 에러코드(INVALID_CREDENTIALS)를 반환해야 계정 열거 공격을 막을 수 있다
@@ -156,6 +195,21 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_CREDENTIALS));
+
+        verify(loginAttemptService).recordFailure("tester");
+    }
+
+    @Test
+    void 로그인_시도가_잠긴_계정이면_ACCOUNT_LOCKED() {
+        SignInRequest request = new SignInRequest("locked-user", "raw-password");
+
+        when(loginAttemptService.isLocked("locked-user")).thenReturn(true);
+
+        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.ACCOUNT_LOCKED));
+
+        verify(userRepository, org.mockito.Mockito.never()).findByUsername(any());
     }
 
     @Test
@@ -243,6 +297,113 @@ class AuthServiceTest {
         assertThatThrownBy(() -> authService.reissue("logged-out-token"))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN));
+    }
+
+    // ===== requestPasswordReset / confirmPasswordReset =====
+
+    @Test
+    void 존재하지_않는_아이디로_재설정_요청하면_메일을_보내지_않는다() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(any(), any(), any(Duration.class))).thenReturn(true);
+        when(userRepository.findByUsername("nobody")).thenReturn(Optional.empty());
+
+        authService.requestPasswordReset("nobody", "nobody@test.com");
+
+        verify(mailService, org.mockito.Mockito.never()).sendPasswordResetEmail(any(), any());
+        verify(passwordResetTokenRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void 아이디는_존재하지만_이메일이_일치하지_않으면_메일을_보내지_않는다() {
+        User user = createOAuthUser(1L, "real@test.com", AuthProvider.LOCAL);
+
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(any(), any(), any(Duration.class))).thenReturn(true);
+        when(userRepository.findByUsername("tester")).thenReturn(Optional.of(user));
+
+        authService.requestPasswordReset("tester", "wrong@test.com");
+
+        verify(mailService, org.mockito.Mockito.never()).sendPasswordResetEmail(any(), any());
+        verify(mailService, org.mockito.Mockito.never()).sendSocialAccountNotice(any(), any());
+        verify(passwordResetTokenRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void 소셜_계정_아이디와_이메일이_일치하면_안내_메일만_보낸다() {
+        User user = createOAuthUser(1L, "google@test.com", AuthProvider.GOOGLE);
+
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(any(), any(), any(Duration.class))).thenReturn(true);
+        when(userRepository.findByUsername("google_1")).thenReturn(Optional.of(user));
+
+        authService.requestPasswordReset("google_1", "google@test.com");
+
+        verify(mailService).sendSocialAccountNotice("google@test.com", AuthProvider.GOOGLE);
+        verify(passwordResetTokenRepository, org.mockito.Mockito.never()).save(any());
+    }
+
+    @Test
+    void 아이디와_이메일이_일치하는_로컬_계정이면_토큰을_저장하고_메일을_보낸다() {
+        User user = createOAuthUser(1L, "local@test.com", AuthProvider.LOCAL);
+
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(any(), any(), any(Duration.class))).thenReturn(true);
+        when(userRepository.findByUsername("local_1")).thenReturn(Optional.of(user));
+
+        authService.requestPasswordReset("local_1", "local@test.com");
+
+        verify(passwordResetTokenRepository).save(any(PasswordResetToken.class));
+        verify(mailService).sendPasswordResetEmail(eq("local@test.com"), any());
+    }
+
+    @Test
+    void 쿨다운_중이면_재설정_요청을_무시한다() {
+        when(redisTemplate.opsForValue()).thenReturn(valueOperations);
+        when(valueOperations.setIfAbsent(any(), any(), any(Duration.class))).thenReturn(false);
+
+        authService.requestPasswordReset("local_1", "local@test.com");
+
+        verify(userRepository, org.mockito.Mockito.never()).findByUsername(any());
+    }
+
+    @Test
+    void 유효하지_않은_토큰으로_재설정하면_실패한다() {
+        when(passwordResetTokenRepository.findById("bad-token")).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> authService.confirmPasswordReset("bad-token", "newpassword123"))
+                .isInstanceOf(CustomException.class)
+                .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.PASSWORD_RESET_TOKEN_INVALID));
+    }
+
+    @Test
+    void 정상적으로_비밀번호를_재설정한다() {
+        User user = createUser(1L, "tester", "old-encoded-password", UserStatus.ACTIVE);
+        PasswordResetToken token = new PasswordResetToken("valid-token", 1L);
+
+        when(passwordResetTokenRepository.findById("valid-token")).thenReturn(Optional.of(token));
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(passwordEncoder.encode("newpassword123")).thenReturn("new-encoded-password");
+
+        authService.confirmPasswordReset("valid-token", "newpassword123");
+
+        assertThat(user.getPassword()).isEqualTo("new-encoded-password");
+        verify(passwordResetTokenRepository).deleteById("valid-token");
+        verify(refreshTokenRepository).deleteById(1L);
+    }
+
+    private User createOAuthUser(Long id, String email, AuthProvider provider) {
+        User user = User.builder()
+                .username(provider.name().toLowerCase() + "_" + id)
+                .password("encoded-random-password")
+                .nickname("nick" + id)
+                .email(email)
+                .role(Role.USER)
+                .status(UserStatus.ACTIVE)
+                .provider(provider)
+                .providerId(String.valueOf(id))
+                .build();
+        setId(user, id);
+        return user;
     }
 
     private User createUser(Long id, String username, String encodedPassword, UserStatus status) {

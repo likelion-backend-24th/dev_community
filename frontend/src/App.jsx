@@ -11,6 +11,8 @@ import LoginPage from "./pages/auth/LoginPage";
 import SignupPage from "./pages/auth/SignupPage";
 import OAuthCallbackPage from "./pages/auth/OAuthCallbackPage";
 import OAuthNicknamePage from "./pages/auth/OAuthNicknamePage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import QuestionListPage from "./pages/question/QuestionListPage";
 import PremiumQuestionListPage from "./pages/question/PremiumQuestionListPage";
 import QuestionDetailPage from "./pages/question/QuestionDetailPage";
@@ -35,6 +37,8 @@ const NO_NAVBAR_PATHS = [
   "/signup",
   "/oauth/callback",
   "/oauth/nickname",
+  "/forgot-password",
+  "/reset-password",
 ];
 
 const NO_FLOATING_WRITE_BUTTON_PATHS = ["/questions/new"];
@@ -67,6 +71,8 @@ function App() {
           <Route path="/questions/:id" element={<QuestionDetailPage key={location.key} />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
 
           {/* Spring Security OAuth2 Client가 백엔드(8080)에서 인증 처리를 끝낸 뒤
               accessToken을 쿼리스트링에 실어 이 경로로 리다이렉트시켜줌 (provider 구분 없이 공용) */}
