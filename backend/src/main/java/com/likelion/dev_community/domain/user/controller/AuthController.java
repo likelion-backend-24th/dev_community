@@ -72,6 +72,7 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("사용 가능한 닉네임입니다", null));
     }
 
+    @Operation(summary = "이메일 중복 확인")
     @GetMapping("/check-email")
     public ResponseEntity<ApiResponse<Void>> checkEmail(@RequestParam @NotBlank String email){
         authService.checkEmail(email);
@@ -88,12 +89,14 @@ public class AuthController {
         return ResponseEntity.ok(ApiResponse.success("회원가입 및 로그인 성공", tokenResponse));
     }
 
+    @Operation(summary = "비밀번호 재설정 요청")
     @PostMapping("/password-reset/request")
     public ResponseEntity<ApiResponse<Void>> requestPasswordReset(@Valid @RequestBody PasswordResetRequest request) {
         authService.requestPasswordReset(request.getUsername(), request.getEmail());
         return ResponseEntity.ok(ApiResponse.success("입력하신 정보와 일치하는 계정이 있다면 이메일로 재설정 링크를 보냈습니다.", null));
     }
 
+    @Operation(summary = "비밀번호 재설정 확정")
     @PostMapping("/password-reset/confirm")
     public ResponseEntity<ApiResponse<Void>> confirmPasswordReset(@Valid @RequestBody PasswordResetConfirmRequest request) {
         authService.confirmPasswordReset(request.getToken(), request.getNewPassword());
