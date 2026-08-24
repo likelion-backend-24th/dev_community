@@ -4,6 +4,8 @@ import com.likelion.dev_community.common.ApiResponse;
 import com.likelion.dev_community.domain.notification.dto.NotificationPayload;
 import com.likelion.dev_community.domain.notification.service.NotificationService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+@Tag(name = "알림")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/notifications")
@@ -21,6 +24,7 @@ public class NotificationController {
 
     private final NotificationService notificationService;
 
+    @Operation(summary = "최근 알림 목록 조회")
     @GetMapping
     public ResponseEntity<ApiResponse<List<NotificationPayload>>> getRecentNotifications(@AuthenticationPrincipal CustomUserDetails userDetails) {
 
@@ -29,6 +33,7 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
+    @Operation(summary = "전체 알림 읽음 처리")
     @PatchMapping("/read-all")
     public ResponseEntity<ApiResponse<Void>> markAllAsRead(@AuthenticationPrincipal CustomUserDetails userDetails) {
 

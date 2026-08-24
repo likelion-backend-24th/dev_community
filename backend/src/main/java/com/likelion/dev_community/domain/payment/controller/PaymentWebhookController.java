@@ -4,6 +4,8 @@ import com.likelion.dev_community.domain.payment.service.WebhookService;
 import io.portone.sdk.server.errors.WebhookVerificationException;
 import io.portone.sdk.server.webhook.Webhook;
 import io.portone.sdk.server.webhook.WebhookVerifier;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "결제 웹훅")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class PaymentWebhookController {
 
     private final WebhookService webhookService;
 
+    @Operation(summary = "PortOne 웹훅 수신")
     @PostMapping("/webhook")
     public ResponseEntity<Void> webhook(@RequestBody String rawBody,
                                               @RequestHeader(value = WebhookVerifier.HEADER_ID, required = false) String webhookId,

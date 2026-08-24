@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.question.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -12,8 +13,10 @@ public class CodeCommentRequest {
 
     @NotNull(message = "라인 번호를 입력해주세요.")
     @Min(value = 1, message = "라인 번호는 1 이상이어야 합니다.")
+    @Schema(example = "12")
     private final Integer lineNumber;
 
     @NotBlank(message = "내용을 입력해주세요.")
+    @Schema(example = "이 부분은 null 체크가 필요해 보입니다.")
     private final String content;
 }
