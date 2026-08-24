@@ -9,6 +9,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public class PaymentCancelRequest {
     @NotBlank(message = "취소 사유를 입력해주세요.")
-    @Schema(example = "단순 변심")
+    @Schema(example = "단순 변심", description = "결제 취소 사유")
     private final String reason;
 }

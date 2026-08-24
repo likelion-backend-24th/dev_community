@@ -10,7 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class StaleQuestionsResponse {
 
-    @Schema(example = "5")
+    @Schema(example = "5", description = "7일 이상 미답변 상태로 방치된 질문 수")
     private final long count;
     private final List<StaleQuestionItem> questions;
 }

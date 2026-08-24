@@ -15,10 +15,10 @@ import java.time.LocalDateTime;
 public class SubscriptionResponse {
     private final PlanType planType;
 
-    @Schema(example = "2026-08-11T10:00:00")
+    @Schema(example = "2026-08-11T10:00:00", description = "구독 시작일시")
     private final LocalDateTime startedAt;
 
-    @Schema(example = "2026-09-11T10:00:00")
+    @Schema(example = "2026-09-11T10:00:00", description = "구독 만료일시")
     private final LocalDateTime expiresAt;
 
     private final SubscriptionStatus status;

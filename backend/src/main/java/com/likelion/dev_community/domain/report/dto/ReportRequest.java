@@ -15,10 +15,10 @@ public class ReportRequest {
     private final ReportTargetType targetType;
 
     @NotNull
-    @Schema(example = "10")
+    @Schema(example = "10", description = "신고 대상의 ID. targetType에 따라 질문 ID 또는 답변 ID")
     private final Long targetId;
 
     @NotBlank
-    @Schema(example = "부적절한 내용이 포함되어 있습니다.")
+    @Schema(example = "부적절한 내용이 포함되어 있습니다.", description = "신고 사유")
     private final String reason;
 }

@@ -14,29 +14,29 @@ import java.util.List;
 @AllArgsConstructor
 public class QuestionSummaryResponse {
 
-    @Schema(example = "1")
+    @Schema(example = "1", description = "질문 ID")
     private final Long id;
-    @Schema(example = "Spring Security 인증 관련 질문입니다")
+    @Schema(example = "Spring Security 인증 관련 질문입니다", description = "질문 제목")
     private final String title;
-    @Schema(example = "BE24-Team4")
+    @Schema(example = "BE24-Team4", description = "작성자 닉네임. isAnonymous=true면 \"익명\"으로 대체됨")
     private final String authorNickname;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "작성자 전문가 인증 여부. 익명 작성 시 항상 false로 표시됨")
     private final boolean authorIsExpert;
     private final QuestionStatus status;
 
-    @Schema(example = "152")
+    @Schema(example = "152", description = "조회수")
     private final int viewCount;
-    @Schema(example = "24")
+    @Schema(example = "24", description = "추천수")
     private final int likeCount;
-    @Schema(example = "3")
+    @Schema(example = "3", description = "달린 답변 수")
     private final int answerCount;
 
     private final List<String> tags;
-    @Schema(example = "2026-08-23T10:00:00")
+    @Schema(example = "2026-08-23T10:00:00", description = "질문 작성일시")
     private final LocalDateTime createdAt;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "프리미엄(구독자 전용) 게시판 글 여부")
     private final boolean isPremium;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "익명 작성 여부")
     private final boolean isAnonymous;
 
     private final QuestionType type;

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "결제 웹훅")
+@Tag(name = "결제 웹훅", description = "PortOne이 결제/취소 이벤트 발생 시 호출하는 웹훅 수신 API. 인증 헤더 대신 PortOne 서명 검증(없으면 재조회 검증)으로 신뢰성을 확인")
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class PaymentWebhookController {
 
     private final WebhookService webhookService;
 
-    @Operation(summary = "PortOne 웹훅 수신")
+    @Operation(summary = "PortOne 웹훅 수신", description = "PortOne이 결제완료(Transaction.Paid)/결제취소(Transaction.Cancelled) 등 이벤트 발생 시 호출. 서명 헤더가 있으면 검증 후 처리하고, 없으면 본문을 신뢰하지 않고 PortOne 재조회로 검증.")
     @PostMapping("/webhook")
     public ResponseEntity<Void> webhook(@RequestBody String rawBody,
                                               @RequestHeader(value = WebhookVerifier.HEADER_ID, required = false) String webhookId,

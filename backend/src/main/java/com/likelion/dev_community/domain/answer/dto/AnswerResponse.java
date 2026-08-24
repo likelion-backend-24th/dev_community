@@ -11,25 +11,25 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AnswerResponse {
 
-    @Schema(example = "1")
+    @Schema(example = "1", description = "답변 ID")
     private final Long id;
-    @Schema(example = "10")
+    @Schema(example = "10", description = "이 답변이 달린 질문 ID")
     private final Long questionId;
-    @Schema(example = "3")
+    @Schema(example = "3", description = "작성자 회원 ID")
     private final Long authorId;
-    @Schema(example = "BE24-Team4")
+    @Schema(example = "BE24-Team4", description = "작성자 닉네임. isAnonymous=true면 \"익명\"으로 대체됨")
     private final String authorNickname;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "작성자 전문가 인증 여부. 익명 작성 시 항상 false로 표시됨")
     private final boolean authorIsExpert;
-    @Schema(example = "이 경우엔 JwtAuthenticationFilter에서 SecurityContext를 설정하는 순서를 확인해보세요.")
+    @Schema(example = "이 경우엔 JwtAuthenticationFilter에서 SecurityContext를 설정하는 순서를 확인해보세요.", description = "답변 본문")
     private final String content;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "질문 작성자에게 채택되었는지 여부")
     private final boolean isAdopted;
-    @Schema(example = "5")
+    @Schema(example = "5", description = "추천수")
     private final int likeCount;
-    @Schema(example = "2026-08-23T10:00:00")
+    @Schema(example = "2026-08-23T10:00:00", description = "답변 작성일시")
     private final LocalDateTime createdAt;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "익명 작성 여부")
     private final boolean isAnonymous;
 
     public static AnswerResponse from(Answer answer) {

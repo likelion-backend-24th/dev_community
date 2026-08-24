@@ -11,7 +11,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BillingKeyIssueRequest {
     @NotBlank(message = "빌링키가 필요합니다.")
-    @Schema(example = "billing-key-75ae3cab-6afe-422d-bf34-3a7b1762451d")
+    @Schema(example = "billing-key-75ae3cab-6afe-422d-bf34-3a7b1762451d", description = "PortOne 빌링키 발급창에서 발급받은 빌링키")
     private final String billingKey;
 
     @NotNull(message = "구독 등급을 선택해주세요.")

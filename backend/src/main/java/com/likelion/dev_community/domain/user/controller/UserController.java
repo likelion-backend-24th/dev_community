@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "회원")
+@Tag(name = "회원", description = "로그인한 회원 본인의 정보 조회/수정/탈퇴, 마이페이지(내 질문·답변 목록), 전문가 등급 신청을 다루는 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
@@ -33,7 +33,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "내 정보 조회")
+    @Operation(summary = "내 정보 조회", description = "인증 토큰의 사용자 ID로 본인 정보를 조회.")
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         UserInfoResponse userInfo = userService.getUserInfo(customUserDetails.getId());
@@ -41,7 +41,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("회원 정보 조회 성공",userInfo));
     }
 
-    @Operation(summary = "내 정보 수정")
+    @Operation(summary = "내 정보 수정", description = "닉네임 등 본인 정보를 수정.")
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserInfoResponse>> updateUserInfo(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                         @Valid @RequestBody UserInfoRequest userInfoRequest){
@@ -50,7 +50,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("회원 정보 수정 성공",userInfo));
     }
 
-    @Operation(summary = "비밀번호 변경")
+    @Operation(summary = "비밀번호 변경", description = "본인 비밀번호를 변경.")
     @PutMapping("/me/password")
     public ResponseEntity<ApiResponse<Void>> updateUserPassword(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                 @Valid @RequestBody UserPwRequest userPwRequest,
@@ -60,7 +60,7 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.success("비밀번호 변경 성공",null));
     }
 
-    @Operation(summary = "회원 탈퇴")
+    @Operation(summary = "회원 탈퇴", description = "본인 비밀번호 확인 후 계정을 탈퇴(soft delete) 처리. 실제 데이터를 삭제하지 않고 상태만 WITHDRAWN으로 전환.")
     @DeleteMapping("/me")
     public ResponseEntity<ApiResponse<Void>> softDelete(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                         @Valid @RequestBody UserWithdrawRequest request,
@@ -71,7 +71,7 @@ public class UserController {
     }
 
     // 마이페이지 - 내 질문 목록 조회
-    @Operation(summary = "내 질문 목록 조회")
+    @Operation(summary = "내 질문 목록 조회", description = "마이페이지에서 본인이 작성한 질문 목록을 페이지 단위로 조회.")
     @GetMapping("/me/questions")
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> getMyQuestions(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                                      @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -88,7 +88,7 @@ public class UserController {
     }
 
     // 마이페이지 - 내 답변 목록 조회
-    @Operation(summary = "내 답변 목록 조회")
+    @Operation(summary = "내 답변 목록 조회", description = "마이페이지에서 본인이 작성한 답변 목록을 페이지 단위로 조회.")
     @GetMapping("/me/answers")
     public ResponseEntity<ApiResponse<List<AnswerResponse>>> getMyAnswers(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                            @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -105,7 +105,7 @@ public class UserController {
     }
 
     // 마이페이지 - 전문가 등급 신청
-    @Operation(summary = "전문가 등급 신청")
+    @Operation(summary = "전문가 등급 신청", description = "전문가 등급 신청을 접수. 승인은 관리자가 별도로 처리하며, 승인 전까지는 신청 대기 상태로 표시됨.")
     @PostMapping("/me/expert-request")
     public ResponseEntity<ApiResponse<UserInfoResponse>> requestExpert(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         UserInfoResponse userInfo = userService.requestExpert(customUserDetails.getId());

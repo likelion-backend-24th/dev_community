@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "구독")
+@Tag(name = "구독", description = "로그인한 회원 본인의 구독(프리미엄 플랜) 정보 조회 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/members")
@@ -21,7 +21,7 @@ public class SubscriptionController {
 
     private final SubscriptionService subscriptionService;
 
-    @Operation(summary = "내 구독 정보 조회")
+    @Operation(summary = "내 구독 정보 조회", description = "본인의 현재 구독 상태(플랜, 시작일, 만료일)를 조회. 구독 이력이 없으면 data가 null로 응답됨.")
     @GetMapping("/me/subscription")
     public ResponseEntity<ApiResponse<SubscriptionResponse>> getMySubscription(@AuthenticationPrincipal CustomUserDetails customUserDetails){
         SubscriptionResponse mySubscription = subscriptionService.getMySubscription(customUserDetails.getId());

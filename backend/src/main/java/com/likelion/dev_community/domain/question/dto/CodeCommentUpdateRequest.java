@@ -10,7 +10,7 @@ import lombok.Getter;
 public class CodeCommentUpdateRequest {
 
     @NotBlank(message = "내용을 입력해주세요.")
-    @Schema(example = "이 부분은 null 체크가 필요해 보입니다.")
+    @Schema(example = "이 부분은 null 체크가 필요해 보입니다.", description = "수정할 코멘트 내용")
     private final String content;
 
 }

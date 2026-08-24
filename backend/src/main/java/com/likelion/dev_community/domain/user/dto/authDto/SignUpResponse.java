@@ -9,9 +9,9 @@ import lombok.Getter;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class SignUpResponse {
-    @Schema(example = "dev_user01")
+    @Schema(example = "dev_user01", description = "가입된 아이디")
     private final String username;
-    @Schema(example = "BE24-Team4")
+    @Schema(example = "BE24-Team4", description = "가입된 닉네임")
     private final String nickname;
 
     public static SignUpResponse from(User user){
