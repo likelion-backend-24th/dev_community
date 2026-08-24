@@ -11,19 +11,19 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CodeCommentResponse {
 
-    @Schema(example = "1")
+    @Schema(example = "1", description = "코멘트 ID")
     private final Long id;
-    @Schema(example = "10")
+    @Schema(example = "10", description = "이 코멘트가 달린 질문 ID")
     private final Long questionId;
-    @Schema(example = "3")
+    @Schema(example = "3", description = "작성자 회원 ID")
     private final Long authorId;
-    @Schema(example = "BE24-Team4")
+    @Schema(example = "BE24-Team4", description = "작성자 닉네임")
     private final String authorNickname;
-    @Schema(example = "12")
+    @Schema(example = "12", description = "코멘트가 달린 코드 라인 번호")
     private final int lineNumber;
-    @Schema(example = "이 부분은 null 체크가 필요해 보입니다.")
+    @Schema(example = "이 부분은 null 체크가 필요해 보입니다.", description = "코멘트 내용")
     private final String content;
-    @Schema(example = "2026-08-23T10:00:00")
+    @Schema(example = "2026-08-23T10:00:00", description = "작성일시")
     private final LocalDateTime createdAt;
 
     public static CodeCommentResponse from(CodeComment comment) {

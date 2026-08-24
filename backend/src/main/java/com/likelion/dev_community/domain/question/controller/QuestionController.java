@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "질문")
+@Tag(name = "질문", description = "질문의 등록/목록·상세 조회/수정/삭제, 프리미엄 게시판 목록, AI 요약·태그추천(구독자 전용)을 다루는 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/questions")
@@ -29,7 +29,7 @@ public class QuestionController {
     private final ViewerKeyResolver viewerKeyResolver;
 
     // F-06
-    @Operation(summary = "질문 등록")
+    @Operation(summary = "질문 등록", description = "질문을 작성. isPremium/type(코드리뷰·커리어상담)/isAnonymous는 구독자(또는 ADMIN)만 사용 가능. 로그인 필요.")
     @PostMapping
     public ResponseEntity<ApiResponse<QuestionResponse>> createQuestion(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -44,7 +44,7 @@ public class QuestionController {
     }
 
     // F-07
-    @Operation(summary = "질문 목록 조회")
+    @Operation(summary = "질문 목록 조회", description = "일반 게시판 질문 목록을 페이지·검색어·태그·상태 조건으로 조회. 프리미엄 질문은 포함되지 않음. 인증 불필요.")
     @GetMapping
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readQuestions(
             @RequestParam(defaultValue = "0") int page,
@@ -61,7 +61,7 @@ public class QuestionController {
     }
 
     // F-32
-    @Operation(summary = "프리미엄 질문 목록 조회")
+    @Operation(summary = "프리미엄 질문 목록 조회", description = "구독자 전용 프리미엄 게시판 질문 목록을 조회. 비구독자(ADMIN 제외)는 403.")
     @GetMapping("/premium")
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readPremiumQuestions(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -81,7 +81,7 @@ public class QuestionController {
     }
 
     // F-08
-    @Operation(summary = "질문 상세 조회")
+    @Operation(summary = "질문 상세 조회", description = "질문 상세 정보를 조회. 조회 시 조회수가 증가하며(방문자별 중복 방지), 프리미엄 질문은 비구독자(ADMIN 제외) 접근 시 403. 인증 불필요.")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionDetailResponse>> readDetailQuestion(
             @PathVariable Long id,
@@ -98,7 +98,7 @@ public class QuestionController {
     }
 
     // F-09 (수정)
-    @Operation(summary = "질문 수정")
+    @Operation(summary = "질문 수정", description = "본인이 작성한 질문을 수정. ADMIN은 타인 질문도 수정 가능.")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionResponse>> updateQuestion(
             @PathVariable Long id,
@@ -113,7 +113,7 @@ public class QuestionController {
     }
 
     // F-09 (삭제)
-    @Operation(summary = "질문 삭제")
+    @Operation(summary = "질문 삭제", description = "본인이 작성한 질문을 soft delete 처리. ADMIN은 타인 질문도 삭제 가능.")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable Long id,
@@ -127,7 +127,7 @@ public class QuestionController {
     }
 
     // 질문 글 AI 요약 (멤버십 구독자 전용)
-    @Operation(summary = "질문 AI 요약 조회 (구독자 전용)")
+    @Operation(summary = "질문 AI 요약 조회 (구독자 전용)", description = "Gemini로 질문 본문을 요약한 결과를 조회(최초 조회 시 생성 후 캐시). 비구독자(ADMIN 제외)는 403.")
     @GetMapping("/{id}/summary")
     public ResponseEntity<ApiResponse<String>> getSummary(
             @PathVariable Long id,
@@ -139,7 +139,7 @@ public class QuestionController {
     }
 
     // 질문 작성 중 본문 기준 AI 태그 추천 (멤버십 구독자 전용)
-    @Operation(summary = "AI 태그 추천 (구독자 전용)")
+    @Operation(summary = "AI 태그 추천 (구독자 전용)", description = "작성 중인 제목/본문을 Gemini에 전달해 추천 태그 목록을 받음. 비구독자(ADMIN 제외)는 403.")
     @PostMapping("/tags/suggest")
     public ResponseEntity<ApiResponse<List<String>>> suggestTags(
             @AuthenticationPrincipal CustomUserDetails userDetails,

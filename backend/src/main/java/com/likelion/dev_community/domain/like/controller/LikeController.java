@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "추천")
+@Tag(name = "추천", description = "질문/답변에 대한 추천 토글 및 본인 추천 여부 조회를 다루는 API")
 @RestController
 @RequiredArgsConstructor
 public class LikeController {
 
     private final LikeService likeService;
 
-    @Operation(summary = "질문 추천 토글")
+    @Operation(summary = "질문 추천 토글", description = "질문에 대한 본인 추천을 켜거나 끔(이미 추천했으면 취소). 로그인 필요.")
     @PostMapping("/api/questions/{id}/like")
     public ApiResponse<Boolean> toggleQuestionLike(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                      @PathVariable Long id) {
@@ -32,7 +32,7 @@ public class LikeController {
         return ApiResponse.success(liked);
     }
 
-    @Operation(summary = "답변 추천 토글")
+    @Operation(summary = "답변 추천 토글", description = "답변에 대한 본인 추천을 켜거나 끔(이미 추천했으면 취소). 로그인 필요.")
     @PostMapping("/api/answers/{id}/like")
     public ApiResponse<Boolean> toggleAnswerLike(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                   @PathVariable Long id) {
@@ -42,7 +42,7 @@ public class LikeController {
 
     // 질문 상세 화면에서 질문/답변에 대한 내 추천 여부를 한 번에 조회
     // GET /api/questions/**는 SecurityConfig에서 permitAll이라 비로그인 사용자도 호출 가능 -> 그 경우 전부 false로 응답
-    @Operation(summary = "내 추천 여부 일괄 조회")
+    @Operation(summary = "내 추천 여부 일괄 조회", description = "질문 상세 화면에서 질문과 답변들에 대한 본인의 추천 여부를 한 번에 조회. 비로그인 시 전부 false로 응답.")
     @GetMapping("/api/questions/{id}/like-status")
     public ApiResponse<LikeStatusResponse> getLikeStatus(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                           @PathVariable Long id,

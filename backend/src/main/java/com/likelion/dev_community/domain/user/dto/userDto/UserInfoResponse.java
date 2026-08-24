@@ -14,22 +14,22 @@ import java.time.LocalDateTime;
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class UserInfoResponse {
-    @Schema(example = "1")
+    @Schema(example = "1", description = "회원 고유 ID")
     private final Long userId;
-    @Schema(example = "dev_user01")
+    @Schema(example = "dev_user01", description = "로그인 아이디")
     private final String username;
-    @Schema(example = "BE24-Team4")
+    @Schema(example = "BE24-Team4", description = "닉네임")
     private final String nickname;
     private final Role role;
     private final UserStatus status;
     private final AuthProvider provider;
-    @Schema(example = "2026-08-23T10:00:00")
+    @Schema(example = "2026-08-23T10:00:00", description = "가입일시")
     private final LocalDateTime createdAt;
-    @Schema(example = "120")
+    @Schema(example = "120", description = "평판 점수. 추천/채택 등 활동에 따라 자동 반영됨")
     private final int reputation;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "전문가 인증 여부")
     private final boolean isExpert;
-    @Schema(example = "false")
+    @Schema(example = "false", description = "전문가 등급 신청 후 관리자 승인 대기 중인지 여부")
     private final boolean expertRequested;
 
     public static UserInfoResponse from(User user){

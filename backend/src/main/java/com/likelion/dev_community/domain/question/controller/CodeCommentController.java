@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "코드리뷰 댓글")
+@Tag(name = "코드리뷰 댓글", description = "코드리뷰 유형 질문의 특정 라인에 대한 댓글 등록/조회/수정/삭제를 다루는 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/questions/{questionId}/code-comments")
@@ -25,7 +25,7 @@ public class CodeCommentController {
 
     private final CodeCommentService codeCommentService;
 
-    @Operation(summary = "코드 코멘트 등록")
+    @Operation(summary = "코드 코멘트 등록", description = "코드리뷰 유형 질문의 특정 라인에 코멘트를 남김. 코드리뷰 유형이 아닌 질문에 시도하면 400. 로그인 필요.")
     @PostMapping
     public ResponseEntity<ApiResponse<CodeCommentResponse>> createComment(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                           @PathVariable Long questionId,
@@ -36,7 +36,7 @@ public class CodeCommentController {
                 .body(ApiResponse.success("코드 코멘트 등록 완료", response));
     }
 
-    @Operation(summary = "코드 코멘트 목록 조회")
+    @Operation(summary = "코드 코멘트 목록 조회", description = "특정 질문에 달린 코드 코멘트 목록을 조회. 인증 불필요.")
     @GetMapping
     public ResponseEntity<ApiResponse<List<CodeCommentResponse>>> readComments(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                                @PathVariable Long questionId) {
@@ -48,7 +48,7 @@ public class CodeCommentController {
         return ResponseEntity.ok(ApiResponse.success(response));
     }
 
-    @Operation(summary = "코드 코멘트 수정")
+    @Operation(summary = "코드 코멘트 수정", description = "본인이 작성한 코드 코멘트를 수정. ADMIN은 타인 코멘트도 수정 가능.")
     @PutMapping("/{commentId}")
     public ResponseEntity<ApiResponse<CodeCommentResponse>> updateComment(@AuthenticationPrincipal CustomUserDetails userDetails,
                                                                           @PathVariable Long questionId,
@@ -59,7 +59,7 @@ public class CodeCommentController {
         return ResponseEntity.ok(ApiResponse.success("코드 코멘트 수정 완료", response));
     }
 
-    @Operation(summary = "코드 코멘트 삭제")
+    @Operation(summary = "코드 코멘트 삭제", description = "본인이 작성한 코드 코멘트를 삭제. ADMIN은 타인 코멘트도 삭제 가능.")
     @DeleteMapping("/{commentId}")
     public ResponseEntity<Void> deleteComment(@AuthenticationPrincipal CustomUserDetails userDetails,
                                               @PathVariable Long questionId,

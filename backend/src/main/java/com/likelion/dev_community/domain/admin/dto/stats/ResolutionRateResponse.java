@@ -8,11 +8,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ResolutionRateResponse {
 
-    @Schema(example = "120")
+    @Schema(example = "120", description = "전체 질문 수")
     private final long totalQuestions;
-    @Schema(example = "84")
+    @Schema(example = "84", description = "채택된 답변이 있는(해결된) 질문 수")
     private final long resolvedQuestions;
-    @Schema(example = "70.0")
+    @Schema(example = "70.0", description = "해결률(%). resolvedQuestions / totalQuestions * 100, 소수점 첫째 자리까지 반올림")
     private final double resolutionRate;
 
     public static ResolutionRateResponse of(long totalQuestions, long resolvedQuestions) {

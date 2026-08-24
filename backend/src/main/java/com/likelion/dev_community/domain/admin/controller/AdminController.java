@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@Tag(name = "관리자")
+@Tag(name = "관리자", description = "신고 처리, 회원 목록/정지/전문가 승인 관리, 특정 회원의 활동 대시보드·질문·답변 조회를 다루는 API. 전부 ADMIN 권한 필요")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
@@ -37,7 +37,7 @@ public class AdminController {
     private final PersonalDashboardService personalDashboardService;
 
     // 신고 목록 조회
-    @Operation(summary = "신고 목록 조회")
+    @Operation(summary = "신고 목록 조회", description = "접수된 신고를 상태별로 필터링해 페이지 단위로 조회. ADMIN 전용.")
     @GetMapping("/reports")
     public ResponseEntity<ApiResponse<List<ReportResponse>>> getReports(@RequestParam(required = false) ReportStatus status,
                                                                         @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -54,7 +54,7 @@ public class AdminController {
     }
 
     // 신고 개별 처리
-    @Operation(summary = "신고 개별 처리")
+    @Operation(summary = "신고 개별 처리", description = "신고 1건을 처리(승인/반려 등) 상태로 전환. ADMIN 전용.")
     @PatchMapping("/reports/{id}")
     public ResponseEntity<ApiResponse<ReportResponse>> processingReport(@PathVariable(name = "id") Long reportId,
                                                                         @Valid @RequestBody ReportProcessRequest request){
@@ -64,7 +64,7 @@ public class AdminController {
     }
 
     // 회원 목록 전체 조회 (expertRequested=true면 전문가 등급 요청한 유저만)
-    @Operation(summary = "회원 목록 전체 조회")
+    @Operation(summary = "회원 목록 전체 조회", description = "전체 회원 목록을 페이지 단위로 조회. expertRequested=true로 전문가 등급 신청자만 필터링할 수 있음. ADMIN 전용.")
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserInfoResponse>>> getAllUsers(@RequestParam(required = false) Boolean expertRequested,
                                                                             @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -82,7 +82,7 @@ public class AdminController {
     }
 
     // 특정 유저의 누적된 신고 목록 카운트
-    @Operation(summary = "유저 신고 누적 카운트 조회")
+    @Operation(summary = "유저 신고 누적 카운트 조회", description = "특정 회원이 신고 대상으로 누적된 신고 건수를 조회. ADMIN 전용.")
     @GetMapping("/users/{id}/reports")
     public ResponseEntity<ApiResponse<Long>> countReportByTargetUserId(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -92,7 +92,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저 정지 수행
-    @Operation(summary = "회원 정지")
+    @Operation(summary = "회원 정지", description = "특정 회원의 계정 상태를 SUSPENDED로 전환. ADMIN 전용.")
     @PatchMapping("/users/{id}/suspend")
     public ResponseEntity<ApiResponse<UserInfoResponse>> userSuspension(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.userSuspension(userId);
@@ -101,7 +101,7 @@ public class AdminController {
     }
 
     // 정지 해제
-    @Operation(summary = "회원 정지 해제")
+    @Operation(summary = "회원 정지 해제", description = "정지된 회원의 계정 상태를 ACTIVE로 되돌림. ADMIN 전용.")
     @PatchMapping("/users/{id}/unsuspend")
     public ResponseEntity<ApiResponse<UserInfoResponse>> userUnsuspension(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.userUnsuspension(userId);
@@ -110,7 +110,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저를 전문가로 승인
-    @Operation(summary = "전문가 승인")
+    @Operation(summary = "전문가 승인", description = "전문가 등급 신청자를 전문가로 승인. 승인 시 신청 대기 상태는 자동으로 해제됨. ADMIN 전용.")
     @PatchMapping("/users/{id}/expert")
     public ResponseEntity<ApiResponse<UserInfoResponse>> grantExpert(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.grantExpert(userId);
@@ -119,7 +119,7 @@ public class AdminController {
     }
 
     // 전문가 지정 해제
-    @Operation(summary = "전문가 지정 해제")
+    @Operation(summary = "전문가 지정 해제", description = "이미 전문가로 지정된 회원의 전문가 자격을 해제. ADMIN 전용.")
     @DeleteMapping("/users/{id}/expert")
     public ResponseEntity<ApiResponse<UserInfoResponse>> revokeExpert(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.revokeExpert(userId);
@@ -128,7 +128,7 @@ public class AdminController {
     }
 
     // 전문가 등급 신청 거절
-    @Operation(summary = "전문가 등급 신청 거절")
+    @Operation(summary = "전문가 등급 신청 거절", description = "전문가 등급 신청을 거절하고 신청 대기 상태를 해제. ADMIN 전용.")
     @PostMapping("/users/{id}/expert-request/reject")
     public ResponseEntity<ApiResponse<UserInfoResponse>> rejectExpertRequest(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.rejectExpertRequest(userId);
@@ -137,7 +137,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저의 활동 대시보드 조회 (전문가 등급 요청 심사용)
-    @Operation(summary = "특정 유저 활동 요약 조회")
+    @Operation(summary = "특정 유저 활동 요약 조회", description = "전문가 등급 심사 등을 위해 특정 회원의 질문/답변/채택/평판 활동 요약을 조회. ADMIN 전용.")
     @GetMapping("/users/{id}/dashboard/summary")
     public ResponseEntity<ApiResponse<PersonalDashboardSummaryResponse>> getUserDashboardSummary(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -145,7 +145,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("유저 활동 요약 조회 성공", personalDashboardService.getSummary(userId)));
     }
 
-    @Operation(summary = "특정 유저 활동 타임라인 조회")
+    @Operation(summary = "특정 유저 활동 타임라인 조회", description = "특정 회원의 최근 활동 타임라인을 조회. ADMIN 전용.")
     @GetMapping("/users/{id}/dashboard/timeline")
     public ResponseEntity<ApiResponse<List<ActivityTimelineItem>>> getUserDashboardTimeline(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -154,7 +154,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저의 질문/답변 목록 조회 (활동 대시보드 드릴다운용)
-    @Operation(summary = "특정 유저 질문 목록 조회")
+    @Operation(summary = "특정 유저 질문 목록 조회", description = "활동 대시보드 드릴다운용으로 특정 회원이 작성한 질문 목록을 조회. ADMIN 전용.")
     @GetMapping("/users/{id}/questions")
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> getUserQuestions(@PathVariable(name = "id") Long userId,
                                                                                         @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -163,7 +163,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("유저 질문 목록 조회 성공", questions.getContent()));
     }
 
-    @Operation(summary = "특정 유저 답변 목록 조회")
+    @Operation(summary = "특정 유저 답변 목록 조회", description = "활동 대시보드 드릴다운용으로 특정 회원이 작성한 답변 목록을 조회. ADMIN 전용.")
     @GetMapping("/users/{id}/answers")
     public ResponseEntity<ApiResponse<List<AnswerResponse>>> getUserAnswers(@PathVariable(name = "id") Long userId,
                                                                              @ParameterObject @PageableDefault(size = 10) Pageable pageable){

@@ -10,10 +10,10 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class DailyStatItem {
 
-    @Schema(example = "2026-08-23")
+    @Schema(example = "2026-08-23", description = "집계 대상 일자")
     private final LocalDate date;
-    @Schema(example = "12")
+    @Schema(example = "12", description = "해당 일자의 신규 가입자 수")
     private final long signupCount;
-    @Schema(example = "34")
+    @Schema(example = "34", description = "해당 일자의 질문 등록 수")
     private final long questionCount;
 }
