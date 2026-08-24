@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   createQuestion,
@@ -112,9 +112,25 @@ function QuestionFormPage() {
     };
   }, []);
 
+  // IME(한글 등) 조합 상태를 추적한다. 일부 입력기 환경에서는 조합 완료 신호(compositionend)가
+  // Enter keydown보다 늦게 도착해, 이미 비운 입력창에 조합 중이던 마지막 글자가 뒤늦게
+  // 흘러들어오고 그 직후 또 한 번의 Enter가 그 잔여 글자를 태그로 추가해버리는 문제가 있다.
+  const composingRef = useRef(false);
+  // isComposing만으로는 이 순서 역전을 항상 잡아내지 못하는 환경이 있어서, 방금(200ms 이내)
+  // Enter로 태그를 추가했다면 뒤이은 Enter는 원인과 무관하게 잔여 글자로 간주하고 무시한다.
+  // 정상적인 사용자가 태그 하나를 다 입력하고 Enter를 또 누르기까지는 이보다 훨씬 오래 걸린다.
+  const lastAddedAtRef = useRef(0);
+
   const handleTagKeyDown = (e) => {
     if (e.key !== "Enter") return;
+    if (e.nativeEvent.isComposing || composingRef.current) return;
     e.preventDefault();
+
+    const now = Date.now();
+    if (now - lastAddedAtRef.current < 200) {
+      setTagInput("");
+      return;
+    }
 
     const value = tagInput.trim();
     if (!value) return;
@@ -128,6 +144,7 @@ function QuestionFormPage() {
       return;
     }
 
+    lastAddedAtRef.current = now;
     setTags((prev) => [...prev, value]);
     setTagInput("");
     setError("");
@@ -251,6 +268,8 @@ function QuestionFormPage() {
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyDown={handleTagKeyDown}
+              onCompositionStart={() => { composingRef.current = true; }}
+              onCompositionEnd={() => { composingRef.current = false; }}
               placeholder="태그 입력 후 Enter"
               disabled={tags.length >= MAX_TAG_COUNT}
             />
