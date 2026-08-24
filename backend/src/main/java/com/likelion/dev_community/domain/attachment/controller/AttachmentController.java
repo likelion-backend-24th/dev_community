@@ -7,6 +7,8 @@ import com.likelion.dev_community.domain.attachment.entity.AttachmentTargetType;
 import com.likelion.dev_community.domain.attachment.service.AttachmentService;
 import com.likelion.dev_community.domain.attachment.service.FileStorageService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -20,6 +22,7 @@ import org.springframework.web.util.UriUtils;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+@Tag(name = "첨부파일")
 @RestController
 @RequiredArgsConstructor
 public class AttachmentController {
@@ -27,6 +30,7 @@ public class AttachmentController {
     private final AttachmentService attachmentService;
     private final FileStorageService fileStorageService;
 
+    @Operation(summary = "질문 첨부파일 업로드")
     @PostMapping("/api/questions/{questionId}/attachments")
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> uploadQuestionAttachments(
             @PathVariable Long questionId,
@@ -38,6 +42,7 @@ public class AttachmentController {
         return ResponseEntity.ok(ApiResponse.success("첨부파일 등록 완료", response));
     }
 
+    @Operation(summary = "답변 첨부파일 업로드")
     @PostMapping("/api/answers/{answerId}/attachments")
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> uploadAnswerAttachments(
             @PathVariable Long answerId,
@@ -49,12 +54,14 @@ public class AttachmentController {
         return ResponseEntity.ok(ApiResponse.success("첨부파일 등록 완료", response));
     }
 
+    @Operation(summary = "질문 첨부파일 목록 조회")
     @GetMapping("/api/questions/{questionId}/attachments")
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> getQuestionAttachments(@PathVariable Long questionId) {
         List<AttachmentResponse> response = attachmentService.list(AttachmentTargetType.QUESTION, questionId);
         return ResponseEntity.ok(ApiResponse.success("첨부파일 목록 조회 성공", response));
     }
 
+    @Operation(summary = "답변 첨부파일 목록 조회")
     @GetMapping("/api/answers/{answerId}/attachments")
     public ResponseEntity<ApiResponse<List<AttachmentResponse>>> getAnswerAttachments(@PathVariable Long answerId) {
         List<AttachmentResponse> response = attachmentService.list(AttachmentTargetType.ANSWER, answerId);
@@ -62,6 +69,7 @@ public class AttachmentController {
     }
 
     // 이미지는 <img>에서 바로 표시, 그 외 코드 파일은 다운로드되도록 Content-Disposition을 파일별로 다르게 설정
+    @Operation(summary = "첨부파일 다운로드")
     @GetMapping("/api/attachments/{attachmentId}")
     public ResponseEntity<Resource> downloadAttachment(@PathVariable Long attachmentId) {
         Attachment attachment = attachmentService.getForDownload(attachmentId);
@@ -80,6 +88,7 @@ public class AttachmentController {
                 .body(resource);
     }
 
+    @Operation(summary = "첨부파일 삭제")
     @DeleteMapping("/api/attachments/{attachmentId}")
     public ResponseEntity<ApiResponse<Void>> deleteAttachment(
             @PathVariable Long attachmentId,

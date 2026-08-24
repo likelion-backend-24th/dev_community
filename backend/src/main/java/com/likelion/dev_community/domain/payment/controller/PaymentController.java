@@ -10,6 +10,8 @@ import com.likelion.dev_community.domain.payment.dto.PaymentPrepareRequest;
 import com.likelion.dev_community.domain.payment.dto.PaymentPrepareResponse;
 import com.likelion.dev_community.domain.payment.service.PaymentService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "결제")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/payments")
@@ -28,6 +31,7 @@ public class PaymentController {
 
     private final PaymentService paymentService;
 
+    @Operation(summary = "결제 준비 (deprecated)")
     @Deprecated
     @PostMapping("/prepare")
     public ResponseEntity<ApiResponse<PaymentPrepareResponse>> prepare(@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -37,6 +41,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("결제 준비 완료", paymentPrepareResponse));
     }
 
+    @Operation(summary = "결제 완료 검증 (deprecated)")
     @Deprecated
     @PostMapping("/{paymentId}/complete")
     public ResponseEntity<ApiResponse<PaymentCompleteResponse>> complete(@AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -46,6 +51,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("결제 완료 확인", paymentCompleteResponse));
     }
 
+    @Operation(summary = "빌링키 발급 준비")
     @PostMapping("/billing/prepare")
     public ResponseEntity<ApiResponse<BillingKeyPrepareResponse>> prepareBillingKey(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         BillingKeyPrepareResponse response = paymentService.prepareBillingKeyIssue(customUserDetails.getId());
@@ -53,6 +59,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("빌링키 발급 준비 완료", response));
     }
 
+    @Operation(summary = "빌링키 발급 및 정기결제 등록")
     @PostMapping("/billing/issue")
     public ResponseEntity<ApiResponse<PaymentCompleteResponse>> issueBillingKey(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                                  @Valid @RequestBody BillingKeyIssueRequest billingKeyIssueRequest) {
@@ -63,6 +70,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("정기결제 등록 완료", response));
     }
 
+    @Operation(summary = "내 최근 결제 조회")
     @GetMapping("/me/latest")
     public ResponseEntity<ApiResponse<PaymentCompleteResponse>> myLatestPayment(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
         PaymentCompleteResponse response = paymentService.getLatestPaidPayment(customUserDetails.getId());
@@ -70,6 +78,7 @@ public class PaymentController {
         return ResponseEntity.ok(ApiResponse.success("최근 결제 조회 완료", response));
     }
 
+    @Operation(summary = "결제 취소")
     @PostMapping("/{paymentId}/cancel")
     public ResponseEntity<ApiResponse<PaymentCancelResponse>> cancel(@AuthenticationPrincipal CustomUserDetails customUserDetails,
                                                                      @PathVariable String paymentId,

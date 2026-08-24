@@ -7,6 +7,8 @@ import com.likelion.dev_community.domain.chat.dto.ChatRoomDetailResponse;
 import com.likelion.dev_community.domain.chat.dto.ChatRoomListItemResponse;
 import com.likelion.dev_community.domain.chat.service.ChatService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "채팅")
 @RestController
 @RequiredArgsConstructor
 public class ChatController {
@@ -23,6 +26,7 @@ public class ChatController {
     private final ChatService chatService;
 
     // 답변자가 커리어상담 글에 1:1 채팅 개설
+    @Operation(summary = "채팅방 개설")
     @PostMapping("/api/questions/{questionId}/chat-rooms")
     public ResponseEntity<ApiResponse<ChatRoomDetailResponse>> openChat(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -36,6 +40,7 @@ public class ChatController {
     }
 
     // 내 채팅 목록 (질문자/답변자 겸용)
+    @Operation(summary = "내 채팅방 목록 조회")
     @GetMapping("/api/chat-rooms")
     public ResponseEntity<ApiResponse<List<ChatRoomListItemResponse>>> getMyChatRooms(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -46,6 +51,7 @@ public class ChatController {
     }
 
     // 우하단 '내 채팅' 버튼 뱃지에 표시할, 안읽은 메시지가 있는 채팅방 개수
+    @Operation(summary = "안읽은 채팅방 개수 조회")
     @GetMapping("/api/chat-rooms/unread-count")
     public ResponseEntity<ApiResponse<Long>> getUnreadChatRoomCount(
             @AuthenticationPrincipal CustomUserDetails userDetails
@@ -55,6 +61,7 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success(count));
     }
 
+    @Operation(summary = "채팅방 상세 조회")
     @GetMapping("/api/chat-rooms/{roomId}")
     public ResponseEntity<ApiResponse<ChatRoomDetailResponse>> getChatRoom(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -66,6 +73,7 @@ public class ChatController {
     }
 
     // 채팅방을 이미 보고 있는 상태에서 실시간으로 새 메시지가 온 경우, 그 메시지도 곧바로 읽음 처리
+    @Operation(summary = "채팅방 읽음 처리")
     @PatchMapping("/api/chat-rooms/{roomId}/read")
     public ResponseEntity<ApiResponse<Void>> markChatRoomRead(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -76,6 +84,7 @@ public class ChatController {
         return ResponseEntity.ok(ApiResponse.success());
     }
 
+    @Operation(summary = "채팅 메시지 전송")
     @PostMapping("/api/chat-rooms/{roomId}/messages")
     public ResponseEntity<ApiResponse<ChatMessageResponse>> sendMessage(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -89,6 +98,7 @@ public class ChatController {
     }
 
     // 질문자가 최초 1회 채팅 수락
+    @Operation(summary = "채팅 수락")
     @PatchMapping("/api/chat-rooms/{roomId}/accept")
     public ResponseEntity<ApiResponse<ChatRoomDetailResponse>> acceptChat(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -100,6 +110,7 @@ public class ChatController {
     }
 
     // 질문자가 답변(채팅) 채택
+    @Operation(summary = "채팅 채택")
     @PatchMapping("/api/chat-rooms/{roomId}/adopt")
     public ResponseEntity<ApiResponse<ChatRoomDetailResponse>> adoptChat(
             @AuthenticationPrincipal CustomUserDetails userDetails,

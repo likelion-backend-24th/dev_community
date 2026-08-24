@@ -6,6 +6,8 @@ import com.likelion.dev_community.common.viewcount.ViewerKeyResolver;
 import com.likelion.dev_community.domain.question.dto.*;
 import com.likelion.dev_community.domain.question.service.QuestionService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "질문")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/questions")
@@ -26,6 +29,7 @@ public class QuestionController {
     private final ViewerKeyResolver viewerKeyResolver;
 
     // F-06
+    @Operation(summary = "질문 등록")
     @PostMapping
     public ResponseEntity<ApiResponse<QuestionResponse>> createQuestion(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -40,6 +44,7 @@ public class QuestionController {
     }
 
     // F-07
+    @Operation(summary = "질문 목록 조회")
     @GetMapping
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readQuestions(
             @RequestParam(defaultValue = "0") int page,
@@ -56,6 +61,7 @@ public class QuestionController {
     }
 
     // F-32
+    @Operation(summary = "프리미엄 질문 목록 조회")
     @GetMapping("/premium")
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> readPremiumQuestions(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -75,6 +81,7 @@ public class QuestionController {
     }
 
     // F-08
+    @Operation(summary = "질문 상세 조회")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionDetailResponse>> readDetailQuestion(
             @PathVariable Long id,
@@ -91,6 +98,7 @@ public class QuestionController {
     }
 
     // F-09 (수정)
+    @Operation(summary = "질문 수정")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<QuestionResponse>> updateQuestion(
             @PathVariable Long id,
@@ -105,6 +113,7 @@ public class QuestionController {
     }
 
     // F-09 (삭제)
+    @Operation(summary = "질문 삭제")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteQuestion(
             @PathVariable Long id,
@@ -118,6 +127,7 @@ public class QuestionController {
     }
 
     // 질문 글 AI 요약 (멤버십 구독자 전용)
+    @Operation(summary = "질문 AI 요약 조회 (구독자 전용)")
     @GetMapping("/{id}/summary")
     public ResponseEntity<ApiResponse<String>> getSummary(
             @PathVariable Long id,
@@ -129,6 +139,7 @@ public class QuestionController {
     }
 
     // 질문 작성 중 본문 기준 AI 태그 추천 (멤버십 구독자 전용)
+    @Operation(summary = "AI 태그 추천 (구독자 전용)")
     @PostMapping("/tags/suggest")
     public ResponseEntity<ApiResponse<List<String>>> suggestTags(
             @AuthenticationPrincipal CustomUserDetails userDetails,

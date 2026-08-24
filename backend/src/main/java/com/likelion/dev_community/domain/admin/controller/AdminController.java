@@ -12,6 +12,8 @@ import com.likelion.dev_community.domain.report.entity.ReportStatus;
 import com.likelion.dev_community.domain.report.service.ReportService;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoResponse;
 import com.likelion.dev_community.domain.user.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+@Tag(name = "관리자")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
@@ -34,6 +37,7 @@ public class AdminController {
     private final PersonalDashboardService personalDashboardService;
 
     // 신고 목록 조회
+    @Operation(summary = "신고 목록 조회")
     @GetMapping("/reports")
     public ResponseEntity<ApiResponse<List<ReportResponse>>> getReports(@RequestParam(required = false) ReportStatus status,
                                                                         @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -50,6 +54,7 @@ public class AdminController {
     }
 
     // 신고 개별 처리
+    @Operation(summary = "신고 개별 처리")
     @PatchMapping("/reports/{id}")
     public ResponseEntity<ApiResponse<ReportResponse>> processingReport(@PathVariable(name = "id") Long reportId,
                                                                         @Valid @RequestBody ReportProcessRequest request){
@@ -59,6 +64,7 @@ public class AdminController {
     }
 
     // 회원 목록 전체 조회 (expertRequested=true면 전문가 등급 요청한 유저만)
+    @Operation(summary = "회원 목록 전체 조회")
     @GetMapping("/users")
     public ResponseEntity<ApiResponse<List<UserInfoResponse>>> getAllUsers(@RequestParam(required = false) Boolean expertRequested,
                                                                             @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -76,6 +82,7 @@ public class AdminController {
     }
 
     // 특정 유저의 누적된 신고 목록 카운트
+    @Operation(summary = "유저 신고 누적 카운트 조회")
     @GetMapping("/users/{id}/reports")
     public ResponseEntity<ApiResponse<Long>> countReportByTargetUserId(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -85,6 +92,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저 정지 수행
+    @Operation(summary = "회원 정지")
     @PatchMapping("/users/{id}/suspend")
     public ResponseEntity<ApiResponse<UserInfoResponse>> userSuspension(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.userSuspension(userId);
@@ -93,6 +101,7 @@ public class AdminController {
     }
 
     // 정지 해제
+    @Operation(summary = "회원 정지 해제")
     @PatchMapping("/users/{id}/unsuspend")
     public ResponseEntity<ApiResponse<UserInfoResponse>> userUnsuspension(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.userUnsuspension(userId);
@@ -101,6 +110,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저를 전문가로 승인
+    @Operation(summary = "전문가 승인")
     @PatchMapping("/users/{id}/expert")
     public ResponseEntity<ApiResponse<UserInfoResponse>> grantExpert(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.grantExpert(userId);
@@ -109,6 +119,7 @@ public class AdminController {
     }
 
     // 전문가 지정 해제
+    @Operation(summary = "전문가 지정 해제")
     @DeleteMapping("/users/{id}/expert")
     public ResponseEntity<ApiResponse<UserInfoResponse>> revokeExpert(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.revokeExpert(userId);
@@ -117,6 +128,7 @@ public class AdminController {
     }
 
     // 전문가 등급 신청 거절
+    @Operation(summary = "전문가 등급 신청 거절")
     @PostMapping("/users/{id}/expert-request/reject")
     public ResponseEntity<ApiResponse<UserInfoResponse>> rejectExpertRequest(@PathVariable(name = "id") Long userId){
         UserInfoResponse userInfoResponse = userService.rejectExpertRequest(userId);
@@ -125,6 +137,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저의 활동 대시보드 조회 (전문가 등급 요청 심사용)
+    @Operation(summary = "특정 유저 활동 요약 조회")
     @GetMapping("/users/{id}/dashboard/summary")
     public ResponseEntity<ApiResponse<PersonalDashboardSummaryResponse>> getUserDashboardSummary(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -132,6 +145,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("유저 활동 요약 조회 성공", personalDashboardService.getSummary(userId)));
     }
 
+    @Operation(summary = "특정 유저 활동 타임라인 조회")
     @GetMapping("/users/{id}/dashboard/timeline")
     public ResponseEntity<ApiResponse<List<ActivityTimelineItem>>> getUserDashboardTimeline(@PathVariable(name = "id") Long userId){
         userService.findUserById(userId);
@@ -140,6 +154,7 @@ public class AdminController {
     }
 
     // 관리자가 특정 유저의 질문/답변 목록 조회 (활동 대시보드 드릴다운용)
+    @Operation(summary = "특정 유저 질문 목록 조회")
     @GetMapping("/users/{id}/questions")
     public ResponseEntity<ApiResponse<List<QuestionSummaryResponse>>> getUserQuestions(@PathVariable(name = "id") Long userId,
                                                                                         @ParameterObject @PageableDefault(size = 10) Pageable pageable){
@@ -148,6 +163,7 @@ public class AdminController {
         return ResponseEntity.ok(ApiResponse.success("유저 질문 목록 조회 성공", questions.getContent()));
     }
 
+    @Operation(summary = "특정 유저 답변 목록 조회")
     @GetMapping("/users/{id}/answers")
     public ResponseEntity<ApiResponse<List<AnswerResponse>>> getUserAnswers(@PathVariable(name = "id") Long userId,
                                                                              @ParameterObject @PageableDefault(size = 10) Pageable pageable){

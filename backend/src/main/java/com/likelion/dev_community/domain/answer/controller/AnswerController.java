@@ -5,6 +5,8 @@ import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.service.AnswerService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "답변")
 @RestController
 @RequiredArgsConstructor
 public class AnswerController {
@@ -21,6 +24,7 @@ public class AnswerController {
     private final AnswerService answerService;
 
     // F-12
+    @Operation(summary = "답변 등록")
     @PostMapping("/api/questions/{questionId}/answers")
     public ResponseEntity<ApiResponse<AnswerResponse>> createAnswer(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -34,6 +38,7 @@ public class AnswerController {
     }
 
     // 답변 목록 조회
+    @Operation(summary = "답변 목록 조회")
     @GetMapping("/api/questions/{questionId}/answers")
     public ResponseEntity<ApiResponse<List<AnswerResponse>>> readAnswers(
             @PathVariable Long questionId
@@ -44,6 +49,7 @@ public class AnswerController {
     }
 
     // 답변 단건 조회
+    @Operation(summary = "답변 단건 조회")
     @GetMapping("/api/answers/{answerId}")
     public ResponseEntity<ApiResponse<AnswerResponse>> readAnswer(
             @PathVariable Long answerId
@@ -54,6 +60,7 @@ public class AnswerController {
     }
 
     // F-13
+    @Operation(summary = "답변 수정")
     @PatchMapping("/api/answers/{answerId}")
     public ResponseEntity<ApiResponse<AnswerResponse>> updateAnswer(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -68,6 +75,7 @@ public class AnswerController {
     }
 
     // F-13
+    @Operation(summary = "답변 삭제")
     @DeleteMapping("/api/answers/{answerId}")
     public ResponseEntity<ApiResponse<Void>> deleteAnswer(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -81,6 +89,7 @@ public class AnswerController {
     }
 
     // F-14 채택
+    @Operation(summary = "답변 채택")
     @PostMapping("/api/answers/{answerId}/adopt")
     public ResponseEntity<ApiResponse<AnswerResponse>> adoptAnswer(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -92,6 +101,7 @@ public class AnswerController {
     }
 
     // F-14-1 채택 취소
+    @Operation(summary = "답변 채택 취소")
     @DeleteMapping("/api/answers/{answerId}/adopt")
     public ResponseEntity<ApiResponse<AnswerResponse>> cancelAdoption(
             @AuthenticationPrincipal CustomUserDetails userDetails,
