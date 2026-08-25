@@ -360,11 +360,12 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: var(--space-base);
-  border-left: 4px solid var(--border-subtle);
 }
 
+/* 채택된 답변만 왼쪽에 강조선을 갖는다. 평소에도 자리를 잡아두면
+   답변 본문이 카드 안에서 오른쪽으로 밀려 보인다. */
 .answer-card.is-adopted {
-  border-left-color: var(--green-strong);
+  border-left: 3px solid var(--term-green);
 }
 
 .answer-card__body {

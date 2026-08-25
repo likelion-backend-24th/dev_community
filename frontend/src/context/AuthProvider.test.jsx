@@ -134,7 +134,9 @@ describe('AuthProvider', () => {
     }
 
     await expect(errorHandler(error)).rejects.toBe(error)
+    // replace: true여야 뒤로가기로 이전 페이지에 돌아갈 수 있다.
     expect(mockNavigate).toHaveBeenCalledWith('/membership', {
+      replace: true,
       state: { message: '멤버십 가입 후 이용할 수 있어요.' },
     })
   })
@@ -150,7 +152,7 @@ describe('AuthProvider', () => {
     }
 
     await expect(errorHandler(error)).rejects.toBe(error)
-    expect(mockNavigate).toHaveBeenCalledWith('/403')
+    expect(mockNavigate).toHaveBeenCalledWith('/403', { replace: true })
   })
 
   it('does not log out on a 401 from the password-check endpoint (wrong current password)', async () => {

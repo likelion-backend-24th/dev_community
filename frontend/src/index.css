@@ -37,6 +37,14 @@
   --yellow: #e0a020;
   --grey: #6b6b6b;
 
+  /* Terminal palette
+     the one place the monochrome rule relaxes. these are syntax-highlighter
+     hues, used only on status and type badges so a board of questions reads
+     like tool output rather than a generic feed. */
+  --term-green: #57f287;
+  --term-amber: #ffb86c;
+  --term-cyan: #8be9fd;
+
   /* Borders / inputs */
   --border-subtle: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.22);

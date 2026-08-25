@@ -167,21 +167,21 @@
 }
 
 .badge-resolved {
-  background: transparent;
-  border-color: var(--green-strong);
-  color: var(--green-strong);
+  background: rgba(87, 242, 135, 0.1);
+  border-color: var(--term-green);
+  color: var(--term-green);
 }
 
 .badge-open {
-  background: transparent;
-  border-color: var(--border-strong);
-  color: var(--text-muted);
+  background: rgba(255, 184, 108, 0.1);
+  border-color: var(--term-amber);
+  color: var(--term-amber);
 }
 
 .badge-pending {
-  background: transparent;
-  border-color: var(--yellow);
-  color: var(--yellow);
+  background: rgba(255, 184, 108, 0.1);
+  border-color: var(--term-amber);
+  color: var(--term-amber);
 }
 
 .badge-danger {
@@ -190,13 +190,14 @@
 }
 
 .badge-type {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: rgba(139, 233, 253, 0.12);
+  border-color: var(--term-cyan);
+  color: var(--term-cyan);
 }
 
 .badge-type-tint {
-  background: var(--surface-selected);
-  color: var(--text-header);
+  background: rgba(139, 233, 253, 0.12);
+  color: var(--term-cyan);
 }
 
 .expert-badge {
