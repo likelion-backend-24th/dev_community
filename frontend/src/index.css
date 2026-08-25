@@ -1,78 +1,44 @@
 :root {
-  /* Chassis
-     every region is a beveled plate stamped out of this periwinkle chrome.
-     surfaces get brighter as they rise; chrome-indigo is the shadow line. */
-  --surface-primary: #7a8aba;
-  --surface-secondary: #8ba1d4;
-  --surface-tertiary: #9fbee7;
-  --surface-floating: #ffffff;
-  --surface-hover: rgba(255, 255, 255, 0.32);
-  --surface-selected: rgba(255, 255, 255, 0.55);
-
-  --canvas-soft: #9fbee7;
-  --lavender: #acace7;
-  --ice: #c0d5e6;
-  --platinum: #dedede;
-  --chrome-indigo: #3d4f97;
-  --muted-indigo: #60619c;
-
-  /* Command layer — near-black slabs printed with a halftone grille.
-     carries the nav bar, the action rail, and the footer. */
-  --carbon: #21242e;
-  --carbon-raised: #2d3140;
-  --halftone: radial-gradient(rgba(255, 255, 255, 0.09) 1px, transparent 1px);
-  --halftone-size: 3px 3px;
+  /* Product surfaces (dark, default) */
+  --surface-tertiary: #1e1f22;
+  --surface-secondary: #2b2d31;
+  --surface-primary: #313338;
+  --surface-floating: #111214;
+  --surface-hover: rgba(78, 80, 88, 0.3);
+  --surface-selected: rgba(78, 80, 88, 0.6);
 
   /* Text */
-  --text-normal: #21242e;
-  --text-header: #21242e;
-  /* The periwinkle canvas is a mid-tone, so no indigo reaches 4.5:1 against
-     it — secondary text goes near-black and the hierarchy is carried by size
-     and weight instead, the way the source material does it. */
-  --text-muted: #1f2230;
-  --text-link: #3d4f97;
-  --interactive-normal: #21242e;
-  --interactive-hover: #3d4f97;
-  --placeholder: #60619c;
-  --on-carbon: #ffffff;
+  --text-normal: #dbdee1;
+  --text-header: #f2f3f5;
+  --text-muted: #949ba4;
+  --text-link: #00a8fc;
+  --interactive-normal: #b5bac1;
+  --interactive-hover: #dbdee1;
+  --placeholder: #87898c;
 
-  /* Warm signal — rationed to wayfinding only.
-     signal = forward/commit, amber = tools and marks, nav-gold = menu words.
-     cool chrome never carries an action colour. */
-  --accent: #f68d1f;
-  --accent-hover: #e07a0c;
-  --accent-active: #c76a08;
-  /* white on signal orange is only 2.4:1, so labels sit in carbon instead */
-  --on-accent: #21242e;
-  --amber: #ecab37;
-  --amber-hover: #dd9a1f;
-  --nav-gold: #e48600;
+  /* Brand */
+  --blurple: #5865f2;
+  --blurple-hover: #4752c4;
+  --blurple-active: #3c45a5;
 
-  /* Brand + semantic */
-  --primary: #e60012;
-  --red: #e60012;
-  --red-soft: #e60012;
-  --yellow: #ecab37;
-  --grey: #60619c;
-  --green: #3d4f97;
-  --green-strong: #f68d1f;
+  /* Status */
+  --green: #23a55a;
+  --green-strong: #57f287;
+  --yellow: #f0b232;
+  --red: #f23f43;
+  --red-soft: #fa777c;
+  --grey: #80848e;
 
-  /* Bevel edges — depth here is simulated moulded plastic, never a blur. */
-  --bevel-light: rgba(255, 255, 255, 0.55);
-  --bevel-light-soft: rgba(255, 255, 255, 0.35);
-  --bevel-dark: #3d4f97;
-  --border-subtle: rgba(61, 79, 151, 0.45);
-  --hairline: #60619c;
+  /* Borders / inputs */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --input-bg: #1e1f22;
+  --secondary-btn-bg: #4e5058;
+  --secondary-btn-hover: #6d6f78;
 
-  --input-bg: #ffffff;
-  --secondary-btn-bg: #dedede;
-  --secondary-btn-hover: #c9cfe0;
-
-  /* Radius — sharp by default, round only where it signals a physical control */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 6px;
-  --radius-xl: 10px;
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
   --radius-pill: 9999px;
 
   /* Spacing */
@@ -85,22 +51,21 @@
   --space-xxl: 32px;
   --space-section: 40px;
 
-  /* Elevation — hard offsets only. no blurred drop shadows anywhere. */
-  --shadow-floating: 2px 2px 0 rgba(33, 36, 46, 0.45);
-  --shadow-modal: 4px 4px 0 rgba(33, 36, 46, 0.5);
-  --shadow-high: 4px 4px 0 rgba(33, 36, 46, 0.55);
+  /* Elevation */
+  --shadow-floating: 0 4px 8px rgba(0, 0, 0, 0.24);
+  --shadow-modal: 0 8px 16px rgba(0, 0, 0, 0.24);
+  --shadow-high: 0 12px 32px rgba(0, 0, 0, 0.36);
 
   /* Motion */
-  --motion-fast: 80ms;
-  --motion-standard: 140ms;
-  --motion-emphasis: 200ms;
+  --motion-fast: 100ms;
+  --motion-standard: 200ms;
+  --motion-emphasis: 300ms;
   --ease-enter: cubic-bezier(0, 0, 0.2, 1);
   --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  /* Typography — the era's web-safe reality. character comes from treatment,
-     not from typeface: uppercase tracking on chrome, outlined display. */
-  --font-sans: Arial, "Pretendard Variable", Pretendard, Helvetica, "Malgun Gothic", sans-serif;
+  /* Typography */
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, "Noto Sans KR", sans-serif;
   --font-mono: "JetBrains Mono", Consolas, "Andale Mono", Menlo, Monaco, monospace;
 }
 
@@ -136,44 +101,6 @@ button {
 code,
 pre {
   font-family: var(--font-mono);
-}
-
-/* Beveled plate: brighter top/left edge, chrome-indigo bottom/right shadow.
-   This is the single most load-bearing visual rule in the system. */
-.plate {
-  border-top: 1px solid var(--bevel-light);
-  border-left: 1px solid var(--bevel-light-soft);
-  border-right: 1px solid var(--bevel-dark);
-  border-bottom: 1px solid var(--bevel-dark);
-}
-
-/* Inverted bevel — recessed. Used for inset wells and for the pressed/hover
-   state of any control, so buttons read as physically depressing. */
-.inset {
-  border-top: 1px solid var(--bevel-dark);
-  border-left: 1px solid var(--bevel-dark);
-  border-right: 1px solid var(--bevel-light);
-  border-bottom: 1px solid var(--bevel-light);
-}
-
-/* Silkscreen-legend voice: every structural label in the chrome. */
-.chrome-label {
-  font-weight: 700;
-  font-size: 11px;
-  line-height: 1.1;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Box-art display type: outlined and hard-shadowed, never flat. */
-.boxart {
-  font-weight: 900;
-  color: #ffffff;
-  -webkit-text-stroke: 3px var(--carbon);
-  paint-order: stroke fill;
-  text-shadow: 3px 3px 0 var(--chrome-indigo);
-  letter-spacing: -0.5px;
-  line-height: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {

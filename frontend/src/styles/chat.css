@@ -21,16 +21,16 @@
 }
 
 .chat-room-card:hover {
-  border-color: var(--chrome-indigo);
+  border-color: rgba(88, 101, 242, 0.4);
 }
 
 .chat-room-card--unread {
-  border-color: var(--primary);
-  box-shadow: 2px 2px 0 rgba(33, 36, 46, 0.35);
+  border-color: #4dd8ff;
+  box-shadow: 0 0 8px 1px rgba(77, 216, 255, 0.6), 0 0 16px rgba(77, 216, 255, 0.3);
 }
 
 .chat-room-card--unread:hover {
-  border-color: var(--primary);
+  border-color: #4dd8ff;
 }
 
 .chat-room-card__top {
@@ -91,8 +91,8 @@
 }
 
 .chat-message--mine .chat-message__bubble {
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--blurple);
+  color: #ffffff;
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
 }
 

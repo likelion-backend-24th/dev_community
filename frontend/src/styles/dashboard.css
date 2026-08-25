@@ -28,7 +28,7 @@
 
 .stat-tile--active {
   background: var(--surface-tertiary);
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--blurple);
   outline-offset: -2px;
 }
 
@@ -112,13 +112,4 @@
   font-size: 40px;
   font-weight: 700;
   color: var(--yellow);
-}
-
-/* Recharts renders legend/axis labels as inline SVG fills, so they need an
-   explicit override to stay legible on the periwinkle chrome. */
-.recharts-legend-item-text,
-.recharts-cartesian-axis-tick-value {
-  fill: var(--carbon) !important;
-  color: var(--carbon) !important;
-  font-weight: 700;
 }

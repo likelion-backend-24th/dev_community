@@ -124,7 +124,7 @@ pre[class*=language-]::selection {
 :not(pre)>code[class*=language-],
 pre[class*=language-] {
     color: #fff;
-    background: var(--carbon)
+    background: #1a1b26
 }
 
 :not(pre)>code[class*=language-] {

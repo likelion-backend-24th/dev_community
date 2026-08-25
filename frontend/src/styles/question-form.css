@@ -23,7 +23,7 @@
 }
 
 .tag-input:focus-within {
-  border-color: var(--accent);
+  border-color: var(--blurple);
 }
 
 .tag-input__field {
@@ -92,7 +92,7 @@
 }
 
 .board-settings__gate input {
-  accent-color: var(--accent);
+  accent-color: var(--blurple);
 }
 
 .board-settings__gate input:disabled {
@@ -148,7 +148,7 @@
 }
 
 .board-settings__checkbox input {
-  accent-color: var(--accent);
+  accent-color: var(--blurple);
 }
 
 .board-settings__hint {
