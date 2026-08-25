@@ -325,8 +325,20 @@
 }
 
 .footer__brand {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  font-family: var(--font-mono);
+  font-weight: 700;
   color: #ffffff;
+}
+
+/* 네비게이션 바 로고와 같은 워드마크지만, 여기서는 커서가 깜빡이지 않고
+   고정된 형태로 둔다(하단은 상시 노출되는 브랜드 표기라 애니메이션이
+   불필요한 시선 분산이 됨). 푸터 배경은 테마와 무관하게 항상 charcoal로
+   고정돼 있어서, 화살표 색도 --caret-green 대신 다크용 값을 그대로 씀. */
+.footer__brand-arrow {
+  color: #42be65;
 }
 
 .footer__links {
