@@ -110,7 +110,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--red);
+  background: var(--blurple);
   border: 2px solid var(--surface-tertiary);
 }
 
@@ -126,9 +126,8 @@
   width: 320px;
   max-width: 80vw;
   padding: var(--space-xs);
-  border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  background: var(--surface-floating);
+  background: var(--surface-primary);
   box-shadow: var(--shadow-modal);
   display: flex;
   flex-direction: column;
@@ -138,11 +137,10 @@
 .navbar__notif-menu-title {
   margin: 0;
   padding: var(--space-sm) var(--space-md) var(--space-xs);
-  font-family: var(--font-mono-label);
-  font-size: 11px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
 }
 
@@ -187,7 +185,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--red);
+  background: var(--blurple);
 }
 
 .navbar__notif-item-message {
@@ -213,9 +211,8 @@
   height: 32px;
   border: none;
   border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
-  font-family: var(--font-mono-label);
+  background: var(--blurple);
+  color: #ffffff;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -228,9 +225,8 @@
   z-index: 20;
   min-width: 180px;
   padding: var(--space-xs);
-  border: 1px solid var(--border-strong);
   border-radius: var(--radius-md);
-  background: var(--surface-floating);
+  background: var(--surface-primary);
   box-shadow: var(--shadow-modal);
   display: flex;
   flex-direction: column;
@@ -275,13 +271,13 @@
 
 
 .page {
-  max-width: 1120px;
+  max-width: 840px;
   margin: 0 auto;
   padding: var(--space-xxl) var(--space-base) var(--space-section);
 }
 
 .page.page--reading {
-  max-width: 920px;
+  max-width: 760px;
 }
 
 .page__header {
@@ -294,17 +290,13 @@
 
 .page__title {
   margin: 0;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.02em;
   color: var(--text-header);
 }
 
 .page__count {
-  font-family: var(--font-mono-label);
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -315,7 +307,7 @@
 }
 
 .footer__inner {
-  max-width: 1120px;
+  max-width: 840px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -326,11 +318,7 @@
 }
 
 .footer__brand {
-  font-family: var(--font-mono-label);
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-weight: 600;
 }
 
 .footer__links {
@@ -360,20 +348,21 @@
   white-space: normal;
   line-height: 1.25;
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--blurple);
+  color: #ffffff;
   font-size: 14px;
   font-weight: 700;
+  box-shadow: var(--shadow-high);
   transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
 .floating-write-btn:hover {
-  background: var(--accent-hover);
+  background: var(--blurple-hover);
   transform: translateY(-2px);
 }
 
 .floating-write-btn:active {
-  background: var(--accent-active);
+  background: var(--blurple-active);
   transform: translateY(0);
 }
 
@@ -391,11 +380,11 @@
   white-space: normal;
   line-height: 1.25;
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
-  background: var(--surface-floating);
-  border: 1px solid var(--border-strong);
-  color: var(--text-header);
+  background: var(--secondary-btn-bg);
+  color: #ffffff;
   font-size: 14px;
   font-weight: 700;
+  box-shadow: var(--shadow-high);
   transition: background var(--motion-fast) var(--ease-standard), transform var(--motion-fast) var(--ease-standard);
 }
 
@@ -415,9 +404,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
-  background: var(--red);
-  color: var(--text-header);
-  font-family: var(--font-mono-label);
+  background: #ff3b30;
+  color: #ffffff;
   font-size: 11px;
   font-weight: 700;
   line-height: 1;
@@ -432,11 +420,12 @@
   max-width: 240px;
   padding: var(--space-md) var(--space-lg);
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: #ffffff;
+  color: var(--surface-primary);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;
+  box-shadow: var(--shadow-high);
   cursor: pointer;
   animation: notification-toast-in var(--motion-emphasis) var(--ease-bounce);
 }

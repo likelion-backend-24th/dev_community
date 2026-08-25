@@ -28,7 +28,7 @@
 
 .stat-tile--active {
   background: var(--surface-tertiary);
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--blurple);
   outline-offset: -2px;
 }
 

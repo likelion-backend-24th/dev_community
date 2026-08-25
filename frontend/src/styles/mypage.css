@@ -13,8 +13,8 @@
   width: 64px;
   height: 64px;
   border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--on-accent);
+  background: var(--blurple);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -117,7 +117,7 @@
 
 .tab:disabled {
   color: var(--text-header);
-  border-bottom-color: var(--accent);
+  border-bottom-color: var(--blurple);
   cursor: default;
   opacity: 1;
 }
@@ -142,7 +142,7 @@
 }
 
 .mypage-list__item:hover {
-  background: var(--surface-hover);
+  background: rgba(78, 80, 88, 0.3);
 }
 
 .mypage-list__title {
