@@ -46,7 +46,7 @@
 
 .btn-secondary {
   background: var(--secondary-btn-bg);
-  color: #ffffff;
+  color: var(--on-secondary-btn);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -91,17 +91,22 @@
   text-decoration: underline;
 }
 
+/* Carbon's signature focus treatment: no outer glow, the bottom hairline
+   thickens to a 2px accent underline instead. */
 .input,
 .select,
 .textarea {
   background: var(--input-bg);
   color: var(--text-normal);
-  border: 1px solid var(--input-bg);
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 10px var(--space-md);
+  padding: 11px var(--space-md);
   font-family: inherit;
   font-size: 14px;
-  transition: border-color var(--motion-fast) var(--ease-standard);
+  letter-spacing: var(--body-tracking);
+  transition: border-bottom-width var(--motion-fast) var(--ease-standard),
+    border-bottom-color var(--motion-fast) var(--ease-standard);
 }
 
 .input::placeholder,
@@ -113,7 +118,9 @@
 .select:focus,
 .textarea:focus {
   outline: none;
-  border-color: var(--blurple);
+  border-bottom-width: 2px;
+  border-bottom-color: var(--blurple);
+  padding-bottom: 10px;
 }
 
 .textarea {
@@ -153,8 +160,8 @@
 }
 
 .badge-open {
-  background: var(--secondary-btn-bg);
-  color: var(--interactive-normal);
+  background: var(--surface-selected);
+  color: var(--text-normal);
 }
 
 .badge-pending {
@@ -173,8 +180,8 @@
 }
 
 .badge-type-tint {
-  background: rgba(88, 101, 242, 0.16);
-  color: #a5b1ff;
+  background: rgba(15, 98, 254, 0.16);
+  color: var(--text-link);
 }
 
 .expert-badge {

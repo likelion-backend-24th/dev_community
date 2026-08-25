@@ -1,11 +1,11 @@
 /* Question list/detail */
 
+/* Carbon's tab strip: flat, bottom-hairline row with a 2px accent underline
+   marking the selected tab — no pill background. */
 .board-tabs {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  background: var(--surface-tertiary);
-  border-radius: var(--radius-pill);
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border-subtle);
   margin-bottom: var(--space-xl);
 }
 
@@ -13,12 +13,14 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 16px;
-  border-radius: var(--radius-pill);
+  padding: 13px 18px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 400;
+  letter-spacing: var(--body-tracking);
   color: var(--interactive-normal);
-  transition: color var(--motion-fast) var(--ease-standard), background var(--motion-fast) var(--ease-standard);
+  transition: color var(--motion-fast) var(--ease-standard), border-color var(--motion-fast) var(--ease-standard);
 }
 
 .board-tab:hover {
@@ -27,8 +29,9 @@
 
 .board-tab--active,
 .board-tab--active:hover {
-  background: var(--blurple);
-  color: #ffffff;
+  color: var(--text-header);
+  font-weight: 600;
+  border-bottom-color: var(--blurple);
 }
 
 .board-tab svg {
@@ -127,7 +130,7 @@
 }
 
 .question-card:hover {
-  border-color: rgba(88, 101, 242, 0.4);
+  border-color: rgba(15, 98, 254, 0.4);
 }
 
 .question-card__top {
@@ -217,8 +220,9 @@
 .question-detail__title {
   margin: 0;
   min-width: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 28px;
+  font-weight: 400;
+  letter-spacing: normal;
   color: var(--text-header);
   overflow-wrap: break-word;
 }
@@ -270,7 +274,7 @@
   padding: 6px 10px;
   font-size: 12px;
   font-weight: 500;
-  color: #ffffff;
+  color: var(--on-secondary-btn);
   cursor: pointer;
   white-space: nowrap;
   transition: background var(--motion-fast) var(--ease-standard);
@@ -307,7 +311,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #a5b1ff;
+  color: var(--text-link);
 }
 
 .ai-summary__text {
@@ -489,7 +493,7 @@
 }
 
 .code-review-line:hover {
-  background: rgba(88, 101, 242, 0.08);
+  background: rgba(15, 98, 254, 0.08);
 }
 
 .code-review-line__number {

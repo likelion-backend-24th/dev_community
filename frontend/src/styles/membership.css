@@ -89,9 +89,9 @@
 }
 
 .plan-card--premium {
-  border-color: rgba(88, 101, 242, 0.55);
+  border-color: rgba(15, 98, 254, 0.55);
   background:
-    linear-gradient(160deg, rgba(88, 101, 242, 0.14), transparent 60%),
+    linear-gradient(160deg, rgba(15, 98, 254, 0.14), transparent 60%),
     var(--surface-secondary);
 }
 
@@ -128,7 +128,7 @@
 }
 
 .plan-card--premium .plan-card__icon {
-  background: rgba(88, 101, 242, 0.24);
+  background: rgba(15, 98, 254, 0.24);
   color: var(--blurple-hover);
 }
 

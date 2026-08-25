@@ -21,10 +21,27 @@
   />
   <link
     rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;600&family=IBM+Plex+Sans+KR:wght@300;400;600&display=swap"
+  />
+  <link
+    rel="stylesheet"
     href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
   />
 
   <title>Dev_Community</title>
+
+  <!-- 테마 깜빡임(FOUC) 방지: 렌더 전에 저장된 선택 또는 OS 설정으로 data-theme을 미리 정함 -->
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem("theme");
+        var theme = stored || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+        document.documentElement.setAttribute("data-theme", theme);
+      } catch (e) {
+        document.documentElement.setAttribute("data-theme", "light");
+      }
+    })();
+  </script>
 
   <!-- portone sdk -->
   <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>

@@ -7,6 +7,7 @@ import {
   getRecentNotifications,
   markAllNotificationsRead,
 } from "../../api/notificationApi";
+import ThemeToggle from "./ThemeToggle";
 
 function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -90,6 +91,7 @@ function Navbar() {
       </div>
 
       <div className="navbar__actions">
+        <ThemeToggle />
         {isAuthenticated ? (
           <>
             <Link to="/questions/new" className="btn btn-primary btn-sm">
