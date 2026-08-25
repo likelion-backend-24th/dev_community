@@ -101,8 +101,8 @@
 }
 
 .markdown-body .task-list-item input[type="checkbox"]:checked {
-  background: var(--blurple);
-  border-color: var(--blurple);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 .markdown-body .task-list-item input[type="checkbox"]:checked::after {

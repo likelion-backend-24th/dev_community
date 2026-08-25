@@ -4,9 +4,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(ellipse 760px 480px at 50% 42%, rgba(88, 101, 242, 0.16), transparent 70%),
-    var(--surface-primary);
+  background: var(--surface-primary);
 }
 
 .auth-header {
@@ -14,29 +12,40 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-base);
-  min-height: 64px;
-  padding: var(--space-sm) var(--space-xxl);
-  background: var(--surface-tertiary);
-  border-bottom: 1px solid var(--border-subtle);
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
+  background: var(--carbon);
+  background-image: var(--halftone);
+  background-size: var(--halftone-size);
+  border-bottom: 1px solid var(--bevel-dark);
 }
 
+/* Same racetrack pill as the main nav bar. */
 .auth-header__brand {
-  display: flex;
+  display: inline-flex;
   align-items: baseline;
-  gap: 0.15em;
-  font-family: var(--font-mono);
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--text-header);
+  gap: 0.1em;
+  padding: 2px 12px;
+  border-radius: var(--radius-pill);
+  background: #ffffff;
+  color: var(--primary);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -0.3px;
+}
+
+.auth-header__brand .navbar__brand-arrow,
+.auth-header__brand .navbar__brand-caret {
+  color: var(--primary);
 }
 
 .auth-header__label {
   margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--nav-gold);
 }
 
 .auth-main {
@@ -50,9 +59,13 @@
 .auth-card {
   width: 100%;
   max-width: 400px;
-  background: var(--surface-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--space-xl) var(--space-xl) var(--space-xxl);
+  background: var(--platinum);
+  border-top: 1px solid var(--bevel-light);
+  border-left: 1px solid var(--bevel-light-soft);
+  border-right: 1px solid var(--bevel-dark);
+  border-bottom: 1px solid var(--bevel-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
   box-shadow: var(--shadow-modal);
 }
 
@@ -126,7 +139,7 @@
 
 .field__input:focus {
   outline: none;
-  border-color: var(--blurple);
+  border-color: var(--accent);
 }
 
 .field__input.is-error {
@@ -173,7 +186,7 @@
 .field__check-btn {
   flex-shrink: 0;
   background: var(--secondary-btn-bg);
-  color: #ffffff;
+  color: var(--carbon);
   border: none;
   border-radius: var(--radius-sm);
   padding: 0 var(--space-base);
@@ -220,7 +233,7 @@
 }
 
 .field__agree input {
-  accent-color: var(--blurple);
+  accent-color: var(--accent);
 }
 
 .field__agree a {
@@ -245,8 +258,8 @@
 .auth-submit {
   margin-top: var(--space-xs);
   min-height: 38px;
-  background: var(--blurple);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
   border-radius: var(--radius-md);
   padding: 2px var(--space-base);
@@ -257,11 +270,11 @@
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: var(--blurple-hover);
+  background: var(--accent-hover);
 }
 
 .auth-submit:active:not(:disabled) {
-  background: var(--blurple-active);
+  background: var(--accent-active);
 }
 
 .auth-submit:disabled {

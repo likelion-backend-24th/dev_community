@@ -13,7 +13,7 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--blurple);
+  color: var(--carbon);
 }
 
 .membership-hero h1 {
@@ -40,8 +40,8 @@
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  background: rgba(35, 165, 90, 0.16);
-  border: 1px solid rgba(35, 165, 90, 0.4);
+  background: var(--lavender);
+  border: 1px solid var(--chrome-indigo);
   color: var(--green-strong);
   border-radius: var(--radius-md);
   padding: var(--space-md) var(--space-base);
@@ -89,9 +89,9 @@
 }
 
 .plan-card--premium {
-  border-color: rgba(88, 101, 242, 0.55);
+  border-color: var(--chrome-indigo);
   background:
-    linear-gradient(160deg, rgba(88, 101, 242, 0.14), transparent 60%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 60%),
     var(--surface-secondary);
 }
 
@@ -99,8 +99,8 @@
   position: absolute;
   top: -12px;
   right: var(--space-xl);
-  background: var(--blurple);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.02em;
@@ -128,8 +128,8 @@
 }
 
 .plan-card--premium .plan-card__icon {
-  background: rgba(88, 101, 242, 0.24);
-  color: var(--blurple-hover);
+  background: var(--lavender);
+  color: var(--accent-hover);
 }
 
 .plan-card__name {
@@ -181,7 +181,7 @@
 }
 
 .plan-card--premium .plan-card__features svg {
-  color: var(--blurple-hover);
+  color: var(--accent-hover);
 }
 
 .plan-card__foot {
@@ -357,7 +357,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  color: var(--placeholder);
+  color: var(--carbon);
   font-size: 12px;
   margin-top: var(--space-xl);
 }

@@ -1,8 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/layout/Navbar";
 import Footer from "./components/layout/Footer";
-import FloatingWriteButton from "./components/layout/FloatingWriteButton";
-import FloatingChatButton from "./components/layout/FloatingChatButton";
+import ActionRail from "./components/layout/ActionRail";
 import NotificationToast from "./components/layout/NotificationToast";
 import { useAuth } from "./hooks/useAuth";
 import PrivateRoute from "./components/auth/PrivateRoute";
@@ -41,28 +40,15 @@ const NO_NAVBAR_PATHS = [
   "/reset-password",
 ];
 
-const NO_FLOATING_WRITE_BUTTON_PATHS = ["/questions/new"];
-const NO_FLOATING_CHAT_BUTTON_PREFIXES = ["/chats"];
-
 function App() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const showNavbar = !NO_NAVBAR_PATHS.includes(location.pathname);
-  const showFloatingWriteButton =
-    showNavbar &&
-    isAuthenticated &&
-    !NO_FLOATING_WRITE_BUTTON_PATHS.includes(location.pathname) &&
-    !location.pathname.endsWith("/edit");
-  const showFloatingChatButton =
-    showNavbar &&
-    isAuthenticated &&
-    !NO_FLOATING_CHAT_BUTTON_PREFIXES.some((prefix) =>
-      location.pathname.startsWith(prefix),
-    );
 
   return (
     <div className="app-shell">
       {showNavbar && <Navbar />}
+      <div className={showNavbar ? "app-body" : undefined}>
       <main className="app-main">
         <Routes>
           <Route path="/" element={<LoginPage />} />
@@ -104,8 +90,8 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
-      {showFloatingWriteButton && <FloatingWriteButton />}
-      {showFloatingChatButton && <FloatingChatButton />}
+        {showNavbar && <ActionRail />}
+      </div>
       {isAuthenticated && <NotificationToast />}
       <Footer />
     </div>

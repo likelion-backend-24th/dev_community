@@ -1,23 +1,37 @@
 /* Shared UI primitives */
 
+/* Every control is a beveled chip: bright top edge, chrome-indigo bottom edge.
+   There is no hover state in the source material, so hover/press inverts the
+   bevel instead — the control reads as physically depressing. */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-xs);
-  min-height: 38px;
+  min-height: 36px;
   padding: 2px var(--space-base);
-  border: none;
-  border-radius: var(--radius-md);
+  border-top: 1px solid var(--bevel-light);
+  border-left: 1px solid var(--bevel-light-soft);
+  border-right: 1px solid var(--bevel-dark);
+  border-bottom: 1px solid var(--bevel-dark);
+  border-radius: var(--radius-sm);
   font-family: inherit;
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background var(--motion-fast) var(--ease-standard),
-    opacity var(--motion-fast) var(--ease-standard);
+  transition: background var(--motion-fast) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled),
+.btn:active:not(:disabled) {
+  border-top-color: var(--bevel-dark);
+  border-left-color: var(--bevel-dark);
+  border-right-color: var(--bevel-light);
+  border-bottom-color: var(--bevel-light);
 }
 
 .btn:disabled {
@@ -26,82 +40,95 @@
 }
 
 .btn-sm {
-  min-height: 30px;
+  min-height: 28px;
   padding: 2px var(--space-md);
-  font-size: 12px;
+  font-size: 11px;
 }
 
+/* Forward / commit. Signal orange with a carbon label — white on this orange
+   is only 2.4:1, so the doc's white label is deliberately overridden. */
 .btn-primary {
-  background: var(--blurple);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--blurple-hover);
+  background: var(--accent-hover);
 }
 
 .btn-primary:active:not(:disabled) {
-  background: var(--blurple-active);
+  background: var(--accent-active);
 }
 
+/* Utility / tool chip. */
 .btn-secondary {
-  background: var(--secondary-btn-bg);
-  color: #ffffff;
+  background: var(--amber);
+  color: var(--carbon);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background: var(--secondary-btn-hover);
+  background: var(--amber-hover);
 }
 
 .btn-liked {
-  background: var(--green);
+  background: var(--accent);
+  color: var(--on-accent);
 }
 
 .btn-liked:hover:not(:disabled) {
-  background: var(--green);
-  opacity: 0.9;
+  background: var(--accent-hover);
 }
 
 .btn-destructive {
-  background: #da373c;
+  background: var(--primary);
   color: #ffffff;
 }
 
 .btn-destructive:hover:not(:disabled) {
-  background: #a12828;
+  background: #b8000e;
 }
 
 .btn-warning {
-  background: var(--yellow);
-  color: #111214;
+  background: var(--amber);
+  color: var(--carbon);
 }
 
 .btn-warning:hover:not(:disabled) {
-  opacity: 0.85;
+  background: var(--amber-hover);
 }
 
 .btn-ghost {
   background: transparent;
-  color: var(--text-normal);
+  border-color: transparent;
+  color: var(--text-muted);
   padding: 2px var(--space-sm);
   min-height: auto;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 12px;
 }
 
 .btn-ghost:hover:not(:disabled) {
+  border-color: transparent;
+  color: var(--carbon);
   text-decoration: underline;
 }
 
+/* Fields are recessed into the chrome — inverted bevel, white well. */
 .input,
 .select,
 .textarea {
   background: var(--input-bg);
   color: var(--text-normal);
-  border: 1px solid var(--input-bg);
+  border-top: 1px solid var(--bevel-dark);
+  border-left: 1px solid var(--bevel-dark);
+  border-right: 1px solid var(--bevel-light);
+  border-bottom: 1px solid var(--bevel-light);
   border-radius: var(--radius-sm);
-  padding: 10px var(--space-md);
+  padding: 8px var(--space-md);
   font-family: inherit;
-  font-size: 14px;
-  transition: border-color var(--motion-fast) var(--ease-standard);
+  font-size: 13px;
+  transition: outline-color var(--motion-fast) var(--ease-standard);
 }
 
 .input::placeholder,
@@ -112,69 +139,74 @@
 .input:focus,
 .select:focus,
 .textarea:focus {
-  outline: none;
-  border-color: var(--blurple);
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
 }
 
 .textarea {
   width: 100%;
   min-height: 120px;
   resize: vertical;
-  font-size: 16px;
-  line-height: 1.375;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .select {
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
-  padding-right: 32px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23949BA4' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  padding-right: 30px;
+  border: 1px solid var(--carbon);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%2321242E' stroke-width='2' stroke-linecap='square'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px 16px;
+  background-position: right 8px center;
+  background-size: 14px 14px;
 }
 
+/* Badges are silkscreened legends, not pills. */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: var(--radius-pill);
-  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 }
 
+/* Resolved is the authority voice — a carbon slab. Unresolved is a tool
+   state — amber. Neither borrows the forward-motion orange. */
 .badge-resolved {
-  background: var(--green);
+  background: var(--carbon);
   color: #ffffff;
 }
 
 .badge-open {
-  background: var(--secondary-btn-bg);
-  color: var(--interactive-normal);
+  background: var(--amber);
+  color: var(--carbon);
 }
 
 .badge-pending {
-  background: var(--yellow);
-  color: #111214;
+  background: var(--amber);
+  color: var(--carbon);
 }
 
 .badge-danger {
-  background: var(--red);
+  background: var(--primary);
   color: #ffffff;
 }
 
 .badge-type {
-  background: var(--blurple);
+  background: var(--chrome-indigo);
   color: #ffffff;
 }
 
 .badge-type-tint {
-  background: rgba(88, 101, 242, 0.16);
-  color: #a5b1ff;
+  background: var(--lavender);
+  color: var(--carbon);
+  border: 1px solid var(--chrome-indigo);
 }
 
 .expert-badge {
@@ -201,8 +233,8 @@
   width: 20px;
   height: 20px;
   margin-right: 6px;
-  border-radius: 50%;
-  background: var(--blurple);
+  border-radius: var(--radius-pill);
+  background: var(--carbon);
   color: #ffffff;
   font-size: 10px;
   font-weight: 700;
@@ -218,24 +250,34 @@
 .tag-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: var(--radius-pill);
-  background: var(--surface-tertiary);
-  color: var(--text-normal);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  border-top: 1px solid var(--bevel-dark);
+  border-left: 1px solid var(--bevel-dark);
+  border-right: 1px solid var(--bevel-light);
+  border-bottom: 1px solid var(--bevel-light);
+  color: var(--chrome-indigo);
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .card {
   background: var(--surface-secondary);
-  border-radius: var(--radius-md);
-  padding: var(--space-base) var(--space-lg);
+  border-top: 1px solid var(--bevel-light);
+  border-left: 1px solid var(--bevel-light-soft);
+  border-right: 1px solid var(--bevel-dark);
+  border-bottom: 1px solid var(--bevel-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--space-md) var(--space-base);
 }
 
 .state-text {
-  color: var(--text-muted);
-  font-size: 14px;
+  color: var(--chrome-indigo);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   padding: var(--space-xl) 0;
   text-align: center;
 }
@@ -243,12 +285,12 @@
 .state-text::before {
   content: "";
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   margin: 0 auto var(--space-sm);
-  border: 2px solid var(--border-subtle);
-  border-top-color: var(--blurple);
-  border-radius: 50%;
+  border: 3px solid var(--chrome-indigo);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-pill);
   animation: state-text-spin 0.6s linear infinite;
 }
 
@@ -268,19 +310,21 @@
   align-items: center;
   gap: var(--space-base);
   padding: var(--space-section) var(--space-base);
-  color: var(--text-muted);
-  font-size: 14px;
+  color: var(--carbon);
+  font-size: 13px;
+  font-weight: 700;
   text-align: center;
 }
 
 .inline-error {
   margin: 0;
-  background: var(--surface-tertiary);
-  border-left: 4px solid var(--red);
-  color: var(--red-soft);
-  font-size: 14px;
-  line-height: 1.29;
-  padding: var(--space-sm) var(--space-base);
+  background: #ffffff;
+  border: 2px solid var(--primary);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: var(--space-sm) var(--space-md);
   border-radius: var(--radius-sm);
 }
 
@@ -288,15 +332,15 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-xs);
-  margin-bottom: var(--space-base);
+  margin-bottom: var(--space-md);
 }
 
 .form-field label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  color: var(--carbon);
 }
 
 /* Modal */
@@ -304,7 +348,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(33, 36, 46, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -315,8 +359,12 @@
 .modal {
   width: 100%;
   max-width: 400px;
-  background: var(--surface-primary);
-  border-radius: var(--radius-md);
+  background: var(--surface-secondary);
+  border-top: 1px solid var(--bevel-light);
+  border-left: 1px solid var(--bevel-light-soft);
+  border-right: 1px solid var(--bevel-dark);
+  border-bottom: 1px solid var(--bevel-dark);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shadow-modal);
   overflow: hidden;
   animation: modal-in var(--motion-standard) var(--ease-enter);
@@ -336,7 +384,7 @@
 @keyframes modal-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 
   to {
@@ -346,14 +394,19 @@
 }
 
 .modal__header {
-  padding: var(--space-base) var(--space-base) 0;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--carbon);
+  background-image: var(--halftone);
+  background-size: var(--halftone-size);
 }
 
 .modal__title {
   margin: 0;
-  font-size: 20px;
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-header);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #ffffff;
 }
 
 .modal__body {
@@ -362,8 +415,8 @@
 
 .modal__desc {
   margin: 0 0 var(--space-base);
-  font-size: 14px;
-  line-height: 1.375;
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--text-normal);
 }
 
@@ -371,8 +424,9 @@
   display: flex;
   justify-content: flex-end;
   gap: var(--space-sm);
-  padding: var(--space-base);
-  background: var(--surface-secondary);
+  padding: var(--space-md);
+  background: var(--surface-primary);
+  border-top: 1px solid var(--bevel-dark);
 }
 
 /* Toast */
@@ -382,12 +436,15 @@
   bottom: var(--space-xl);
   left: 50%;
   transform: translateX(-50%);
-  background: var(--surface-floating);
-  color: var(--text-normal);
-  border-left: 4px solid var(--green);
+  background: var(--carbon);
+  background-image: var(--halftone);
+  background-size: var(--halftone-size);
+  color: #ffffff;
+  border-left: 4px solid var(--accent);
   border-radius: var(--radius-sm);
   padding: var(--space-sm) var(--space-base);
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 700;
   box-shadow: var(--shadow-modal);
   z-index: 200;
 }
