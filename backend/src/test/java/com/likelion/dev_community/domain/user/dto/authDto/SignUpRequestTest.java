@@ -32,6 +32,13 @@ class SignUpRequestTest {
     }
 
     @Test
+    void username_앞뒤_공백은_trim되어_저장된다() {
+        SignUpRequest request = new SignUpRequest("  leocho  ", "password123", "nickname", "test@test.com");
+
+        assertThat(request.getUsername()).isEqualTo("leocho");
+    }
+
+    @Test
     void username이_50자를_초과하면_검증에_실패한다() {
         SignUpRequest request = new SignUpRequest("a".repeat(51), "password123", "nickname", "test@test.com");
 

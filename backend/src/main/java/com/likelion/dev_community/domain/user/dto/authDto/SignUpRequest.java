@@ -4,10 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-@AllArgsConstructor
 @Getter
 public class SignUpRequest {
     @NotBlank(message = "아이디를 입력해주세요.")
@@ -30,4 +28,13 @@ public class SignUpRequest {
     @Size(max = 100, message = "이메일은 100자 이하여야 합니다.")
     @Schema(example = "dev_user01@example.com", description = "이메일. 100자 이하, 자체가입/소셜가입 통합해 중복 불가")
     private final String email;
+
+    // 아이디 앞뒤 공백이 trim되지 않은 채 저장되면(예: "leocho" vs " leocho ")
+    // 화면상 구분이 안 되는 별개 계정이 생겨 로그인 혼란을 유발하므로 여기서 정규화한다.
+    public SignUpRequest(String username, String password, String nickname, String email) {
+        this.username = username == null ? null : username.trim();
+        this.password = password;
+        this.nickname = nickname;
+        this.email = email;
+    }
 }
