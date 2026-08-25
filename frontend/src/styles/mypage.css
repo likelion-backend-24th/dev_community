@@ -142,7 +142,7 @@
 }
 
 .mypage-list__item:hover {
-  background: rgba(78, 80, 88, 0.3);
+  background: var(--surface-hover);
 }
 
 .mypage-list__title {

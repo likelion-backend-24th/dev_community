@@ -76,15 +76,19 @@ export function AuthProvider({ children }) {
         // 미구독자가 멤버십 게시판 접근 시 403 페이지 대신 멤버십 가입 페이지로 안내해 가입 유도.
         const isPremiumBoardEndpoint = url.includes("/api/questions/premium");
 
+        // replace로 넘겨야 뒤로가기가 정상 동작한다. push로 쌓으면 뒤로가기 →
+        // 접근 못 하는 페이지로 복귀 → 다시 403 → 다시 리다이렉트가 반복돼서
+        // 사용자가 이전 페이지로 빠져나갈 수 없다.
         if (status === 403 && isPremiumBoardEndpoint) {
           navigateRef.current("/membership", {
+            replace: true,
             state: { message: "멤버십 가입 후 이용할 수 있어요." },
           });
           return Promise.reject(error);
         }
 
         if (status === 403) {
-          navigateRef.current("/403");
+          navigateRef.current("/403", { replace: true });
           return Promise.reject(error);
         }
 

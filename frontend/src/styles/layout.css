@@ -36,11 +36,11 @@
 }
 
 .navbar__brand-arrow {
-  color: var(--green-strong);
+  color: var(--caret-green);
 }
 
 .navbar__brand-caret {
-  color: var(--green-strong);
+  color: var(--caret-green);
   animation: navbar-caret-blink 1s steps(1) infinite;
 }
 
@@ -288,10 +288,13 @@
   margin-bottom: var(--space-xl);
 }
 
+/* At 32px this maps to Carbon's "headline" tier (400, not the 300 reserved
+   for true 42px+ display sizes) — still noticeably lighter than the old 700. */
 .page__title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 32px;
+  font-weight: 400;
+  letter-spacing: normal;
   color: var(--text-header);
 }
 
@@ -300,10 +303,14 @@
   color: var(--text-muted);
 }
 
+/* Carbon inverts the footer to charcoal regardless of the page theme — it's
+   the one surface that stays constant while everything else fades between
+   light and dark. */
 .footer {
-  border-top: 1px solid var(--border-subtle);
-  color: var(--text-muted);
+  background: #161616;
+  color: #c6c6c6;
   font-size: 13px;
+  letter-spacing: var(--body-tracking);
 }
 
 .footer__inner {
@@ -314,11 +321,28 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: var(--space-sm) var(--space-lg);
-  padding: var(--space-base);
+  padding: var(--space-xl) var(--space-base);
 }
 
 .footer__brand {
-  font-weight: 600;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.15em;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.footer__brand-arrow {
+  color: var(--caret-green);
+}
+
+/* 실제 "커서"는 이 밑줄 문자다. 네비게이션 바의 .navbar__brand-caret과
+   색은 동일하게 --caret-green을 쓰되, animation은 의도적으로 붙이지
+   않는다 — 하단은 상시 노출되는 브랜드 표기라 깜빡임이 불필요한 시선
+   분산이 되기 때문. */
+.footer__brand-caret {
+  color: var(--caret-green);
 }
 
 .footer__links {
@@ -327,11 +351,11 @@
 }
 
 .footer__links a {
-  color: var(--text-muted);
+  color: #c6c6c6;
 }
 
 .footer__links a:hover {
-  color: var(--text-normal);
+  color: #ffffff;
 }
 
 .floating-write-btn {
@@ -381,7 +405,7 @@
   line-height: 1.25;
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) var(--radius-sm);
   background: var(--secondary-btn-bg);
-  color: #ffffff;
+  color: var(--on-secondary-btn);
   font-size: 14px;
   font-weight: 700;
   box-shadow: var(--shadow-high);
@@ -420,8 +444,8 @@
   max-width: 240px;
   padding: var(--space-md) var(--space-lg);
   border-radius: var(--radius-lg) var(--radius-lg) var(--radius-sm) var(--radius-lg);
-  background: #ffffff;
-  color: var(--surface-primary);
+  background: #161616;
+  color: #ffffff;
   font-size: 14px;
   font-weight: 600;
   line-height: 1.4;

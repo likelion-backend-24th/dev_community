@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   background:
-    radial-gradient(ellipse 760px 480px at 50% 42%, rgba(88, 101, 242, 0.16), transparent 70%),
+    radial-gradient(ellipse 760px 480px at 50% 42%, rgba(15, 98, 254, 0.16), transparent 70%),
     var(--surface-primary);
 }
 
@@ -59,7 +59,8 @@
 .auth-card__title {
   margin: 0 0 var(--space-xs);
   font-size: 24px;
-  font-weight: 700;
+  font-weight: 400;
+  letter-spacing: normal;
   line-height: 1.25;
   color: var(--text-header);
 }
@@ -111,13 +112,15 @@
   min-width: 0;
   background: var(--input-bg);
   color: var(--text-normal);
-  border: 1px solid var(--input-bg);
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 10px var(--space-md);
+  padding: 11px var(--space-md);
   font-family: inherit;
   font-size: 16px;
   line-height: 1.375;
-  transition: border-color var(--motion-fast) var(--ease-standard);
+  transition: border-bottom-width var(--motion-fast) var(--ease-standard),
+    border-bottom-color var(--motion-fast) var(--ease-standard);
 }
 
 .field__input::placeholder {
@@ -126,11 +129,13 @@
 
 .field__input:focus {
   outline: none;
-  border-color: var(--blurple);
+  border-bottom-width: 2px;
+  border-bottom-color: var(--blurple);
+  padding-bottom: 10px;
 }
 
 .field__input.is-error {
-  border-color: var(--red-soft);
+  border-bottom-color: var(--red-soft);
 }
 
 .field__password-row {
@@ -173,7 +178,7 @@
 .field__check-btn {
   flex-shrink: 0;
   background: var(--secondary-btn-bg);
-  color: #ffffff;
+  color: var(--on-secondary-btn);
   border: none;
   border-radius: var(--radius-sm);
   padding: 0 var(--space-base);
