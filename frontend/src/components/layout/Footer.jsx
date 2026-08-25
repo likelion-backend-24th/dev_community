@@ -8,7 +8,8 @@ function Footer() {
           <span className="footer__brand-arrow" aria-hidden="true">
             &gt;
           </span>
-          dev_com_
+          dev_com
+          <span className="footer__brand-caret">_</span>
         </span>
         <nav className="footer__links">
           <Link to="/terms">이용약관</Link>
