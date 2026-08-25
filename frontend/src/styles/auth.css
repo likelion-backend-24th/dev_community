@@ -4,9 +4,11 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(ellipse 760px 480px at 50% 42%, rgba(88, 101, 242, 0.16), transparent 70%),
-    var(--surface-primary);
+  background-color: var(--surface-primary);
+  background-image:
+    radial-gradient(ellipse 760px 480px at 50% 42%, rgba(255, 255, 255, 0.05), transparent 70%),
+    var(--dot-matrix);
+  background-size: auto, var(--dot-matrix-size);
 }
 
 .auth-header {
@@ -32,9 +34,10 @@
 
 .auth-header__label {
   margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono-label);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -51,7 +54,8 @@
   width: 100%;
   max-width: 400px;
   background: var(--surface-secondary);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
   padding: var(--space-xl) var(--space-xl) var(--space-xxl);
   box-shadow: var(--shadow-modal);
 }
@@ -84,9 +88,10 @@
 }
 
 .field__label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono-label);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -111,8 +116,8 @@
   min-width: 0;
   background: var(--input-bg);
   color: var(--text-normal);
-  border: 1px solid var(--input-bg);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 10px var(--space-md);
   font-family: inherit;
   font-size: 16px;
@@ -126,7 +131,7 @@
 
 .field__input:focus {
   outline: none;
-  border-color: var(--blurple);
+  border-color: var(--accent);
 }
 
 .field__input.is-error {
@@ -172,10 +177,10 @@
 
 .field__check-btn {
   flex-shrink: 0;
-  background: var(--secondary-btn-bg);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-header);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
   padding: 0 var(--space-base);
   font-size: 14px;
   font-weight: 500;
@@ -220,7 +225,7 @@
 }
 
 .field__agree input {
-  accent-color: var(--blurple);
+  accent-color: var(--accent);
 }
 
 .field__agree a {
@@ -245,10 +250,10 @@
 .auth-submit {
   margin-top: var(--space-xs);
   min-height: 38px;
-  background: var(--blurple);
-  color: #ffffff;
+  background: var(--accent);
+  color: var(--on-accent);
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   padding: 2px var(--space-base);
   font-size: 14px;
   font-weight: 500;
@@ -257,11 +262,11 @@
 }
 
 .auth-submit:hover:not(:disabled) {
-  background: var(--blurple-hover);
+  background: var(--accent-hover);
 }
 
 .auth-submit:active:not(:disabled) {
-  background: var(--blurple-active);
+  background: var(--accent-active);
 }
 
 .auth-submit:disabled {
@@ -322,10 +327,10 @@
 .auth-oauth-btn {
   width: 100%;
   min-height: 38px;
-  background: var(--input-bg);
+  background: transparent;
   color: var(--text-normal);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
   padding: 2px var(--space-base);
   font-size: 14px;
   font-weight: 500;
