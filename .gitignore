@@ -5,3 +5,4 @@ build/
 dev-community-key.pem
 application-local.yml
 *.iml.DS_Store
+docs/
