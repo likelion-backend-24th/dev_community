@@ -79,7 +79,13 @@ function Navbar() {
     <nav className="navbar">
       <div className="navbar__links">
         <Link to="/questions" className="navbar__brand">
-          Dev_Community
+          <span className="navbar__brand-arrow" aria-hidden="true">
+            &gt;
+          </span>
+          <span>
+            dev_com
+            <span className="navbar__brand-caret">_</span>
+          </span>
         </Link>
       </div>
 
