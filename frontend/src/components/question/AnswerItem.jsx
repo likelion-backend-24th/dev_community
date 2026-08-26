@@ -8,6 +8,7 @@ import {
 import ReportButton from "./ReportButton";
 import AttachmentList from "../attachment/AttachmentList";
 import ExpertBadge from "../common/ExpertBadge";
+import AlertModal from "../common/AlertModal";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -29,6 +30,7 @@ function AnswerItem({
   const [content, setContent] = useState(answer.content);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  const [likeAlertMessage, setLikeAlertMessage] = useState("");
 
   const isAuthor = currentUser?.id === answer.authorId;
   const canEdit = isAuthor || isAdmin;
@@ -73,7 +75,11 @@ function AnswerItem({
     try {
       await onLike(answer.id);
     } catch (err) {
-      setError(err.response?.data?.message ?? "추천 처리에 실패했습니다.");
+      if (err.response?.status === 403) {
+        setLikeAlertMessage(err.response?.data?.message ?? "추천할 수 없습니다.");
+      } else {
+        setError(err.response?.data?.message ?? "추천 처리에 실패했습니다.");
+      }
     } finally {
       setBusy(false);
     }
@@ -207,6 +213,13 @@ function AnswerItem({
         <p className="inline-error" role="alert">
           {error}
         </p>
+      )}
+
+      {likeAlertMessage && (
+        <AlertModal
+          message={likeAlertMessage}
+          onClose={() => setLikeAlertMessage("")}
+        />
       )}
     </li>
   );

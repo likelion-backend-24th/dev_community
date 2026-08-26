@@ -73,6 +73,11 @@ export function AuthProvider({ children }) {
           return Promise.reject(error);
         }
 
+        const isLikeEndpoint = url.endsWith("/like");
+        if (status === 403 && isLikeEndpoint) {
+          return Promise.reject(error);
+        }
+
         // 미구독자가 멤버십 게시판 접근 시 403 페이지 대신 멤버십 가입 페이지로 안내해 가입 유도.
         const isPremiumBoardEndpoint = url.includes("/api/questions/premium");
 

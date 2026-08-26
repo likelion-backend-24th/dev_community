@@ -48,6 +48,7 @@ function QuestionDetailPage() {
   const [answerSubmitting, setAnswerSubmitting] = useState(false);
   const [answerError, setAnswerError] = useState("");
   const [selfAnswerAlertOpen, setSelfAnswerAlertOpen] = useState(false);
+  const [likeAlertMessage, setLikeAlertMessage] = useState("");
   const [answerAttachmentFiles, setAnswerAttachmentFiles] = useState([]);
   const [answerAttachmentError, setAnswerAttachmentError] = useState("");
 
@@ -176,6 +177,10 @@ function QuestionDetailPage() {
         prev ? { ...prev, likeCount: prev.likeCount + (liked ? 1 : -1) } : prev,
       );
     } catch (err) {
+      if (err.response?.status === 403) {
+        setLikeAlertMessage(err.response?.data?.message ?? "추천할 수 없습니다.");
+        return;
+      }
       setError(err.response?.data?.message ?? "추천 처리에 실패했습니다.");
     }
   };
@@ -610,6 +615,13 @@ function QuestionDetailPage() {
         <AlertModal
           message="본인의 글에는 답변을 등록할 수 없습니다."
           onClose={() => setSelfAnswerAlertOpen(false)}
+        />
+      )}
+
+      {likeAlertMessage && (
+        <AlertModal
+          message={likeAlertMessage}
+          onClose={() => setLikeAlertMessage("")}
         />
       )}
     </div>
