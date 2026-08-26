@@ -40,6 +40,7 @@ function LoginPage() {
   const [failMessage, setFailMessage] = useState("");
   const [progress, setProgress] = useState(0);
   const [lastLoginStamp, setLastLoginStamp] = useState("");
+  const [lastLoginIp, setLastLoginIp] = useState("");
 
   const [error, setError] = useState("");
   const [toast, setToast] = useState(
@@ -83,6 +84,8 @@ function LoginPage() {
     setPassword("");
     setFailMessage("");
     setProgress(0);
+    setLastLoginStamp("");
+    setLastLoginIp("");
     setStep(STEP.LOGIN);
     usernameInputRef.current?.focus();
   };
@@ -118,9 +121,11 @@ function LoginPage() {
     }, 70);
 
     let accessToken = null;
+    let prevLoginAt = null;
+    let prevLoginIp = null;
     let failureMessage = null;
     try {
-      ({ accessToken } = await login({ username, password }));
+      ({ accessToken, lastLoginAt: prevLoginAt, lastLoginIp: prevLoginIp } = await login({ username, password }));
     } catch (err) {
       failureMessage = err.response?.data?.message ?? "로그인에 실패했습니다.";
     }
@@ -136,12 +141,18 @@ function LoginPage() {
     }
 
     setProgress(100);
-    const now = new Date();
-    const days = ["일", "월", "화", "수", "목", "금", "토"];
-    setLastLoginStamp(
-      `${days[now.getDay()]} ${now.getMonth() + 1}월 ${now.getDate()}일 ` +
-        `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
-    );
+    // 이번이 첫 로그인이면(직전 기록 없음) Last login 줄 없이 바로 셸 프롬프트만 보여준다.
+    if (prevLoginAt) {
+      const days = ["일", "월", "화", "수", "목", "금", "토"];
+      const prev = new Date(prevLoginAt);
+      setLastLoginStamp(
+        `${days[prev.getDay()]} ${prev.getMonth() + 1}월 ${prev.getDate()}일 ` +
+          `${String(prev.getHours()).padStart(2, "0")}:${String(prev.getMinutes()).padStart(2, "0")}`,
+      );
+      setLastLoginIp(prevLoginIp ?? "");
+    } else {
+      setLastLoginStamp("");
+    }
     setStep(STEP.DONE);
     setTimeout(() => {
       setAuth(accessToken);
@@ -249,9 +260,11 @@ function LoginPage() {
 
               {step === STEP.DONE && (
                 <div className="term-result" aria-live="polite">
-                  <p className="term-line term-line--dim">
-                    {`Last login: ${lastLoginStamp} from 203.0.113.42`}
-                  </p>
+                  {lastLoginStamp && (
+                    <p className="term-line term-line--dim">
+                      {`Last login: ${lastLoginStamp} from ${lastLoginIp}`}
+                    </p>
+                  )}
                   <p className="term-line term-line--prompt">
                     {username}@dev-com:~$
                     <span className="term-cursor-block" aria-hidden="true"></span>

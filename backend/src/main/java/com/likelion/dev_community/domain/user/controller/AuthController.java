@@ -8,6 +8,7 @@ import com.likelion.dev_community.domain.user.service.AuthService;
 import com.likelion.dev_community.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -36,8 +37,10 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "아이디/비밀번호로 로그인해 액세스 토큰을 발급받음. 리프레시 토큰은 HttpOnly 쿠키로 전달됨. 인증 불필요.")
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody SignInRequest request, HttpServletResponse httpServletResponse){
-        TokenResponse tokenResponse = authService.signIn(request, httpServletResponse);
+    public ResponseEntity<ApiResponse<TokenResponse>> login(
+            @Valid @RequestBody SignInRequest request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse
+    ){
+        TokenResponse tokenResponse = authService.signIn(request, httpServletRequest, httpServletResponse);
         return ResponseEntity.ok(ApiResponse.success("로그인 성공",tokenResponse));
     }
 

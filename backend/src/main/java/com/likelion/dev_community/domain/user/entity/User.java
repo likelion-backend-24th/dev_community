@@ -61,6 +61,12 @@ public class User extends BaseTimeEntity {
     // 마지막으로 색을 뽑은 시각. 결제 갱신(Subscription.startedAt)마다 1회로 리롤을 제한하는 기준이 된다.
     private LocalDateTime avatarColorRolledAt;
 
+    // 가장 최근 로그인 시각/IP. 직전 값만 보관하며(이력 미보관), 로그인 성공마다 덮어쓴다.
+    private LocalDateTime lastLoginAt;
+
+    @Column(length = 45)
+    private String lastLoginIp;
+
     @Builder
     public User(String username, String password, String nickname, String email, Role role, UserStatus status,
                 AuthProvider provider, String providerId) {
@@ -152,5 +158,10 @@ public class User extends BaseTimeEntity {
     public void rollAvatarColor(String hex, LocalDateTime rolledAt) {
         this.avatarColorHex = hex;
         this.avatarColorRolledAt = rolledAt;
+    }
+
+    public void recordLogin(String ip, LocalDateTime at) {
+        this.lastLoginAt = at;
+        this.lastLoginIp = ip;
     }
 }
