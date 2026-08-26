@@ -12,6 +12,7 @@ import {
 } from "../../api/userApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ExpertBadge from "../../components/common/ExpertBadge";
+import { getAvatarColor } from "../../utils/avatarColor";
 import "../../styles/mypage.css";
 
 function MyPage() {
@@ -114,7 +115,12 @@ function MyPage() {
       </div>
 
       <section className="profile-card card">
-        <div className="profile-card__avatar">{profile.nickname[0]}</div>
+        <div
+          className="profile-card__avatar"
+          style={{ backgroundColor: getAvatarColor(profile.nickname) }}
+        >
+          {profile.nickname[0]}
+        </div>
         <div className="profile-card__body">
           <div className="profile-card__name-row">
             <span className="profile-card__name">{profile.nickname}</span>

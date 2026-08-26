@@ -8,6 +8,7 @@ import {
   markAllNotificationsRead,
 } from "../../api/notificationApi";
 import ThemeToggle from "./ThemeToggle";
+import { getAvatarColor } from "../../utils/avatarColor";
 
 function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -154,6 +155,7 @@ function Navbar() {
               <button
                 type="button"
                 className="navbar__avatar"
+                style={{ backgroundColor: getAvatarColor(user?.nickname) }}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-haspopup="true"
                 aria-expanded={menuOpen}

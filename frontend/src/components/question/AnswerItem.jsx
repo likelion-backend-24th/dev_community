@@ -9,6 +9,7 @@ import { toggleAnswerLike } from "../../api/likeApi";
 import ReportButton from "./ReportButton";
 import AttachmentList from "../attachment/AttachmentList";
 import ExpertBadge from "../common/ExpertBadge";
+import { getAvatarColor } from "../../utils/avatarColor";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -123,7 +124,11 @@ function AnswerItem({
 
       <div className="answer-card__meta">
         <span className="author-with-badge">
-          <span className="avatar-circle" aria-hidden="true">
+          <span
+            className="avatar-circle"
+            style={{ backgroundColor: getAvatarColor(answer.authorNickname) }}
+            aria-hidden="true"
+          >
             {answer.authorNickname?.[0] ?? "?"}
           </span>
           {answer.authorNickname}

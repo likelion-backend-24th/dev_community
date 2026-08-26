@@ -4,6 +4,7 @@ import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import ExpertBadge from "../../components/common/ExpertBadge";
+import { getAvatarColor } from "../../utils/avatarColor";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -241,7 +242,11 @@ function QuestionListPage() {
 
               <div className="question-card__meta">
                 <span className="author-with-badge">
-                  <span className="avatar-circle" aria-hidden="true">
+                  <span
+                    className="avatar-circle"
+                    style={{ backgroundColor: getAvatarColor(q.authorNickname) }}
+                    aria-hidden="true"
+                  >
                     {q.authorNickname?.[0] ?? "?"}
                   </span>
                   {q.authorNickname}
