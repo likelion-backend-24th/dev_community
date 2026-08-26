@@ -4,6 +4,7 @@ import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import ExpertBadge from "../../components/common/ExpertBadge";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -289,7 +290,7 @@ function QuestionListPage() {
                   </svg>
                   {q.answerCount}
                 </span>
-                <span>{new Date(q.createdAt).toLocaleString()}</span>
+                <span className="question-card__time">{formatRelativeTime(q.createdAt)}</span>
               </div>
               </Link>
             </li>

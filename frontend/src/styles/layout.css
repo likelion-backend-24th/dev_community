@@ -45,10 +45,14 @@
 }
 
 @keyframes navbar-caret-blink {
-  0%, 49% {
+
+  0%,
+  49% {
     opacity: 1;
   }
-  50%, 100% {
+
+  50%,
+  100% {
     opacity: 0;
   }
 }
@@ -478,11 +482,17 @@
   .floating-write-btn {
     right: var(--space-lg);
     bottom: var(--space-lg);
+    width: 47px;
+    height: 47px;
+    font-size: 11px;
   }
 
   .floating-chat-btn {
     right: var(--space-lg);
-    bottom: 100px;
+    bottom: 73px;
+    width: 47px;
+    height: 47px;
+    font-size: 11px;
   }
 
   .notification-toast {
