@@ -352,12 +352,34 @@
 
 /* 로그인 폼 — macOS 터미널 창 */
 
+/* 시안처럼 카드 배경/그림자를 없애고, 모든 UI가 페이지 배경 위에 직접 떠 있게 만든다. */
 .auth-card--terminal {
-  max-width: 480px;
+  max-width: 560px;
+  background: none;
+  box-shadow: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.auth-card--terminal .auth-card__title {
+  margin: 0 0 4px;
+}
+
+.auth-card--terminal .auth-card__subtitle {
+  margin: 0;
+}
+
+.auth-card--terminal .auth-divider {
+  margin: 0;
+}
+
+.auth-card--terminal .auth-links {
+  margin-top: 0;
 }
 
 .term-window {
-  margin: var(--space-lg) 0 var(--space-base);
   border-radius: 10px;
   overflow: hidden;
   background: #1e1e1e;
@@ -369,7 +391,7 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 14px 18px;
+  padding: 15px 20px;
   background: var(--term-titlebar-bg);
   border-bottom: 1px solid var(--term-titlebar-border);
   position: relative;
@@ -398,10 +420,10 @@
 }
 
 .term-body {
-  padding: 24px 26px 28px;
+  padding: 26px 30px 32px;
   font-family: var(--font-mono);
-  font-size: 16px;
-  line-height: 1.9;
+  font-size: 14px;
+  line-height: 1.85;
   min-height: 190px;
 }
 
@@ -435,7 +457,7 @@
   outline: none;
   color: #e6e6e6;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 14px;
   caret-color: #e6e6e6;
   padding: 3px 0;
 }
@@ -461,7 +483,7 @@
   border: none;
   padding: 0;
   font-family: var(--font-mono);
-  font-size: 16px;
+  font-size: 14px;
   cursor: pointer;
   color: #7ee787;
 }
@@ -477,8 +499,8 @@
 
 .term-submit__cursor {
   display: inline-block;
-  width: 8px;
-  height: 17px;
+  width: 7px;
+  height: 15px;
   background: #7ee787;
   animation: term-blink 1s step-end infinite;
   transform: translateY(2px);
@@ -504,11 +526,11 @@
 
 .term-cursor-block {
   display: inline-block;
-  width: 8px;
-  height: 17px;
+  width: 7px;
+  height: 15px;
   background: #e6e6e6;
   animation: term-blink 1s step-end infinite;
-  vertical-align: -3px;
+  vertical-align: -2px;
   margin-left: 3px;
 }
 

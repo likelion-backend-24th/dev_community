@@ -165,7 +165,7 @@ function LoginPage() {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   };
 
-  const progressCells = 16;
+  const progressCells = 28;
   const filledCells = Math.round((progress / 100) * progressCells);
   const progressBar = "█".repeat(filledCells) + "░".repeat(progressCells - filledCells);
 
