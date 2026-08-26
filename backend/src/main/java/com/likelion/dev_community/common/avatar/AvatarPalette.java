@@ -1,47 +1,22 @@
 package com.likelion.dev_community.common.avatar;
 
 import java.security.SecureRandom;
-import java.util.List;
 
 /**
- * 아바타 원의 배경색 팔레트. 프론트엔드({@code frontend/src/utils/avatarColor.js})의
- * MEMBER_COLORS와 값이 정확히 같아야 한다 — 색을 뽑는 건 서버지만, 뽑힌 색을 렌더링하는
- * 스와치 정의(이름·용도)는 양쪽이 같은 목록을 참조한다는 전제로 관리한다.
+ * 아바타 원의 배경색 생성 규칙.
  *
- * 전부 흰 글자 기준 명암비 4.5:1 이상만 골랐다. Tailwind 600~700 계열 색상 중 대비를
- * 직접 계산해 통과한 것만 남겼다.
+ * 색상(hue)만 0~359도 전체에서 무작위로 뽑고 채도/명도는 고정한다. 흰 글자 기준
+ * 명암비 4.5:1을 hue 전체 구간(가장 밝게 나오는 노랑~연두 부근 포함)에서 항상
+ * 만족하도록 채도 60% · 명도 25%로 고정했다 — hue가 연속값이라 사실상 360가지
+ * 이상의 색이 나오면서도 시인성 범위는 유지된다.
  */
 public final class AvatarPalette {
 
     // 익명 작성자 전용 고정 회색. 개인 팔레트에 없는 색이라 실제 이용자를 유추할 수 없다.
     public static final String ANONYMOUS_GRAY = "#57606f";
 
-    public static final List<String> MEMBER_COLORS = List.of(
-            "#dc2626", // red
-            "#c2410c", // orange (dark)
-            "#b45309", // amber (dark)
-            "#4d7c0f", // lime (dark)
-            "#15803d", // green
-            "#047857", // emerald
-            "#0f766e", // teal
-            "#0e7490", // cyan (dark)
-            "#2563eb", // blue
-            "#4f46e5", // indigo
-            "#6d28d9", // violet
-            "#9333ea", // purple
-            "#a21caf", // fuchsia (dark)
-            "#be185d", // pink (dark)
-            "#db2777", // pink
-            "#be123c", // rose (dark)
-            "#7c2d12", // brown-ish orange
-            "#3730a3", // deep indigo
-            "#166534", // deep green
-            "#155e75", // deep cyan
-            "#6b21a8", // deep purple
-            "#9d174d", // deep pink
-            "#1d4ed8", // strong blue
-            "#059669"  // strong emerald
-    );
+    private static final float SATURATION = 0.60f;
+    private static final float LIGHTNESS = 0.25f;
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
@@ -49,7 +24,31 @@ public final class AvatarPalette {
     }
 
     public static String rollRandom() {
-        return MEMBER_COLORS.get(RANDOM.nextInt(MEMBER_COLORS.size()));
+        int hue = RANDOM.nextInt(360);
+        return toHex(hslToRgb(hue, SATURATION, LIGHTNESS));
+    }
+
+    private static int[] hslToRgb(int hueDegrees, float s, float l) {
+        float c = (1 - Math.abs(2 * l - 1)) * s;
+        float hPrime = hueDegrees / 60f;
+        float x = c * (1 - Math.abs(hPrime % 2 - 1));
+        float r1, g1, b1;
+        if (hPrime < 1) { r1 = c; g1 = x; b1 = 0; }
+        else if (hPrime < 2) { r1 = x; g1 = c; b1 = 0; }
+        else if (hPrime < 3) { r1 = 0; g1 = c; b1 = x; }
+        else if (hPrime < 4) { r1 = 0; g1 = x; b1 = c; }
+        else if (hPrime < 5) { r1 = x; g1 = 0; b1 = c; }
+        else { r1 = c; g1 = 0; b1 = x; }
+        float m = l - c / 2;
+        return new int[]{
+                Math.round((r1 + m) * 255),
+                Math.round((g1 + m) * 255),
+                Math.round((b1 + m) * 255)
+        };
+    }
+
+    private static String toHex(int[] rgb) {
+        return String.format("#%02x%02x%02x", rgb[0], rgb[1], rgb[2]);
     }
 
     // 질문/답변 DTO에서 작성자 아바타 색을 결정하는 공통 규칙.

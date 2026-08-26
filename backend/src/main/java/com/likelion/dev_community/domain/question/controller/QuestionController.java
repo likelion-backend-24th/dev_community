@@ -70,12 +70,13 @@ public class QuestionController {
             @RequestParam(required = false) String sort,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String tag,
-            @RequestParam(required = false) String status
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String type
     ) {
         Long userId = (userDetails != null) ? userDetails.getId() : null;
         boolean isAdmin = (userDetails != null) && userDetails.isAdmin();
 
-        Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, userId, isAdmin);
+        Page<QuestionSummaryResponse> result = questionService.readPremiumQuestions(page, size, sort, keyword, tag, status, type, userId, isAdmin);
 
         return ResponseEntity.ok(ApiResponse.success("프리미엄 질문 목록 조회", result.getContent(), PageMetaMapper.of(result)));
     }

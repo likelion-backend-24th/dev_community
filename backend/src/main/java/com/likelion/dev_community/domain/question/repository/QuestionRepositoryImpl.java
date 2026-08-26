@@ -25,18 +25,18 @@ public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
     public Page<Question> searchQuestions(
             String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable
     ) {
-        return search(keyword, tagId, status, sortType, pageable, false);
+        return search(keyword, tagId, status, null, sortType, pageable, false);
     }
 
     @Override
     public Page<Question> searchPremiumQuestions(
-            String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable
+            String keyword, Long tagId, QuestionStatus status, QuestionType type, QuestionSortType sortType, Pageable pageable
     ) {
-        return search(keyword, tagId, status, sortType, pageable, true);
+        return search(keyword, tagId, status, type, sortType, pageable, true);
     }
 
     private Page<Question> search(
-            String keyword, Long tagId, QuestionStatus status, QuestionSortType sortType, Pageable pageable, boolean isPremium
+            String keyword, Long tagId, QuestionStatus status, QuestionType type, QuestionSortType sortType, Pageable pageable, boolean isPremium
     ) {
         BooleanBuilder condition = new BooleanBuilder();
         condition.and(question.isPremium.eq(isPremium));
@@ -57,6 +57,10 @@ public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
         // F-19
         if (status != null) {
             condition.and(question.status.eq(status));
+        }
+
+        if (type != null) {
+            condition.and(question.type.eq(type));
         }
 
         List<Question> content = queryFactory
@@ -84,6 +88,7 @@ public class QuestionRepositoryImpl implements QuestionRepositoryCustom {
     private OrderSpecifier<?>[] resolveOrder(QuestionSortType sortType) {
         return switch (sortType) {
             case LIKE -> new OrderSpecifier<?>[]{ question.likeCount.desc() };
+            case VIEW -> new OrderSpecifier<?>[]{ question.viewCount.desc() };
             case UNRESOLVED -> new OrderSpecifier<?>[]{
                     new CaseBuilder()
                             .when(question.status.eq(QuestionStatus.OPEN)).then(0)

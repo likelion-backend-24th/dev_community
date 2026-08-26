@@ -4,7 +4,7 @@ import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 
 public enum QuestionSortType {
-    LATEST, LIKE, UNRESOLVED;
+    LATEST, LIKE, UNRESOLVED, VIEW;
 
     public static QuestionSortType from(String sort) {
         if (sort == null || sort.isBlank()) {

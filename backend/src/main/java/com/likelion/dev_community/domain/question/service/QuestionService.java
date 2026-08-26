@@ -13,8 +13,8 @@ public interface QuestionService {
     // F-07
     Page<QuestionSummaryResponse> readQuestions(int page, int size, String sort, String keyword, String tag, String status);
 
-    // F-32 프리미엄 게시판
-    Page<QuestionSummaryResponse> readPremiumQuestions(int page, int size, String sort, String keyword, String tag, String status, Long userId, boolean isAdmin);
+    // F-32 프리미엄 게시판. type은 글 유형 필터(null/빈 값이면 전체).
+    Page<QuestionSummaryResponse> readPremiumQuestions(int page, int size, String sort, String keyword, String tag, String status, String type, Long userId, boolean isAdmin);
 
     // F-08
     QuestionDetailResponse readDetailQuestion(Long questionId, String viewerKey, Long userId, boolean isAdmin);
