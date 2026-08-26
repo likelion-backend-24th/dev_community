@@ -594,7 +594,7 @@ function QuestionDetailPage() {
 
             <div className="guest-lock__overlay">
               <p className="guest-lock__message">
-                Dev_Community에 가입해서
+                dev_com에 가입해서
                 <br />
                 다른 개발자들에게 도움받아 보세요!
               </p>

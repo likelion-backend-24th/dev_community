@@ -123,7 +123,7 @@ function SignupPage() {
 
       <main className="auth-main">
         <div className="auth-card">
-          <h1 className="auth-card__title">Dev_Community에 합류하기</h1>
+          <h1 className="auth-card__title">dev_com에 합류하기</h1>
           <p className="auth-card__subtitle">
             질문하고 답변하며 함께 성장하는 커뮤니티예요.
           </p>
