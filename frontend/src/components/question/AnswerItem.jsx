@@ -5,7 +5,6 @@ import {
   adoptAnswer,
   cancelAdoption,
 } from "../../api/answerApi";
-import { toggleAnswerLike } from "../../api/likeApi";
 import ReportButton from "./ReportButton";
 import AttachmentList from "../attachment/AttachmentList";
 import ExpertBadge from "../common/ExpertBadge";
@@ -24,6 +23,7 @@ function AnswerItem({
   questionResolved,
   isLiked,
   onChanged,
+  onLike,
 }) {
   const [editing, setEditing] = useState(false);
   const [content, setContent] = useState(answer.content);
@@ -67,8 +67,17 @@ function AnswerItem({
   const handleCancelAdoption = () =>
     runAction(() => cancelAdoption(answer.id), "채택 취소에 실패했습니다.");
 
-  const handleLike = () =>
-    runAction(() => toggleAnswerLike(answer.id), "추천 처리에 실패했습니다.");
+  const handleLike = async () => {
+    setBusy(true);
+    setError("");
+    try {
+      await onLike(answer.id);
+    } catch (err) {
+      setError(err.response?.data?.message ?? "추천 처리에 실패했습니다.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
   return (
     <li className={`answer-card${answer.adopted ? " is-adopted" : ""}`}>

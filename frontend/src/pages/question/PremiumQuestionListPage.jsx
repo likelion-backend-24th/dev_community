@@ -22,6 +22,7 @@ function PremiumQuestionListPage() {
   const [page, setPage] = useState(0);
   const [sort, setSort] = useState("");
   const [status, setStatus] = useState("");
+  const [type, setType] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
   const [appliedTag, setAppliedTag] = useState(initialTag);
   const [keywordInput, setKeywordInput] = useState("");
@@ -41,6 +42,7 @@ function PremiumQuestionListPage() {
           size: PAGE_SIZE,
           sort: sort || undefined,
           status: status || undefined,
+          type: type || undefined,
           keyword: appliedKeyword || undefined,
           tag: appliedTag || undefined,
         });
@@ -68,7 +70,7 @@ function PremiumQuestionListPage() {
     return () => {
       cancelled = true;
     };
-  }, [page, sort, status, appliedKeyword, appliedTag]);
+  }, [page, sort, status, type, appliedKeyword, appliedTag]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -86,21 +88,49 @@ function PremiumQuestionListPage() {
       <QuestionBoardTabs />
 
       <form className="filter-bar" onSubmit={handleSearchSubmit}>
-        <input
-          type="text"
-          className="input"
-          placeholder="검색어"
-          value={keywordInput}
-          onChange={(e) => setKeywordInput(e.target.value)}
-        />
-        <input
-          type="text"
-          className="input"
-          placeholder="태그"
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-        />
-        <button type="submit" className="btn btn-secondary">
+        <div className="filter-bar__field filter-bar__field--keyword">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+          <input
+            type="text"
+            className="input"
+            placeholder="검색어를 입력하세요"
+            value={keywordInput}
+            onChange={(e) => setKeywordInput(e.target.value)}
+          />
+        </div>
+        <div className="filter-bar__field filter-bar__field--tag">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
+            <circle cx="7.5" cy="7.5" r="1.5" />
+          </svg>
+          <input
+            type="text"
+            className="input"
+            placeholder="태그"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+          />
+        </div>
+        <button type="submit" className="btn btn-primary">
           검색
         </button>
       </form>
@@ -124,6 +154,24 @@ function PremiumQuestionListPage() {
         </div>
 
         <div className="select-group">
+          <label htmlFor="type">유형</label>
+          <select
+            id="type"
+            className="select"
+            value={type}
+            onChange={(e) => {
+              setPage(0);
+              setType(e.target.value);
+            }}
+          >
+            <option value="">전체</option>
+            <option value="GENERAL">일반</option>
+            <option value="CODE_REVIEW">코드리뷰</option>
+            <option value="CAREER_CONSULT">커리어상담</option>
+          </select>
+        </div>
+
+        <div className="select-group">
           <label htmlFor="sort">정렬</label>
           <select
             id="sort"
@@ -136,7 +184,7 @@ function PremiumQuestionListPage() {
           >
             <option value="">최신순</option>
             <option value="LIKE">추천순</option>
-            <option value="UNRESOLVED">미해결 우선</option>
+            <option value="VIEW">조회순</option>
           </select>
         </div>
       </div>
@@ -169,7 +217,7 @@ function PremiumQuestionListPage() {
                   {q.title}
                 </Link>
                 <div className="question-card__badges">
-                  <span className="badge badge-type">
+                  <span className={`badge badge-type badge-type--${q.type?.toLowerCase()}`}>
                     {TYPE_LABEL[q.type] ?? q.type}
                   </span>
                   <span

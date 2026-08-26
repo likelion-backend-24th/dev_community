@@ -7,7 +7,7 @@ import {
   getQuestionSummary,
 } from "../../api/questionApi";
 import { getAnswers, createAnswer } from "../../api/answerApi";
-import { toggleQuestionLike, getLikeStatus } from "../../api/likeApi";
+import { toggleQuestionLike, toggleAnswerLike, getLikeStatus } from "../../api/likeApi";
 import { openChat } from "../../api/chatApi";
 import { getMySubscription } from "../../api/subscriptionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
@@ -170,11 +170,28 @@ function QuestionDetailPage() {
 
   const handleLikeQuestion = async () => {
     try {
-      await toggleQuestionLike(id);
-      reload();
+      const liked = await toggleQuestionLike(id);
+      setQuestionLiked(liked);
+      setQuestion((prev) =>
+        prev ? { ...prev, likeCount: prev.likeCount + (liked ? 1 : -1) } : prev,
+      );
     } catch (err) {
       setError(err.response?.data?.message ?? "추천 처리에 실패했습니다.");
     }
+  };
+
+  // 답변 추천은 전체 재조회(reload) 없이 로컬 상태만 갱신해 페이지 전체가
+  // "불러오는 중..."으로 깜빡이는 걸 막는다. 에러는 AnswerItem이 자체적으로 표시한다.
+  const handleLikeAnswer = async (answerId) => {
+    const liked = await toggleAnswerLike(answerId);
+    setLikedAnswerIds((prev) =>
+      liked ? [...prev, answerId] : prev.filter((likedId) => likedId !== answerId),
+    );
+    setAnswers((prev) =>
+      prev.map((a) =>
+        a.id === answerId ? { ...a, likeCount: a.likeCount + (liked ? 1 : -1) } : a,
+      ),
+    );
   };
 
   const handleDeleteQuestion = async () => {
@@ -526,6 +543,7 @@ function QuestionDetailPage() {
                 questionResolved={question.status === "RESOLVED"}
                 isLiked={likedAnswerIds.includes(answer.id)}
                 onChanged={reload}
+                onLike={handleLikeAnswer}
               />
             ))}
           </ul>

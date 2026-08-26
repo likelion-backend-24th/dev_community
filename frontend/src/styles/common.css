@@ -206,6 +206,19 @@
   color: #ffffff;
 }
 
+/* 멤버십 게시판 글 유형별 고정 색상. 3종 모두 흰 글자 기준 명암비 4.5:1 이상. */
+.badge-type--general {
+  background: #5865f2;
+}
+
+.badge-type--code_review {
+  background: #047857;
+}
+
+.badge-type--career_consult {
+  background: #a21caf;
+}
+
 .badge-type-tint {
   background: rgba(15, 98, 254, 0.16);
   color: var(--text-link);
@@ -255,6 +268,7 @@
   padding: 4px 10px;
   border-radius: var(--radius-pill);
   background: var(--surface-tertiary);
+  border: 1px solid var(--border-subtle);
   color: var(--text-normal);
   font-size: 12px;
   font-weight: 600;

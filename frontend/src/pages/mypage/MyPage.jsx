@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -27,7 +27,9 @@ function MyPage() {
   const [answers, setAnswers] = useState([]);
   const [answerCount, setAnswerCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
   const [error, setError] = useState("");
+  const tabRequestIdRef = useRef(0);
 
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -119,13 +121,24 @@ function MyPage() {
 
   const handleTabClick = async (tab) => {
     setActiveTab(tab);
-    if (tab === "answers") {
-      const myAnswers = await getMyAnswers();
-      setAnswers(myAnswers);
-      setAnswerCount(myAnswers.length);
-    } else {
-      const myQuestions = await getMyQuestions();
-      setQuestions(myQuestions);
+    // 재조회 중 이전 상태(해결/미해결 배지 등)가 잠깐 보였다가 뒤늦게 바뀌는 걸
+    // 막기 위해 로딩 중엔 목록을 가리고, 빠르게 탭을 오갈 때 응답이 역순으로
+    // 도착해 최신 탭 결과를 옛 응답이 덮어쓰지 않도록 요청 id로 가드한다.
+    const requestId = ++tabRequestIdRef.current;
+    setTabLoading(true);
+    try {
+      if (tab === "answers") {
+        const myAnswers = await getMyAnswers();
+        if (tabRequestIdRef.current !== requestId) return;
+        setAnswers(myAnswers);
+        setAnswerCount(myAnswers.length);
+      } else {
+        const myQuestions = await getMyQuestions();
+        if (tabRequestIdRef.current !== requestId) return;
+        setQuestions(myQuestions);
+      }
+    } finally {
+      if (tabRequestIdRef.current === requestId) setTabLoading(false);
     }
   };
 
@@ -256,7 +269,9 @@ function MyPage() {
         </button>
       </nav>
 
-      {activeTab === "questions" ? (
+      {tabLoading ? (
+        <p className="state-text">불러오는 중...</p>
+      ) : activeTab === "questions" ? (
         questions.length === 0 ? (
           <div className="empty-state">
             <p>아직 작성한 질문이 없어요.</p>
