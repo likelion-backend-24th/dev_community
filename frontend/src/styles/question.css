@@ -187,6 +187,10 @@
   flex-shrink: 0;
 }
 
+.question-card__time {
+  margin-left: auto;
+}
+
 .pagination {
   display: flex;
   align-items: center;

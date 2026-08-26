@@ -4,6 +4,7 @@ import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import ExpertBadge from "../../components/common/ExpertBadge";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -212,14 +213,10 @@ function QuestionListPage() {
       {!loading && !error && questions.length > 0 && (
         <ul className="question-list">
           {questions.map((q) => (
-            <li key={q.id} className="question-card">
+            <li key={q.id}>
+              <Link to={`/questions/${q.id}`} className="question-card">
               <div className="question-card__top">
-                <Link
-                  to={`/questions/${q.id}`}
-                  className="question-card__title"
-                >
-                  {q.title}
-                </Link>
+                <span className="question-card__title">{q.title}</span>
                 <span
                   className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
                 >
@@ -293,8 +290,9 @@ function QuestionListPage() {
                   </svg>
                   {q.answerCount}
                 </span>
-                <span>{new Date(q.createdAt).toLocaleString()}</span>
+                <span className="question-card__time">{formatRelativeTime(q.createdAt)}</span>
               </div>
+              </Link>
             </li>
           ))}
         </ul>
