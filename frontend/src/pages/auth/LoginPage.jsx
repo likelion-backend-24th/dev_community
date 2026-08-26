@@ -18,8 +18,15 @@ const STEP = {
   PASSWORD: "password",
   CONFIRM: "confirm",
   LOADING: "loading",
+  DONE: "done",
   FAILED: "failed",
 };
+
+// 실제 응답이 아무리 빨라도 터미널 감성을 느낄 최소 시간은 보장하고,
+// 로그인 성공 후에도 "Last login" 화면을 잠깐 보여준 뒤 이동한다.
+const MIN_LOADING_MS = 1300;
+const SUCCESS_HOLD_MS = 1300;
+const FAIL_HOLD_MS = 1600;
 
 function LoginPage() {
   const { login: setAuth } = useAuth();
@@ -32,6 +39,7 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const [failMessage, setFailMessage] = useState("");
   const [progress, setProgress] = useState(0);
+  const [lastLoginStamp, setLastLoginStamp] = useState("");
 
   const [error, setError] = useState("");
   const [toast, setToast] = useState(
@@ -80,10 +88,9 @@ function LoginPage() {
   };
 
   const triggerFail = (message) => {
-    clearInterval(progressTimerRef.current);
     setFailMessage(message);
     setStep(STEP.FAILED);
-    setTimeout(resetTerminal, 1400);
+    setTimeout(resetTerminal, FAIL_HOLD_MS);
   };
 
   const handleUsernameKeyDown = (e) => {
@@ -104,20 +111,42 @@ function LoginPage() {
     if (step !== STEP.CONFIRM) return;
     setStep(STEP.LOADING);
     setProgress(0);
+    const startedAt = Date.now();
     progressTimerRef.current = setInterval(() => {
-      setProgress((p) => (p >= 90 ? p : p + 6 + Math.floor(Math.random() * 8)));
-    }, 60);
+      // 92%까지만 채워두고, 실제 응답이 도착한 뒤(+최소 대기 시간 이후)에 100%로 마무리한다.
+      setProgress((p) => (p >= 92 ? p : p + 4 + Math.floor(Math.random() * 6)));
+    }, 70);
 
+    let accessToken = null;
+    let failureMessage = null;
     try {
-      const { accessToken } = await login({ username, password });
-      clearInterval(progressTimerRef.current);
-      setProgress(100);
-      setAuth(accessToken);
-      setTimeout(() => navigate("/questions"), 450);
+      ({ accessToken } = await login({ username, password }));
     } catch (err) {
-      const message = err.response?.data?.message ?? "로그인에 실패했습니다.";
-      triggerFail(message);
+      failureMessage = err.response?.data?.message ?? "로그인에 실패했습니다.";
     }
+
+    const elapsed = Date.now() - startedAt;
+    const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
+    await new Promise((resolve) => setTimeout(resolve, remaining));
+    clearInterval(progressTimerRef.current);
+
+    if (failureMessage) {
+      triggerFail(failureMessage);
+      return;
+    }
+
+    setProgress(100);
+    const now = new Date();
+    const days = ["일", "월", "화", "수", "목", "금", "토"];
+    setLastLoginStamp(
+      `${days[now.getDay()]} ${now.getMonth() + 1}월 ${now.getDate()}일 ` +
+        `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`,
+    );
+    setStep(STEP.DONE);
+    setTimeout(() => {
+      setAuth(accessToken);
+      navigate("/questions");
+    }, SUCCESS_HOLD_MS);
   };
 
   const handleConfirmKeyDown = (e) => {
@@ -136,7 +165,7 @@ function LoginPage() {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   };
 
-  const progressCells = 24;
+  const progressCells = 16;
   const filledCells = Math.round((progress / 100) * progressCells);
   const progressBar = "█".repeat(filledCells) + "░".repeat(progressCells - filledCells);
 
@@ -145,7 +174,7 @@ function LoginPage() {
       <AuthHeader />
 
       <main className="auth-main">
-        <div className="auth-card">
+        <div className="auth-card auth-card--terminal">
           <h1 className="auth-card__title">다시 만나서 반가워요</h1>
           <p className="auth-card__subtitle">
             질문하고, 답변하고, 채택받으세요.
@@ -216,6 +245,18 @@ function LoginPage() {
                 <p className="term-progress" aria-live="polite">
                   {`Authenticating [${progressBar}] ${progress}%`}
                 </p>
+              )}
+
+              {step === STEP.DONE && (
+                <div className="term-result" aria-live="polite">
+                  <p className="term-line term-line--dim">
+                    {`Last login: ${lastLoginStamp} from 203.0.113.42`}
+                  </p>
+                  <p className="term-line term-line--prompt">
+                    {username}@dev-com:~$
+                    <span className="term-cursor-block" aria-hidden="true"></span>
+                  </p>
+                </div>
               )}
 
               {step === STEP.FAILED && (
