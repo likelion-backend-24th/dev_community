@@ -3,7 +3,6 @@ package com.likelion.dev_community.domain.answer.service;
 import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
-import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
@@ -33,7 +32,6 @@ public class AnswerServiceImpl implements AnswerService {
     private final AnswerRepository answerRepository;
     private final QuestionRepository questionRepository;
     private final UserRepository userRepository;
-    private final XssSanitizer xssSanitizer;
     private final ReputationService reputationService;
     private final NotificationService notificationService;
     private final SubscriptionService subscriptionService;
@@ -65,8 +63,8 @@ public class AnswerServiceImpl implements AnswerService {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
         }
 
-        // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
-        // String content = xssSanitizer.sanitize(request.getContent());
+        // 본문은 마크다운 원문 그대로 저장(이유는 QuestionServiceImpl의 동일 주석 참고 —
+        // 프론트가 rehype-raw 없는 ReactMarkdown만 쓰므로 raw HTML을 렌더링하지 않아 안전함).
         Answer answer = Answer.builder()
                 .question(question)
                 .author(author)
@@ -126,7 +124,6 @@ public class AnswerServiceImpl implements AnswerService {
 
         AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 수정할 수 있습니다.");
 
-        // String content = xssSanitizer.sanitize(request.getContent());
         answer.update(request.getContent());
 
         return AnswerResponse.from(answer);

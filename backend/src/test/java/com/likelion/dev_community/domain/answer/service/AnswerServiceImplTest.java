@@ -2,7 +2,6 @@ package com.likelion.dev_community.domain.answer.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
-import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
@@ -59,7 +58,7 @@ class AnswerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, new XssSanitizer(), reputationService, notificationService, subscriptionService);
+        answerService = new AnswerServiceImpl(answerRepository, questionRepository, userRepository, reputationService, notificationService, subscriptionService);
     }
 
     @Test
