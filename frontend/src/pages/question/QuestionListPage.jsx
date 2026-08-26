@@ -212,14 +212,10 @@ function QuestionListPage() {
       {!loading && !error && questions.length > 0 && (
         <ul className="question-list">
           {questions.map((q) => (
-            <li key={q.id} className="question-card">
+            <li key={q.id}>
+              <Link to={`/questions/${q.id}`} className="question-card">
               <div className="question-card__top">
-                <Link
-                  to={`/questions/${q.id}`}
-                  className="question-card__title"
-                >
-                  {q.title}
-                </Link>
+                <span className="question-card__title">{q.title}</span>
                 <span
                   className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
                 >
@@ -295,6 +291,7 @@ function QuestionListPage() {
                 </span>
                 <span>{new Date(q.createdAt).toLocaleString()}</span>
               </div>
+              </Link>
             </li>
           ))}
         </ul>
