@@ -49,6 +49,7 @@
 
 .profile-card__stats {
   display: flex;
+  flex-wrap: nowrap;
   gap: var(--space-xl);
   margin-bottom: var(--space-base);
 }
@@ -56,6 +57,7 @@
 .stat {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 2px;
 }
 
@@ -63,6 +65,7 @@
   font-size: 18px;
   font-weight: 700;
   color: var(--text-header);
+  white-space: nowrap;
 }
 
 .stat__label {
@@ -70,6 +73,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  white-space: nowrap;
 }
 
 .profile-card__actions {
