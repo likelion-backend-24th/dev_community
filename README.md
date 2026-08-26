@@ -5,7 +5,7 @@
 
 **Live**: https://dev-com.duckdns.org
 
-**Demo**: [시연 영상](-)
+**Demo**: [시연 영상](https://drive.google.com/file/d/1aDeFzo_2IxoHj9b9WAH6rkJaIcSQTPhL/view?usp=drive_link)
 
 멋쟁이사자처럼 백엔드 24기 기초/응용 4조 팀 프로젝트입니다.
 
@@ -58,16 +58,16 @@
 
 **Backend**
 
-| 기술 | 선택 이유                                                    |
-| ---- |----------------------------------------------------------|
-| Java 21, Spring Boot 4.1 | REST API와 도메인 중심 계층 분리를 구현하기 위해 사용                       |
+| 기술                         | 선택 이유                                                    |
+|----------------------------|----------------------------------------------------------|
+| Java 21, Spring Boot 4.1   | REST API와 도메인 중심 계층 분리를 구현하기 위해 사용                       |
 | Spring Security, JWT(jjwt) | 세션 없이 무상태 인증, Refresh Token만 Redis에서 관리해 강제 로그아웃/탈퇴 시 즉시 무효화 가능 |
-| Spring OAuth2 Client | GitHub/Google 소셜 로그인을 표준 플로우로 위임                         |
-| Spring Data JPA, QueryDSL | 태그+상태+검색어가 조합되는 동적 검색 조건을 타입 안전하게 작성                     |
-| Spring WebSocket(STOMP) | 실시간 채팅/알림에 요청-응답이 아닌 서버 푸시가 필요                           |
-| MySQL 8 | 질문-답변-채택 등 FK 관계가 많은 정형 데이터 저장                           |
-| Redis 7 | Refresh Token, 로그인 실패 카운트, 비밀번호 재설정 토큰 등 TTL이 필요한 휘발성 데이터 저장 |
-| PortOne 서버 SDK | 국내 카드 정기결제·웹훅 처리 구현 가능                                   |
+| Spring OAuth2 Client       | GitHub/Google 소셜 로그인을 표준 플로우로 위임                         |
+| Spring Data JPA, QueryDSL  | 태그+상태+검색어가 조합되는 동적 검색 조건을 타입 안전하게 작성                     |
+| Spring WebSocket(STOMP)    | 실시간 채팅/알림에 요청-응답이 아닌 서버 푸시가 필요                           |
+| MySQL 8                    | 질문-답변-채택 등 FK 관계가 많은 정형 데이터 저장                           |
+| Redis 7                    | Refresh Token, 로그인 실패 카운트, 비밀번호 재설정 토큰 등 TTL이 필요한 휘발성 데이터 저장 |
+| PortOne V2 서버 SDK          | 국내 카드 정기결제·웹훅 처리 구현 가능                                   |
 | Springdoc OpenAPI(Swagger) | API 계약을 코드와 함께 유지                                        |
 
 **Frontend**
@@ -77,9 +77,6 @@
 | React 19, Vite | 빠른 개발 서버와 HMR |
 | React Router | SPA 라우팅 |
 | Axios | 인터셉터로 Access Token 자동 첨부 및 만료 시 재발급 처리 |
-| @stomp/stompjs | 백엔드와 동일한 STOMP 프로토콜의 WebSocket 클라이언트 |
-| react-markdown, remark-gfm, rehype-highlight, prismjs | 코드리뷰 게시글의 마크다운/코드 하이라이팅 렌더링 |
-| Recharts | 관리자 통계 대시보드 차트 |
 | Vitest, @testing-library/react | 컴포넌트 단위 테스트 |
 
 **Infra / CI**
@@ -124,13 +121,19 @@ GitHub push(main) → GitHub Actions CI(테스트, MySQL/Redis 서비스 컨테�
 ```
 
 ## 문서
-| 문서             | 위치                                                                                                                                                                                                 | 용도           |
-|----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------| 
-| 요구사항 정의서 | [Notion](https://app.notion.com/p/MVP-1-2-3ac73873401a80c98daff3847f87e8f3)                                                                                                                        | 기능 범위와 결정 이력 |
-| 화면 설계          | [Figma](https://www.figma.com/design/Hzd31NGLH85EqskfcWH43W/%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=ZNK7Br1YKZ7iWAT7-1) | 화면·컴포넌트 설계   |
-| 아키텍쳐           | [Notion](https://app.notion.com/p/3c873873401a80c89c69c2289f330c0d?source=copy_link)                                                                                                               | 시스템 아키텍쳐     |
-| ERD            | [Notion](https://app.notion.com/p/ERD-MVP-1-2-3ae73873401a80dcbd20d6f18e89d0ca?source=copy_link)                                                                                                   | 데이터 모델과 관계   |
-| API            | [Swagger (local)](http://localhost:8080/swagger-ui/index.html) </br> [Notion](https://app.notion.com/p/API-MVP-1-2-3ae73873401a80049435c6e861b3c7db?source=copy_link)                              | API 계약       |
+| 문서          | 위치                                                                                                                                                                                                 | 용도                 |
+|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------| 
+| 요구사항 정의서    | [Notion](https://app.notion.com/p/MVP-1-2-3ac73873401a80c98daff3847f87e8f3)                                                                                                                        | 기능 범위와 결정 이력       |
+| 기능명세서       | [Notion](https://app.notion.com/p/MVP-1-2-4b273873401a8381955a014a195f2c9d?source=copy_link)   | 기능별 요구사항과 동작 정의    |
+| API         | [Swagger (local)](http://localhost:8080/swagger-ui/index.html) </br> [Notion](https://app.notion.com/p/API-MVP-1-2-3ae73873401a80049435c6e861b3c7db?source=copy_link)                              | API 계약             |
+| ERD         | [Notion](https://app.notion.com/p/ERD-MVP-1-2-3ae73873401a80dcbd20d6f18e89d0ca?source=copy_link)                                                                                                   | 데이터 모델과 관계         |
+| 시퀀스         | [Notion](https://app.notion.com/p/MVP-1-2-3b173873401a80798ec0ebbb062e11b9?source=copy_link)   | 주요 흐름의 컴포넌트 간 상호작용 |
+| 화면 설계       | [Figma](https://www.figma.com/design/Hzd31NGLH85EqskfcWH43W/%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=ZNK7Br1YKZ7iWAT7-1) | 화면·컴포넌트 설계         |
+| 아키텍쳐        | [Notion](https://app.notion.com/p/3c873873401a80c89c69c2289f330c0d?source=copy_link)                                                                                                               | 시스템 아키텍쳐           |
+| User Flow   | [Notion](https://app.notion.com/p/User-Flow-MVP-1-2-3ad73873401a80c89d0ffe256520065f?source=copy_link)   | 화면 간 이동 경로와 분기 조건  |
+| 권한 매트릭스     | [Notion](https://app.notion.com/p/MVP-1-2-3ae73873401a80b8a1bdd2156104d410?source=copy_link)   | 역할별 기능 접근 권한       |
+| 구현 기능       | [Notion](https://app.notion.com/p/07273873401a83479fcc81e1517e44fe?source=copy_link)   | 명세 대비 구현 완료 현황     |
+| 기능완료 테스트 시트 | [Notion](https://app.notion.com/p/3b873873401a8002ab3ac14ab4aaf518?source=copy_link)   | 기능별 테스트 케이스 및 결과   |
 
 ## 프로젝트 구조
 
@@ -299,8 +302,8 @@ npm run test
 | 이름 | GitHub | 역할 |
 | ---- | ------ | ---- |
 | 김재혁 | [@kbsjh8870](https://github.com/kbsjh8870) | 팀장 |
-| 변재웅 | [@woong1116](https://github.com/woong1116) | 팀원 |
 | 조민규 | [@Noisywhitecat-dev](https://github.com/Noisywhitecat-dev) | 팀원 |
+| 변재웅 | [@woong1116](https://github.com/woong1116) | 팀원 |
 
 ### 김재혁
 - 회원 인증 전체(회원가입/로그인/토큰 재발급/로그아웃, Refresh Token Redis 저장·무효화)와 권한 분리(USER/ADMIN), 회원 탈퇴(soft delete)
