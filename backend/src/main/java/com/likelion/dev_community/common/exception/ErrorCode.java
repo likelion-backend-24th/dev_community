@@ -64,7 +64,9 @@ public enum ErrorCode {
     AI_SUMMARY_FAILED(HttpStatus.BAD_GATEWAY, "AI_SUMMARY_FAILED", "AI 요약 생성에 실패했습니다."),
 
     AI_TAG_SUGGESTION_TOO_SHORT(HttpStatus.BAD_REQUEST, "AI_TAG_SUGGESTION_TOO_SHORT", "태그를 추천하기엔 본문이 너무 짧습니다."),
-    AI_TAG_SUGGESTION_FAILED(HttpStatus.BAD_GATEWAY, "AI_TAG_SUGGESTION_FAILED", "AI 태그 추천에 실패했습니다.");
+    AI_TAG_SUGGESTION_FAILED(HttpStatus.BAD_GATEWAY, "AI_TAG_SUGGESTION_FAILED", "AI 태그 추천에 실패했습니다."),
+
+    AVATAR_COLOR_ALREADY_ROLLED(HttpStatus.CONFLICT, "AVATAR_COLOR_ALREADY_ROLLED", "이번 결제 주기에는 이미 아바타 색상을 변경했어요.");
 
     private final HttpStatus status;
     private final String code;

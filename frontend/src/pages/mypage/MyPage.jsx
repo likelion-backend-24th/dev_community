@@ -9,10 +9,11 @@ import {
   updatePassword,
   withdraw,
   requestExpert,
+  rerollAvatarColor,
 } from "../../api/userApi";
+import { getMySubscription } from "../../api/subscriptionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ExpertBadge from "../../components/common/ExpertBadge";
-import { getAvatarColor } from "../../utils/avatarColor";
 import "../../styles/mypage.css";
 
 function MyPage() {
@@ -20,6 +21,7 @@ function MyPage() {
   const { logout, isAdmin } = useAuth();
 
   const [profile, setProfile] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [activeTab, setActiveTab] = useState("questions");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
@@ -32,6 +34,33 @@ function MyPage() {
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [expertRequestSubmitting, setExpertRequestSubmitting] = useState(false);
+  const [avatarColorSubmitting, setAvatarColorSubmitting] = useState(false);
+
+  // 이번 결제 주기(subscription.startedAt) 안에서 이미 색을 뽑았는지.
+  // 구독이 없으면 애초에 버튼 자체가 안 보이므로 여기선 구독 존재를 전제한다.
+  const alreadyRolledThisCycle =
+    !!profile?.avatarColorRolledAt &&
+    !!subscription?.startedAt &&
+    new Date(profile.avatarColorRolledAt) >= new Date(subscription.startedAt);
+
+  const handleRerollAvatarColor = async () => {
+    setAvatarColorSubmitting(true);
+    try {
+      const result = await rerollAvatarColor();
+      setProfile((prev) => ({
+        ...prev,
+        avatarColorHex: result.avatarColorHex,
+        avatarColorRolledAt: result.avatarColorRolledAt,
+      }));
+      setToast("아바타 색상이 바뀌었어요!");
+      setTimeout(() => setToast(""), 3000);
+    } catch (err) {
+      setToast(err.response?.data?.message ?? "색상 변경에 실패했습니다.");
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setAvatarColorSubmitting(false);
+    }
+  };
 
   const handleRequestExpert = async () => {
     setExpertRequestSubmitting(true);
@@ -52,12 +81,13 @@ function MyPage() {
     let cancelled = false;
 
     const fetchOnce = async () => {
-      const [info, myQuestions] = await Promise.all([
+      const [info, myQuestions, mySubscription] = await Promise.all([
         getMyInfo(),
         getMyQuestions(),
+        getMySubscription(),
       ]);
       const myAnswers = await getMyAnswers();
-      return { info, myQuestions, myAnswers };
+      return { info, myQuestions, myAnswers, mySubscription };
     };
 
     (async () => {
@@ -71,6 +101,7 @@ function MyPage() {
         }
         if (cancelled) return;
         setProfile(result.info);
+        setSubscription(result.mySubscription);
         setQuestions(result.myQuestions);
         setAnswers(result.myAnswers);
         setAnswerCount(result.myAnswers.length);
@@ -117,7 +148,7 @@ function MyPage() {
       <section className="profile-card card">
         <div
           className="profile-card__avatar"
-          style={{ backgroundColor: getAvatarColor(profile.nickname) }}
+          style={profile.avatarColorHex ? { backgroundColor: profile.avatarColorHex } : undefined}
         >
           {profile.nickname[0]}
         </div>
@@ -156,6 +187,21 @@ function MyPage() {
             >
               내 정보 수정
             </button>
+            {subscription && (
+              <button
+                type="button"
+                className="btn btn-rainbow btn-sm"
+                onClick={handleRerollAvatarColor}
+                disabled={alreadyRolledThisCycle || avatarColorSubmitting}
+                title={
+                  alreadyRolledThisCycle
+                    ? "이번 결제 주기에는 이미 색상을 바꿨어요. 다음 결제일 이후 다시 뽑을 수 있어요."
+                    : "아바타 색상을 무작위로 다시 뽑아요. 결제 주기당 1회만 가능해요."
+                }
+              >
+                {avatarColorSubmitting ? "색상 뽑는 중..." : "아바타 색상 뽑기"}
+              </button>
+            )}
             <button
               type="button"
               className="btn btn-ghost btn-sm"

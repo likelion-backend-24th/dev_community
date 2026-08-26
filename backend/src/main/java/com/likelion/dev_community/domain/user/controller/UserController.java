@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.user.controller;
 import com.likelion.dev_community.common.ApiResponse;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.question.dto.QuestionSummaryResponse;
+import com.likelion.dev_community.domain.user.dto.userDto.AvatarColorResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoRequest;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserPwRequest;
@@ -111,5 +112,14 @@ public class UserController {
         UserInfoResponse userInfo = userService.requestExpert(customUserDetails.getId());
 
         return ResponseEntity.ok(ApiResponse.success("전문가 등급 신청이 접수되었습니다", userInfo));
+    }
+
+    // 마이페이지 - 멤버십 아바타 색상 리롤 (구독자 전용, 결제 주기당 1회)
+    @Operation(summary = "아바타 색상 리롤", description = "멤버십 구독자가 아바타 색을 무작위로 다시 뽑는다. 결제 갱신 주기당 1회만 가능하며, 이미 이번 주기에 뽑았다면 409를 반환한다.")
+    @PostMapping("/me/avatar-color/reroll")
+    public ResponseEntity<ApiResponse<AvatarColorResponse>> rerollAvatarColor(@AuthenticationPrincipal CustomUserDetails customUserDetails){
+        AvatarColorResponse response = userService.rerollAvatarColor(customUserDetails.getId(), customUserDetails.isAdmin());
+
+        return ResponseEntity.ok(ApiResponse.success("아바타 색상이 변경되었습니다", response));
     }
 }

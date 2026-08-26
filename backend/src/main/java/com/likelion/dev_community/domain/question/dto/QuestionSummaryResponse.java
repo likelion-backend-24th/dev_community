@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.question.dto;
 
+import com.likelion.dev_community.common.avatar.AvatarPalette;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
@@ -41,6 +42,9 @@ public class QuestionSummaryResponse {
 
     private final QuestionType type;
 
+    @Schema(example = "#2563eb", description = "작성자 아바타 색(HEX). 멤버십 색상을 뽑지 않았거나 비멤버면 null(프론트 기본 파란색), 익명 글이면 공용 회색으로 고정됨")
+    private final String authorAvatarColor;
+
     public static QuestionSummaryResponse of(Question question, int answerCount, List<String> tags) {
         return new QuestionSummaryResponse(
                 question.getId(),
@@ -55,7 +59,8 @@ public class QuestionSummaryResponse {
                 question.getCreatedAt(),
                 question.isPremium(),
                 question.isAnonymous(),
-                question.getType()
+                question.getType(),
+                AvatarPalette.resolveAuthorColor(question.isAnonymous(), question.getAuthor().getAvatarColorHex())
         );
     }
 }

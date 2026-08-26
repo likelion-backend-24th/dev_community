@@ -76,6 +76,15 @@ public class SubscriptionService {
                 .map(Subscription::getBillingKey);
     }
 
+    // 현재 활성 구독 주기의 시작 시각(=마지막 결제 갱신 시각). 아바타 색상 리롤을
+    // "결제 주기당 1회"로 제한하는 기준으로 쓰인다. 활성 구독이 없으면 빈 값.
+    @Transactional(readOnly = true)
+    public Optional<LocalDateTime> getActiveSubscriptionStartedAt(Long userId) {
+        return subscriptionRepository.findByUserIdAndStatus(userId, SubscriptionStatus.ACTIVE)
+                .filter(this::isStillActive)
+                .map(Subscription::getStartedAt);
+    }
+
     // 구독자 전용 기능 접근 체크
     @Transactional
     public void requireActiveSubscriber(Long userId, boolean isAdmin){

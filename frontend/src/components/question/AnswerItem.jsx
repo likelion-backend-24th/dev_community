@@ -9,7 +9,6 @@ import { toggleAnswerLike } from "../../api/likeApi";
 import ReportButton from "./ReportButton";
 import AttachmentList from "../attachment/AttachmentList";
 import ExpertBadge from "../common/ExpertBadge";
-import { getAvatarColor } from "../../utils/avatarColor";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -126,7 +125,7 @@ function AnswerItem({
         <span className="author-with-badge">
           <span
             className="avatar-circle"
-            style={{ backgroundColor: getAvatarColor(answer.authorNickname) }}
+            style={answer.authorAvatarColor ? { backgroundColor: answer.authorAvatarColor } : undefined}
             aria-hidden="true"
           >
             {answer.authorNickname?.[0] ?? "?"}

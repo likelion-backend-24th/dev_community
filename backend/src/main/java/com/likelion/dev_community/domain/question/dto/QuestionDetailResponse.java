@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.question.dto;
 
+import com.likelion.dev_community.common.avatar.AvatarPalette;
 import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.question.entity.QuestionStatus;
 import com.likelion.dev_community.domain.question.entity.QuestionType;
@@ -48,6 +49,9 @@ public class QuestionDetailResponse {
     @Schema(example = "5", description = "조회자가 이 질문(커리어상담)에 대해 이미 개설한 채팅방 ID. 없으면 null")
     private final Long myChatRoomId;
 
+    @Schema(example = "#2563eb", description = "작성자 아바타 색(HEX). 멤버십 색상을 뽑지 않았거나 비멤버면 null(프론트 기본 파란색), 익명 글이면 공용 회색으로 고정됨")
+    private final String authorAvatarColor;
+
     public static QuestionDetailResponse of(Question question, List<String> tags) {
         return of(question, tags, null);
     }
@@ -69,7 +73,8 @@ public class QuestionDetailResponse {
                 question.isAnonymous(),
                 question.getType(),
                 question.isTypeLocked(),
-                myChatRoomId
+                myChatRoomId,
+                AvatarPalette.resolveAuthorColor(question.isAnonymous(), question.getAuthor().getAvatarColorHex())
         );
     }
 }

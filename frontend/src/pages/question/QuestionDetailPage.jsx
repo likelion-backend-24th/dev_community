@@ -18,7 +18,6 @@ import CodeReviewBody from "../../components/question/CodeReviewBody";
 import AlertModal from "../../components/common/AlertModal";
 import ExpertBadge from "../../components/common/ExpertBadge";
 import AttachmentList from "../../components/attachment/AttachmentList";
-import { getAvatarColor } from "../../utils/avatarColor";
 import AttachmentPicker from "../../components/attachment/AttachmentPicker";
 import { uploadAnswerAttachments } from "../../api/attachmentApi";
 import ReactMarkdown from "react-markdown";
@@ -302,7 +301,7 @@ function QuestionDetailPage() {
         <span className="author-with-badge">
           <span
             className="avatar-circle avatar-circle--lg"
-            style={{ backgroundColor: getAvatarColor(question.authorNickname) }}
+            style={question.authorAvatarColor ? { backgroundColor: question.authorAvatarColor } : undefined}
             aria-hidden="true"
           >
             {question.authorNickname?.[0] ?? "?"}

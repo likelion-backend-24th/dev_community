@@ -194,6 +194,13 @@ function PremiumQuestionListPage() {
 
               <div className="question-card__meta">
                 <span className="author-with-badge">
+                  <span
+                    className="avatar-circle"
+                    style={q.authorAvatarColor ? { backgroundColor: q.authorAvatarColor } : undefined}
+                    aria-hidden="true"
+                  >
+                    {q.authorNickname?.[0] ?? "?"}
+                  </span>
                   {q.authorNickname}
                   {q.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
                 </span>

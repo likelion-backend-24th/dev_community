@@ -91,6 +91,33 @@
   text-decoration: underline;
 }
 
+/* 멤버십 전용 "아바타 색상 뽑기" 버튼. 기능 자체가 색과 관련돼 있어서
+   무지개 그라데이션으로 한눈에 다른 버튼과 구분되게 함. */
+.btn-rainbow {
+  background: linear-gradient(
+    90deg,
+    #ef4444,
+    #f97316,
+    #eab308,
+    #22c55e,
+    #06b6d4,
+    #3b82f6,
+    #a855f7,
+    #ec4899
+  );
+  color: #ffffff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.btn-rainbow:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.btn-rainbow:disabled {
+  filter: grayscale(0.6);
+  opacity: 0.55;
+}
+
 /* Carbon's signature focus treatment: no outer glow, the bottom hairline
    thickens to a 2px accent underline instead. */
 .input,
