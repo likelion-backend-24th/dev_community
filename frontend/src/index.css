@@ -80,6 +80,13 @@
   /* Theme-switch transition duration, referenced by the global rule below
      and by ThemeToggle so the icon swap and the color fade stay in sync. */
   --theme-motion: 240ms;
+
+  /* Login 화면의 macOS 터미널 창 titlebar 크롬. 터미널 본문 자체는 실제 터미널처럼
+     테마와 무관하게 항상 어둡게 고정되지만, 창을 감싸는 titlebar는 실제 macOS
+     윈도우 크롬처럼 시스템 라이트/다크 모드를 따라간다. */
+  --term-titlebar-bg: #e4e4e6;
+  --term-titlebar-border: #d1d1d3;
+  --term-titlebar-text: #6e6e73;
 }
 
 /* Carbon Gray 100 — dark theme */
@@ -126,6 +133,10 @@
   --shadow-high: 0 8px 24px rgba(0, 0, 0, 0.6);
 
   --caret-green: #42be65;
+
+  --term-titlebar-bg: #3a3a3c;
+  --term-titlebar-border: #48484a;
+  --term-titlebar-text: #b8b8bc;
 }
 
 *,

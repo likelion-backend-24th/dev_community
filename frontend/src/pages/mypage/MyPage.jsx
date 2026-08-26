@@ -217,7 +217,7 @@ function MyPage() {
             )}
             <button
               type="button"
-              className="btn btn-ghost btn-sm"
+              className="btn btn-secondary btn-sm"
               onClick={() => setPasswordModalOpen(true)}
             >
               비밀번호 변경
@@ -257,7 +257,7 @@ function MyPage() {
           onClick={() => handleTabClick("questions")}
           disabled={activeTab === "questions"}
         >
-          내 질문
+          내 질문 ({questions.length})
         </button>
         <button
           type="button"

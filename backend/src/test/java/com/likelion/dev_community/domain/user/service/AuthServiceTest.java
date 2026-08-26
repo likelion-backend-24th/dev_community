@@ -32,8 +32,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ResponseCookie;
 import org.springframework.data.redis.core.ValueOperations;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.likelion.dev_community.common.viewcount.ViewerKeyResolver;
 
 import java.lang.reflect.Field;
 import java.time.Duration;
@@ -86,11 +88,14 @@ class AuthServiceTest {
     @Mock
     private ValueOperations<String, String> valueOperations;
 
+    @Mock
+    private ViewerKeyResolver viewerKeyResolver;
+
     private AuthService authService;
 
     @BeforeEach
     void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider, oAuthSignupInfoRepository, loginAttemptService, passwordResetTokenRepository, mailService, redisTemplate);
+        authService = new AuthService(userRepository, passwordEncoder, jwtProvider, refreshTokenRepository, cookieProvider, oAuthSignupInfoRepository, loginAttemptService, passwordResetTokenRepository, mailService, redisTemplate, viewerKeyResolver);
     }
 
     // ===== signUp (F-01) =====
@@ -163,7 +168,7 @@ class AuthServiceTest {
         when(cookieProvider.createCookie(eq("refreshToken"), eq("refresh-token"), any(Duration.class)))
                 .thenReturn(ResponseCookie.from("refreshToken", "refresh-token").build());
 
-        TokenResponse response = authService.signIn(request, httpServletResponse);
+        TokenResponse response = authService.signIn(request, new MockHttpServletRequest(), httpServletResponse);
 
         assertThat(response.getAccessToken()).isEqualTo("access-token");
         verify(refreshTokenRepository).save(any(RefreshToken.class));
@@ -176,7 +181,7 @@ class AuthServiceTest {
 
         when(userRepository.findByUsername("no-such-user")).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
+        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletRequest(), new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_CREDENTIALS));
 
@@ -192,7 +197,7 @@ class AuthServiceTest {
         when(userRepository.findByUsername("tester")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong-password", "encoded-password")).thenReturn(false);
 
-        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
+        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletRequest(), new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.INVALID_CREDENTIALS));
 
@@ -205,7 +210,7 @@ class AuthServiceTest {
 
         when(loginAttemptService.isLocked("locked-user")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
+        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletRequest(), new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.ACCOUNT_LOCKED));
 
@@ -220,7 +225,7 @@ class AuthServiceTest {
         when(userRepository.findByUsername("withdrawn")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("raw-password", "encoded-password")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletResponse()))
+        assertThatThrownBy(() -> authService.signIn(request, new MockHttpServletRequest(), new MockHttpServletResponse()))
                 .isInstanceOf(CustomException.class)
                 .satisfies(e -> assertThat(((CustomException) e).getErrorCode()).isEqualTo(ErrorCode.WITHDRAWN_ACCOUNT));
     }
