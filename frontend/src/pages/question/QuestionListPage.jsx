@@ -188,7 +188,7 @@ function QuestionListPage() {
           >
             <option value="">최신순</option>
             <option value="LIKE">추천순</option>
-            <option value="UNRESOLVED">미해결 우선</option>
+            <option value="VIEW">조회순</option>
           </select>
         </div>
       </div>
@@ -241,7 +241,11 @@ function QuestionListPage() {
 
               <div className="question-card__meta">
                 <span className="author-with-badge">
-                  <span className="avatar-circle" aria-hidden="true">
+                  <span
+                    className="avatar-circle"
+                    style={q.authorAvatarColor ? { backgroundColor: q.authorAvatarColor } : undefined}
+                    aria-hidden="true"
+                  >
                     {q.authorNickname?.[0] ?? "?"}
                   </span>
                   {q.authorNickname}

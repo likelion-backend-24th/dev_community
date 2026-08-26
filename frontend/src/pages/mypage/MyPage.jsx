@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -9,7 +9,9 @@ import {
   updatePassword,
   withdraw,
   requestExpert,
+  rerollAvatarColor,
 } from "../../api/userApi";
+import { getMySubscription } from "../../api/subscriptionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/mypage.css";
@@ -19,18 +21,48 @@ function MyPage() {
   const { logout, isAdmin } = useAuth();
 
   const [profile, setProfile] = useState(null);
+  const [subscription, setSubscription] = useState(null);
   const [activeTab, setActiveTab] = useState("questions");
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
   const [answerCount, setAnswerCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [tabLoading, setTabLoading] = useState(false);
   const [error, setError] = useState("");
+  const tabRequestIdRef = useRef(0);
 
   const [editInfoOpen, setEditInfoOpen] = useState(false);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [toast, setToast] = useState("");
   const [expertRequestSubmitting, setExpertRequestSubmitting] = useState(false);
+  const [avatarColorSubmitting, setAvatarColorSubmitting] = useState(false);
+
+  // 이번 결제 주기(subscription.startedAt) 안에서 이미 색을 뽑았는지.
+  // 구독이 없으면 애초에 버튼 자체가 안 보이므로 여기선 구독 존재를 전제한다.
+  const alreadyRolledThisCycle =
+    !!profile?.avatarColorRolledAt &&
+    !!subscription?.startedAt &&
+    new Date(profile.avatarColorRolledAt) >= new Date(subscription.startedAt);
+
+  const handleRerollAvatarColor = async () => {
+    setAvatarColorSubmitting(true);
+    try {
+      const result = await rerollAvatarColor();
+      setProfile((prev) => ({
+        ...prev,
+        avatarColorHex: result.avatarColorHex,
+        avatarColorRolledAt: result.avatarColorRolledAt,
+      }));
+      setToast("아바타 색상이 바뀌었어요!");
+      setTimeout(() => setToast(""), 3000);
+    } catch (err) {
+      setToast(err.response?.data?.message ?? "색상 변경에 실패했습니다.");
+      setTimeout(() => setToast(""), 3000);
+    } finally {
+      setAvatarColorSubmitting(false);
+    }
+  };
 
   const handleRequestExpert = async () => {
     setExpertRequestSubmitting(true);
@@ -51,12 +83,13 @@ function MyPage() {
     let cancelled = false;
 
     const fetchOnce = async () => {
-      const [info, myQuestions] = await Promise.all([
+      const [info, myQuestions, mySubscription] = await Promise.all([
         getMyInfo(),
         getMyQuestions(),
+        getMySubscription(),
       ]);
       const myAnswers = await getMyAnswers();
-      return { info, myQuestions, myAnswers };
+      return { info, myQuestions, myAnswers, mySubscription };
     };
 
     (async () => {
@@ -70,6 +103,7 @@ function MyPage() {
         }
         if (cancelled) return;
         setProfile(result.info);
+        setSubscription(result.mySubscription);
         setQuestions(result.myQuestions);
         setAnswers(result.myAnswers);
         setAnswerCount(result.myAnswers.length);
@@ -87,13 +121,24 @@ function MyPage() {
 
   const handleTabClick = async (tab) => {
     setActiveTab(tab);
-    if (tab === "answers") {
-      const myAnswers = await getMyAnswers();
-      setAnswers(myAnswers);
-      setAnswerCount(myAnswers.length);
-    } else {
-      const myQuestions = await getMyQuestions();
-      setQuestions(myQuestions);
+    // 재조회 중 이전 상태(해결/미해결 배지 등)가 잠깐 보였다가 뒤늦게 바뀌는 걸
+    // 막기 위해 로딩 중엔 목록을 가리고, 빠르게 탭을 오갈 때 응답이 역순으로
+    // 도착해 최신 탭 결과를 옛 응답이 덮어쓰지 않도록 요청 id로 가드한다.
+    const requestId = ++tabRequestIdRef.current;
+    setTabLoading(true);
+    try {
+      if (tab === "answers") {
+        const myAnswers = await getMyAnswers();
+        if (tabRequestIdRef.current !== requestId) return;
+        setAnswers(myAnswers);
+        setAnswerCount(myAnswers.length);
+      } else {
+        const myQuestions = await getMyQuestions();
+        if (tabRequestIdRef.current !== requestId) return;
+        setQuestions(myQuestions);
+      }
+    } finally {
+      if (tabRequestIdRef.current === requestId) setTabLoading(false);
     }
   };
 
@@ -114,7 +159,12 @@ function MyPage() {
       </div>
 
       <section className="profile-card card">
-        <div className="profile-card__avatar">{profile.nickname[0]}</div>
+        <div
+          className="profile-card__avatar"
+          style={profile.avatarColorHex ? { backgroundColor: profile.avatarColorHex } : undefined}
+        >
+          {profile.nickname[0]}
+        </div>
         <div className="profile-card__body">
           <div className="profile-card__name-row">
             <span className="profile-card__name">{profile.nickname}</span>
@@ -150,9 +200,24 @@ function MyPage() {
             >
               내 정보 수정
             </button>
+            {subscription && (
+              <button
+                type="button"
+                className="btn btn-rainbow btn-sm"
+                onClick={handleRerollAvatarColor}
+                disabled={alreadyRolledThisCycle || avatarColorSubmitting}
+                title={
+                  alreadyRolledThisCycle
+                    ? "이번 결제 주기에는 이미 색상을 바꿨어요. 다음 결제일 이후 다시 뽑을 수 있어요."
+                    : "아바타 색상을 무작위로 다시 뽑아요. 결제 주기당 1회만 가능해요."
+                }
+              >
+                {avatarColorSubmitting ? "색상 뽑는 중..." : "아바타 색상 뽑기"}
+              </button>
+            )}
             <button
               type="button"
-              className="btn btn-ghost btn-sm"
+              className="btn btn-secondary btn-sm"
               onClick={() => setPasswordModalOpen(true)}
             >
               비밀번호 변경
@@ -192,7 +257,7 @@ function MyPage() {
           onClick={() => handleTabClick("questions")}
           disabled={activeTab === "questions"}
         >
-          내 질문
+          내 질문 ({questions.length})
         </button>
         <button
           type="button"
@@ -204,7 +269,9 @@ function MyPage() {
         </button>
       </nav>
 
-      {activeTab === "questions" ? (
+      {tabLoading ? (
+        <p className="state-text">불러오는 중...</p>
+      ) : activeTab === "questions" ? (
         questions.length === 0 ? (
           <div className="empty-state">
             <p>아직 작성한 질문이 없어요.</p>

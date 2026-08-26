@@ -143,7 +143,7 @@ function ResolutionRatePanel() {
               animationEasing="ease-out"
             >
               <Cell fill={COLOR_GREEN} />
-              <Cell fill={COLOR_GRID} />
+              <Cell fill={COLOR_MUTED} />
             </Pie>
             <Tooltip contentStyle={{ background: "#111214", border: "none", borderRadius: 8 }} />
           </PieChart>

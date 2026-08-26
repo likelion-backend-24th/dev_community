@@ -28,8 +28,10 @@ services:
     # (배포 스크립트가 이 파일 그대로 --build 없이 pull + up만 실행)
     image: ghcr.io/likelion-backend-24th/dev_community-app:latest
     container_name: dev_community_app
-    ports:
-      - "8080:8080"
+    # 호스트에 포트를 열지 않는다 — nginx(frontend 서비스)만 app-network를 통해
+    # 8080으로 접근하고, 외부에서는 반드시 nginx의 HTTPS 경유로만 API에 닿아야 한다.
+    # (예전엔 여기서 8080:8080으로 호스트에 직접 노출해서, 평문 HTTP로 로그인 등
+    # API를 nginx/TLS 없이 바로 호출할 수 있었던 문제가 있었음)
     volumes:
       - uploads_dev_community:/app/uploads
     environment:

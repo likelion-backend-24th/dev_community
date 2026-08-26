@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.answer.dto;
 
+import com.likelion.dev_community.common.avatar.AvatarPalette;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -32,6 +33,9 @@ public class AnswerResponse {
     @Schema(example = "false", description = "익명 작성 여부")
     private final boolean isAnonymous;
 
+    @Schema(example = "#2563eb", description = "작성자 아바타 색(HEX). 멤버십 색상을 뽑지 않았거나 비멤버면 null(프론트 기본 파란색), 익명 글이면 공용 회색으로 고정됨")
+    private final String authorAvatarColor;
+
     public static AnswerResponse from(Answer answer) {
         return new AnswerResponse(
                 answer.getId(),
@@ -43,7 +47,8 @@ public class AnswerResponse {
                 answer.isAdopted(),
                 answer.getLikeCount(),
                 answer.getCreatedAt(),
-                answer.isAnonymous()
+                answer.isAnonymous(),
+                AvatarPalette.resolveAuthorColor(answer.isAnonymous(), answer.getAuthor().getAvatarColorHex())
         );
     }
 }

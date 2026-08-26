@@ -4,7 +4,6 @@ import com.likelion.dev_community.common.ai.GeminiClient;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
-import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.chat.repository.ChatRoomRepository;
@@ -91,7 +90,7 @@ class QuestionServiceImplTest {
     void setUp() {
         questionService = new QuestionServiceImpl(
                 questionRepository, questionTagRepository, answerRepository, userRepository,
-                new XssSanitizer(), viewCountService, tagRepository, subscriptionService, chatRoomRepository,
+                viewCountService, tagRepository, subscriptionService, chatRoomRepository,
                 codeCommentRepository, geminiClient
         );
     }

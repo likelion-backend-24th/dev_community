@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.user.service;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.mail.MailService;
+import com.likelion.dev_community.common.viewcount.ViewerKeyResolver;
 import com.likelion.dev_community.domain.user.dto.authDto.*;
 import com.likelion.dev_community.domain.user.entity.*;
 import com.likelion.dev_community.domain.user.repository.OAuthSignupInfoRepository;
@@ -15,6 +16,7 @@ import com.likelion.dev_community.security.jwt.JwtProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -48,6 +51,7 @@ public class AuthService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final MailService mailService;
     private final StringRedisTemplate redisTemplate;
+    private final ViewerKeyResolver viewerKeyResolver;
 
     @Value("${app.frontend-url}")
     private String frontendUrl;
@@ -79,7 +83,7 @@ public class AuthService {
 
     // 로그인
     @Transactional
-    public TokenResponse signIn(SignInRequest request, HttpServletResponse httpServletResponse){
+    public TokenResponse signIn(SignInRequest request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse){
         if(loginAttemptService.isLocked(request.getUsername()))
             throw new CustomException(ErrorCode.ACCOUNT_LOCKED);
 
@@ -109,7 +113,12 @@ public class AuthService {
 
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return TokenResponse.of(accessToken);
+        // 화면에는 "이번" 로그인이 아니라 "직전" 로그인 정보를 보여줘야 하므로, 덮어쓰기 전에 먼저 읽어둔다.
+        LocalDateTime previousLoginAt = user.getLastLoginAt();
+        String previousLoginIp = user.getLastLoginIp();
+        user.recordLogin(viewerKeyResolver.extractIp(httpServletRequest), LocalDateTime.now());
+
+        return TokenResponse.of(accessToken, previousLoginAt, previousLoginIp);
     }
 
     // 토큰 재발급

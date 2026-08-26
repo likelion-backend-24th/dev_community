@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Entity
 @Table(name = "users")
@@ -51,6 +53,19 @@ public class User extends BaseTimeEntity {
 
     @Column(nullable = false)
     private boolean expertRequested;
+
+    // 멤버십 전용 아바타 색상. null이면 기본 파란색(비멤버/미추첨 상태)으로 표시된다.
+    @Column(length = 10)
+    private String avatarColorHex;
+
+    // 마지막으로 색을 뽑은 시각. 결제 갱신(Subscription.startedAt)마다 1회로 리롤을 제한하는 기준이 된다.
+    private LocalDateTime avatarColorRolledAt;
+
+    // 가장 최근 로그인 시각/IP. 직전 값만 보관하며(이력 미보관), 로그인 성공마다 덮어쓴다.
+    private LocalDateTime lastLoginAt;
+
+    @Column(length = 45)
+    private String lastLoginIp;
 
     @Builder
     public User(String username, String password, String nickname, String email, Role role, UserStatus status,
@@ -138,5 +153,15 @@ public class User extends BaseTimeEntity {
 
     public void cancelExpertRequest() {
         this.expertRequested = false;
+    }
+
+    public void rollAvatarColor(String hex, LocalDateTime rolledAt) {
+        this.avatarColorHex = hex;
+        this.avatarColorRolledAt = rolledAt;
+    }
+
+    public void recordLogin(String ip, LocalDateTime at) {
+        this.lastLoginAt = at;
+        this.lastLoginIp = ip;
     }
 }

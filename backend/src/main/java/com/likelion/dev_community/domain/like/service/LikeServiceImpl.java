@@ -44,6 +44,11 @@ public class LikeServiceImpl implements LikeService {
                     return false;
                 })
                 .orElseGet(() -> {
+                    // 자기 자신의 글/답변은 애초에 좋아요를 만들 수 없으므로, 취소(위 map)가 아닌
+                    // 신규 등록 시점에서만 검사한다.
+                    if (resolveAuthorId(targetType, targetId).equals(userId)) {
+                        throw new CustomException(ErrorCode.SELF_LIKE_NOT_ALLOWED);
+                    }
                     // UNIQUE(user_id, target_type, target_id) 제약이 최종 방어선이므로
                     // 동시 요청으로 두 번 눌려도 DB가 두 번째 insert를 막아준다.
                     likeHistoryRepository.save(
@@ -69,6 +74,17 @@ public class LikeServiceImpl implements LikeService {
                 : likeHistoryRepository.findLikedTargetIds(userId, LikeTargetType.ANSWER, answerIds);
 
         return new LikeStatusResponse(questionLiked, likedAnswerIds);
+    }
+
+    private Long resolveAuthorId(LikeTargetType targetType, Long targetId) {
+        if (targetType == LikeTargetType.QUESTION) {
+            return questionRepository.findById(targetId)
+                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND))
+                    .getAuthor().getId();
+        }
+        return answerRepository.findById(targetId)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND))
+                .getAuthor().getId();
     }
 
     private void increaseCount(LikeTargetType targetType, Long targetId) {

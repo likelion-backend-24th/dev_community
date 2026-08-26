@@ -37,6 +37,13 @@ spring:
             user-info-uri: https://api.github.com/user
             user-name-attribute: id
 
+# 운영 환경에서는 전체 API 스펙이 누구에게나 노출되지 않도록 Swagger/OpenAPI 문서를 끈다.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 app:
   upload:
     dir: /app/uploads

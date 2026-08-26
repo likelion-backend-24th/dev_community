@@ -419,6 +419,10 @@ function MembershipPage() {
                   <CheckIcon />
                   커리어 상담 시 1:1 채팅
                 </li>
+                <li>
+                  <CheckIcon />
+                  결제 주기마다 프로필 아바타 색상 랜덤 변경
+                </li>
               </ul>
 
               <div className="plan-card__foot">
@@ -547,6 +551,15 @@ function MembershipPage() {
                 </tr>
                 <tr>
                   <td>커리어 상담 1:1 채팅</td>
+                  <td className="compare__no">
+                    <CrossIcon />
+                  </td>
+                  <td className="compare__yes">
+                    <CheckIcon />
+                  </td>
+                </tr>
+                <tr>
+                  <td>프로필 아바타 색상 랜덤 변경</td>
                   <td className="compare__no">
                     <CrossIcon />
                   </td>

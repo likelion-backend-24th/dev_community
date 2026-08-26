@@ -8,6 +8,7 @@ import {
   markAllNotificationsRead,
 } from "../../api/notificationApi";
 import ThemeToggle from "./ThemeToggle";
+import { getMyInfo } from "../../api/userApi";
 
 function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -16,6 +17,25 @@ function Navbar() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+
+  // JWT 클레임에는 avatarColorHex가 없어서(로그인 시점 값이 고정) 별도로 가져온다.
+  // 리롤 직후에도 반영되도록 아바타 메뉴를 열 때마다 다시 불러온다.
+  const [avatarColorHex, setAvatarColorHex] = useState(null);
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setAvatarColorHex(null);
+      return;
+    }
+    let cancelled = false;
+    getMyInfo()
+      .then((info) => {
+        if (!cancelled) setAvatarColorHex(info.avatarColorHex ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, menuOpen]);
 
   const [notifMenuOpen, setNotifMenuOpen] = useState(false);
   const [notifItems, setNotifItems] = useState([]);
@@ -154,6 +174,7 @@ function Navbar() {
               <button
                 type="button"
                 className="navbar__avatar"
+                style={avatarColorHex ? { backgroundColor: avatarColorHex } : undefined}
                 onClick={() => setMenuOpen((v) => !v)}
                 aria-haspopup="true"
                 aria-expanded={menuOpen}

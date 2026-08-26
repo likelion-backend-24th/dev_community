@@ -31,6 +31,10 @@ public class UserInfoResponse {
     private final boolean isExpert;
     @Schema(example = "false", description = "전문가 등급 신청 후 관리자 승인 대기 중인지 여부")
     private final boolean expertRequested;
+    @Schema(example = "#2563eb", description = "멤버십 아바타 색(HEX). 색을 뽑은 적 없으면 null(기본 파란색)")
+    private final String avatarColorHex;
+    @Schema(example = "2026-08-25T10:00:00", description = "마지막으로 아바타 색을 뽑은 시각. 없으면 null")
+    private final LocalDateTime avatarColorRolledAt;
 
     public static UserInfoResponse from(User user){
         return new UserInfoResponse(
@@ -43,7 +47,9 @@ public class UserInfoResponse {
                 user.getCreatedAt(),
                 user.getReputation(),
                 user.isExpert(),
-                user.isExpertRequested()
+                user.isExpertRequested(),
+                user.getAvatarColorHex(),
+                user.getAvatarColorRolledAt()
         );
     }
 }
