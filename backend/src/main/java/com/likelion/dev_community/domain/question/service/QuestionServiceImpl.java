@@ -5,7 +5,6 @@ import com.likelion.dev_community.common.ai.GeminiClient;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
-import com.likelion.dev_community.common.xss.XssSanitizer;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.answer.repository.QuestionAnswerCount;
@@ -45,7 +44,6 @@ public class QuestionServiceImpl implements QuestionService {
     private final QuestionTagRepository questionTagRepository;
     private final AnswerRepository answerRepository;
     private final UserRepository userRepository;
-    private final XssSanitizer xssSanitizer;
     private final ViewCountService viewCountService;
     private final TagRepository tagRepository;
     private final SubscriptionService subscriptionService;
@@ -68,9 +66,12 @@ public class QuestionServiceImpl implements QuestionService {
 
         QuestionType type = request.isPremium() ? QuestionType.from(request.getType()) : QuestionType.GENERAL;
 
-        // 추후 마크다운 렌더링 도입 시 출력 단계(HTML 변환 후)에서 sanitize 적용 예정
-        // String title = xssSanitizer.sanitize(request.getTitle());
-        // String content = xssSanitizer.sanitize(request.getContent());
+        // 제목/본문은 마크다운 원문 그대로 저장한다. XssSanitizer(문자 단위 HTML 엔티티
+        // 이스케이프)를 여기서 적용하면 "/", 따옴표, "<"/">" 가 전부 깨져서 URL·코드·인용
+        // 부호가 포함된 정상적인 마크다운을 훼손한다. 프론트가 rehype-raw 없이 ReactMarkdown만
+        // 쓰고 있어 raw HTML을 렌더링하지 않으므로, 지금은 그 자체로 XSS에 안전하다.
+        // 향후 서버가 마크다운을 HTML로 직접 변환해 내려주는 방식으로 바뀌면, 그 결과물(HTML)에
+        // 대해 마크다운을 이해하는 sanitizer(예: OWASP Java HTML Sanitizer)를 적용해야 한다.
         String title = request.getTitle();
         String content = request.getContent();
 
@@ -238,8 +239,7 @@ public class QuestionServiceImpl implements QuestionService {
             throw new CustomException(ErrorCode.QUESTION_CONTENT_LOCKED);
         }
 
-        // String title = xssSanitizer.sanitize(request.getTitle());
-        // String content = xssSanitizer.sanitize(request.getContent());
+        // createQuestion과 동일한 이유로 원문 그대로 저장(위 주석 참고).
         question.update(request.getTitle(), request.getContent(), request.isAnonymous(), type);
 
         List<String> tagNames = syncTags(question, request.getTags());
