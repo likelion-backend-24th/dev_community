@@ -349,3 +349,149 @@
 .auth-oauth-btn i {
   font-size: 18px;
 }
+
+/* 로그인 폼 — macOS 터미널 창 */
+
+.term-window {
+  margin: var(--space-lg) 0 var(--space-base);
+  border-radius: 9px;
+  overflow: hidden;
+  background: #1e1e1e;
+  border: 1px solid var(--term-titlebar-border);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+}
+
+.term-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--term-titlebar-bg);
+  border-bottom: 1px solid var(--term-titlebar-border);
+  position: relative;
+}
+
+.term-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+}
+
+.term-dot--red { background: #ff5f57; }
+.term-dot--yellow { background: #febc2e; }
+.term-dot--green { background: #28c840; }
+
+.term-titlebar__title {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--term-titlebar-text);
+  white-space: nowrap;
+}
+
+.term-body {
+  padding: 16px 18px 20px;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  min-height: 150px;
+}
+
+.term-line {
+  margin: 0;
+  color: #c8c8c8;
+}
+
+.term-line--dim {
+  color: #7a7a7a;
+}
+
+.term-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.term-row label {
+  color: #c8c8c8;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.term-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #e6e6e6;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  caret-color: #e6e6e6;
+  padding: 2px 0;
+}
+
+.term-input:disabled {
+  color: #e6e6e6;
+  opacity: 1;
+}
+
+.term-input--silent {
+  color: transparent;
+}
+
+.term-confirm-row {
+  margin-top: 14px;
+}
+
+.term-submit {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  cursor: pointer;
+  color: #7ee787;
+}
+
+.term-submit:hover {
+  color: #a6f5b4;
+}
+
+.term-submit__label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.term-submit__cursor {
+  display: inline-block;
+  width: 7px;
+  height: 15px;
+  background: #7ee787;
+  animation: term-blink 1s step-end infinite;
+  transform: translateY(2px);
+}
+
+.term-progress {
+  margin: 14px 0 0;
+  color: #c8c8c8;
+  white-space: pre;
+}
+
+@keyframes term-blink {
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .term-submit__cursor {
+    animation: none;
+  }
+}

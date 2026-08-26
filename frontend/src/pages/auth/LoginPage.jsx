@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { login } from "../../api/authApi";
@@ -11,15 +11,29 @@ const OAUTH_ERROR_MESSAGES = {
   OAUTH_LOGIN_FAILED: "소셜 로그인에 실패했습니다.",
 };
 
+// 터미널 로그인 흐름의 단계.
+// login(아이디 입력) -> password(비밀번호 입력) -> confirm(로그인 확인 대기) -> loading(인증 중) -> failed(실패, 잠시 후 login으로 복귀)
+const STEP = {
+  LOGIN: "login",
+  PASSWORD: "password",
+  CONFIRM: "confirm",
+  LOADING: "loading",
+  FAILED: "failed",
+};
+
 function LoginPage() {
   const { login: setAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
 
-  const [form, setForm] = useState({ username: "", password: "" });
+  const [step, setStep] = useState(STEP.LOGIN);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [failMessage, setFailMessage] = useState("");
+  const [progress, setProgress] = useState(0);
+
   const [error, setError] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(
     location.state?.signupSuccess
       ? "회원가입이 완료되었습니다."
@@ -27,6 +41,11 @@ function LoginPage() {
         ? "비밀번호가 재설정되었습니다. 새 비밀번호로 로그인해주세요."
         : "",
   );
+
+  const usernameInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
+  const confirmBtnRef = useRef(null);
+  const progressTimerRef = useRef(null);
 
   useEffect(() => {
     if (!toast) return;
@@ -42,25 +61,69 @@ function LoginPage() {
     }
   }, [searchParams]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  useEffect(() => {
+    if (step === STEP.PASSWORD) passwordInputRef.current?.focus();
+    if (step === STEP.CONFIRM) confirmBtnRef.current?.focus();
+  }, [step]);
+
+  useEffect(() => {
+    return () => clearInterval(progressTimerRef.current);
+  }, []);
+
+  const resetTerminal = () => {
+    setUsername("");
+    setPassword("");
+    setFailMessage("");
+    setProgress(0);
+    setStep(STEP.LOGIN);
+    usernameInputRef.current?.focus();
   };
 
-  const handleSubmit = async (e) => {
+  const triggerFail = (message) => {
+    clearInterval(progressTimerRef.current);
+    setFailMessage(message);
+    setStep(STEP.FAILED);
+    setTimeout(resetTerminal, 1400);
+  };
+
+  const handleUsernameKeyDown = (e) => {
+    if (e.key !== "Enter") return;
     e.preventDefault();
-    setError("");
-    setSubmitting(true);
+    if (!username.trim()) return;
+    setStep(STEP.PASSWORD);
+  };
+
+  const handlePasswordKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    if (!password) return;
+    setStep(STEP.CONFIRM);
+  };
+
+  const handleAuthenticate = async () => {
+    if (step !== STEP.CONFIRM) return;
+    setStep(STEP.LOADING);
+    setProgress(0);
+    progressTimerRef.current = setInterval(() => {
+      setProgress((p) => (p >= 90 ? p : p + 6 + Math.floor(Math.random() * 8)));
+    }, 60);
 
     try {
-      const { accessToken } = await login(form);
+      const { accessToken } = await login({ username, password });
+      clearInterval(progressTimerRef.current);
+      setProgress(100);
       setAuth(accessToken);
-      navigate("/questions");
+      setTimeout(() => navigate("/questions"), 450);
     } catch (err) {
-      setError(err.response?.data?.message ?? "로그인에 실패했습니다.");
-    } finally {
-      setSubmitting(false);
+      const message = err.response?.data?.message ?? "로그인에 실패했습니다.";
+      triggerFail(message);
     }
+  };
+
+  const handleConfirmKeyDown = (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    handleAuthenticate();
   };
 
   // 백엔드가 GitHub 인증을 시작하는 엔드포인트로 이동 (Spring Security OAuth2 Client가 자동 생성)
@@ -73,6 +136,10 @@ function LoginPage() {
     window.location.href = `${import.meta.env.VITE_API_BASE_URL}/oauth2/authorization/google`;
   };
 
+  const progressCells = 24;
+  const filledCells = Math.round((progress / 100) * progressCells);
+  const progressBar = "█".repeat(filledCells) + "░".repeat(progressCells - filledCells);
+
   return (
     <div className="auth-page">
       <AuthHeader />
@@ -84,51 +151,84 @@ function LoginPage() {
             질문하고, 답변하고, 채택받으세요.
           </p>
 
-          <form className="auth-form" onSubmit={handleSubmit} noValidate>
-            <div className="field">
-              <label className="field__label" htmlFor="username">
-                아이디
-              </label>
-              <input
-                id="username"
-                name="username"
-                className="field__input"
-                value={form.username}
-                onChange={handleChange}
-                autoComplete="username"
-                required
-              />
+          <div className="term-window">
+            <div className="term-titlebar">
+              <span className="term-dot term-dot--red"></span>
+              <span className="term-dot term-dot--yellow"></span>
+              <span className="term-dot term-dot--green"></span>
+              <span className="term-titlebar__title">login — dev-com — 80x24</span>
             </div>
 
-            <div className="field">
-              <label className="field__label" htmlFor="password">
-                비밀번호
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                className="field__input"
-                value={form.password}
-                onChange={handleChange}
-                autoComplete="current-password"
-                required
-              />
-              <Link to="/forgot-password" className="field__forgot-link">
-                비밀번호를 잊으셨나요?
-              </Link>
+            <div className="term-body">
+              <p className="term-line term-line--dim">dev-com OS 1.0 LTS (Carbon)</p>
+
+              <div className="term-row">
+                <label htmlFor="username">dev-com login:</label>
+                <input
+                  id="username"
+                  ref={usernameInputRef}
+                  className="term-input"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onKeyDown={handleUsernameKeyDown}
+                  disabled={step !== STEP.LOGIN}
+                  autoComplete="username"
+                  spellCheck="false"
+                  autoCapitalize="off"
+                  autoFocus
+                />
+              </div>
+
+              {(step === STEP.PASSWORD || step === STEP.CONFIRM || step === STEP.LOADING) && (
+                <div className="term-row">
+                  <label htmlFor="password">Password:</label>
+                  <input
+                    id="password"
+                    ref={passwordInputRef}
+                    className="term-input term-input--silent"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handlePasswordKeyDown}
+                    disabled={step !== STEP.PASSWORD}
+                    autoComplete="current-password"
+                  />
+                </div>
+              )}
+
+              {step === STEP.CONFIRM && (
+                <div className="term-confirm-row">
+                  <button
+                    ref={confirmBtnRef}
+                    type="button"
+                    className="term-submit"
+                    onClick={handleAuthenticate}
+                    onKeyDown={handleConfirmKeyDown}
+                  >
+                    <span aria-hidden="true">›</span>
+                    <span className="term-submit__label">press ENTER to sign in</span>
+                    <span className="term-submit__cursor" aria-hidden="true"></span>
+                  </button>
+                </div>
+              )}
+
+              {step === STEP.LOADING && (
+                <p className="term-progress" aria-live="polite">
+                  {`Authenticating [${progressBar}] ${progress}%`}
+                </p>
+              )}
+
+              {step === STEP.FAILED && (
+                <p className="term-line" role="alert">{failMessage}</p>
+              )}
             </div>
+          </div>
 
-            {error && (
-              <p className="auth-error" role="alert">
-                {error}
-              </p>
-            )}
-
-            <button className="auth-submit" type="submit" disabled={submitting}>
-              {submitting ? "로그인 중..." : "로그인"}
-            </button>
-          </form>
+          {error && (
+            <p className="auth-error" role="alert">
+              {error}
+            </p>
+          )}
 
           <div className="auth-divider">
             <span>또는</span>
@@ -153,6 +253,9 @@ function LoginPage() {
           </button>
 
           <div className="auth-links">
+            <Link to="/forgot-password">
+              비밀번호를 잊으셨나요?
+            </Link>
             <p className="auth-links__muted">
               계정이 없으신가요?
               <Link to="/signup">회원가입</Link>
