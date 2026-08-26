@@ -15,7 +15,7 @@ function PrivacyPolicyPage() {
         <section>
           <h2>제1조 (수집하는 개인정보 항목)</h2>
           <p>
-            Dev_Community(이하 "서비스")는 회원가입 및 서비스 제공을 위해 다음과
+            dev_com(이하 "서비스")는 회원가입 및 서비스 제공을 위해 다음과
             같은 개인정보를 수집합니다.
           </p>
           <ol>
