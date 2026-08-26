@@ -1,5 +1,6 @@
 package com.likelion.dev_community.domain.user.service;
 
+import com.likelion.dev_community.common.avatar.AvatarPalette;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
@@ -11,6 +12,8 @@ import com.likelion.dev_community.domain.question.entity.Question;
 import com.likelion.dev_community.domain.payment.service.PaymentService;
 import com.likelion.dev_community.domain.question.repository.QuestionRepository;
 import com.likelion.dev_community.domain.question.repository.QuestionTagRepository;
+import com.likelion.dev_community.domain.subscription.service.SubscriptionService;
+import com.likelion.dev_community.domain.user.dto.userDto.AvatarColorResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoRequest;
 import com.likelion.dev_community.domain.user.dto.userDto.UserInfoResponse;
 import com.likelion.dev_community.domain.user.dto.userDto.UserPwRequest;
@@ -31,9 +34,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +53,7 @@ public class UserService {
     private final QuestionTagRepository questionTagRepository;
     private final AnswerRepository answerRepository;
     private final PaymentService paymentService;
+    private final SubscriptionService subscriptionService;
 
     // 회원 정보 조회
     public UserInfoResponse getUserInfo(Long userId){
@@ -203,6 +209,31 @@ public class UserService {
         user.cancelExpertRequest();
 
         return UserInfoResponse.from(user);
+    }
+
+    // 멤버십 아바타 색상 리롤. 결제 갱신(구독 startedAt)마다 1회로 제한한다 —
+    // 아직 한 번도 안 뽑았거나, 마지막으로 뽑은 시점이 현재 결제 주기 시작보다 이전이면 허용.
+    @Transactional
+    public AvatarColorResponse rerollAvatarColor(Long userId, boolean isAdmin){
+        subscriptionService.requireActiveSubscriber(userId, isAdmin);
+
+        User user = findUserById(userId);
+
+        Optional<LocalDateTime> cycleStartedAt = subscriptionService.getActiveSubscriptionStartedAt(userId);
+        LocalDateTime rolledAt = user.getAvatarColorRolledAt();
+
+        boolean alreadyRolledThisCycle = rolledAt != null
+                && cycleStartedAt.isPresent()
+                && !rolledAt.isBefore(cycleStartedAt.get());
+
+        if (alreadyRolledThisCycle) {
+            throw new CustomException(ErrorCode.AVATAR_COLOR_ALREADY_ROLLED);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        user.rollAvatarColor(AvatarPalette.rollRandom(), now);
+
+        return AvatarColorResponse.of(user.getAvatarColorHex(), now);
     }
 
     public User findUserById(Long userId){

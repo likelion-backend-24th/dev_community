@@ -95,19 +95,19 @@ public class QuestionServiceImpl implements QuestionService {
     @Transactional(readOnly = true)
     public Page<QuestionSummaryResponse> readQuestions(int page, int size, String sort, String keyword, String tag, String status
     ) {
-        return searchQuestionSummaries(page, size, sort, keyword, tag, status, false);
+        return searchQuestionSummaries(page, size, sort, keyword, tag, status, null, false);
     }
 
     // F-32
     @Override
-    public Page<QuestionSummaryResponse> readPremiumQuestions(int page, int size, String sort, String keyword, String tag, String status, Long userId, boolean isAdmin
+    public Page<QuestionSummaryResponse> readPremiumQuestions(int page, int size, String sort, String keyword, String tag, String status, String type, Long userId, boolean isAdmin
     ) {
         subscriptionService.requireActiveSubscriber(userId, isAdmin);
 
-        return searchQuestionSummaries(page, size, sort, keyword, tag, status, true);
+        return searchQuestionSummaries(page, size, sort, keyword, tag, status, type, true);
     }
 
-    private Page<QuestionSummaryResponse> searchQuestionSummaries(int page, int size, String sort, String keyword, String tag, String status, boolean isPremium
+    private Page<QuestionSummaryResponse> searchQuestionSummaries(int page, int size, String sort, String keyword, String tag, String status, String type, boolean isPremium
     ) {
         if (page < 0) {
             throw new CustomException(ErrorCode.INVALID_INPUT, "page는 0 이상이어야 합니다.");
@@ -134,7 +134,7 @@ public class QuestionServiceImpl implements QuestionService {
         String trimmedKeyword = keyword != null ? keyword.trim() : null;
 
         Page<Question> questions = isPremium
-                ? questionRepository.searchPremiumQuestions(trimmedKeyword, tagId, questionStatus, sortType, pageable)
+                ? questionRepository.searchPremiumQuestions(trimmedKeyword, tagId, questionStatus, typeFilter(type), sortType, pageable)
                 : questionRepository.searchQuestions(trimmedKeyword, tagId, questionStatus, sortType, pageable);
 
         if (questions.isEmpty()) {
@@ -174,6 +174,14 @@ public class QuestionServiceImpl implements QuestionService {
             case "UNRESOLVED" -> QuestionStatus.OPEN;
             default -> throw new CustomException(ErrorCode.INVALID_INPUT, "RESOLVED 또는 UNRESOLVED만 가능");
         };
+    }
+
+    // 프리미엄 게시판 글 유형 필터. QuestionType.from()과 달리 빈 값이면 "전체"를 뜻하는 null을 반환한다.
+    private QuestionType typeFilter(String type) {
+        if (type == null || type.isBlank()) {
+            return null;
+        }
+        return QuestionType.from(type);
     }
 
     // F-08

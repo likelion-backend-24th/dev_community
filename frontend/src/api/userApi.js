@@ -32,3 +32,8 @@ export async function requestExpert() {
   const res = await client.post('/api/members/me/expert-request')
   return res.data.data
 }
+
+export async function rerollAvatarColor() {
+  const res = await client.post('/api/members/me/avatar-color/reroll')
+  return res.data.data
+}

@@ -7,9 +7,9 @@ export async function getQuestions({ page = 0, size = 10, sort, keyword, tag, st
   return { content: res.data.data, meta: res.data.meta }
 }
 
-export async function getPremiumQuestions({ page = 0, size = 10, sort, keyword, tag, status } = {}) {
+export async function getPremiumQuestions({ page = 0, size = 10, sort, keyword, tag, status, type } = {}) {
   const res = await client.get('/api/questions/premium', {
-    params: { page, size, sort, keyword, tag, status },
+    params: { page, size, sort, keyword, tag, status, type },
   })
   return { content: res.data.data, meta: res.data.meta }
 }
