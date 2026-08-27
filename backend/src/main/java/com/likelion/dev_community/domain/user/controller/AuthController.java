@@ -6,6 +6,7 @@ import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.domain.user.dto.authDto.*;
 import com.likelion.dev_community.domain.user.service.AuthService;
 import com.likelion.dev_community.security.CustomUserDetails;
+import com.likelion.dev_community.security.jwt.CookieProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +47,7 @@ public class AuthController {
 
     @Operation(summary = "액세스 토큰 재발급", description = "쿠키에 담긴 리프레시 토큰으로 새 액세스 토큰을 발급받음. 리프레시 토큰이 없으면 401.")
     @PostMapping("/reissue")
-    public ResponseEntity<ApiResponse<ReissueResponse>> reissue(@CookieValue(value = "refreshToken", required = false) String refreshToken){
+    public ResponseEntity<ApiResponse<ReissueResponse>> reissue(@CookieValue(value = CookieProvider.REFRESH_TOKEN, required = false) String refreshToken){
         if(refreshToken==null)
             throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
 

@@ -53,6 +53,8 @@ public class QuestionServiceImpl implements QuestionService {
     private final GeminiClient geminiClient;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
+    private static final int AI_SUMMARY_MIN_LENGTH = 300;
+    private static final int AI_TAG_SUGGESTION_MIN_LENGTH = 20;
 
     // F-06
     @Override
@@ -263,8 +265,6 @@ public class QuestionServiceImpl implements QuestionService {
         question.softDelete();
     }
 
-    private static final int AI_SUMMARY_MIN_LENGTH = 300;
-
     // 질문 글 AI 요약(멤버십 구독자 전용). 최초 요청 시에만 Gemini를 호출하고 이후로는 캐시된 결과를 반환한다.
     @Override
     public String getSummary(Long questionId, Long userId, boolean isAdmin) {
@@ -287,8 +287,6 @@ public class QuestionServiceImpl implements QuestionService {
 
         return summary;
     }
-
-    private static final int AI_TAG_SUGGESTION_MIN_LENGTH = 20;
 
     // 질문 작성 중 본문 기준 AI 태그 추천(멤버십 구독자 전용). 작성 중인 임시 내용이라 캐싱하지 않고 매 요청마다 새로 호출한다.
     @Override

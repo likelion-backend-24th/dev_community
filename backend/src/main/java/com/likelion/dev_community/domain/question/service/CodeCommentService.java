@@ -69,17 +69,7 @@ public class CodeCommentService{
     // 코드 코멘트 수정
     public CodeCommentResponse updateComment(Long userId, boolean isAdmin, Long questionId, Long commentId, CodeCommentUpdateRequest request) {
 
-        Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
-
-        validateCodeReviewQuestion(question, userId, isAdmin);
-
-        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(NotFound.CODE_COMMENT::exception);
-
-        if (!comment.getQuestion().getId().equals(questionId)) {
-            throw NotFound.CODE_COMMENT.exception();
-        }
-
-        AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 수정 가능");
+        CodeComment comment = loadEditableComment(userId, isAdmin, questionId, commentId, "본인이 작성한 코멘트만 수정 가능");
 
         comment.update(request.getContent());
 
@@ -88,19 +78,29 @@ public class CodeCommentService{
 
     // 코드 코멘트 삭제
     public void deleteComment(Long userId, boolean isAdmin, Long questionId, Long commentId){
+
+        CodeComment comment = loadEditableComment(userId, isAdmin, questionId, commentId, "본인이 작성한 코멘트만 삭제 가능");
+
+        codeCommentRepository.delete(comment);
+    }
+
+    // 수정/삭제 공통: 코드리뷰 글인지 확인하고, 해당 글에 속한 본인(또는 관리자) 코멘트를 가져온다.
+    private CodeComment loadEditableComment(Long userId, boolean isAdmin, Long questionId, Long commentId, String forbiddenMessage) {
+
         Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
 
         validateCodeReviewQuestion(question, userId, isAdmin);
 
         CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(NotFound.CODE_COMMENT::exception);
 
+        // 다른 글의 코멘트 id를 넘겨 접근하는 것을 막는다. (존재 여부를 흘리지 않도록 404로 통일)
         if (!comment.getQuestion().getId().equals(questionId)) {
             throw NotFound.CODE_COMMENT.exception();
         }
 
-        AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 삭제 가능");
+        AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, forbiddenMessage);
 
-        codeCommentRepository.delete(comment);
+        return comment;
     }
 
     private void validateCodeReviewQuestion(Question question, Long userId, boolean isAdmin) {

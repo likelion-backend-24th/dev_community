@@ -91,7 +91,7 @@ public class UserService {
 
         refreshTokenRepository.deleteById(userId);
 
-        ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
+        ResponseCookie cookie = cookieProvider.clearCookie(CookieProvider.REFRESH_TOKEN);
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
@@ -111,7 +111,7 @@ public class UserService {
 
         refreshTokenRepository.deleteById(userId);
 
-        ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
+        ResponseCookie cookie = cookieProvider.clearCookie(CookieProvider.REFRESH_TOKEN);
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
