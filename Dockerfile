@@ -10,4 +10,4 @@ WORKDIR /app
 COPY --from=build /app/build/libs/*.jar app.jar
 ENV TZ=Asia/Seoul
 EXPOSE 8080
-ENTRYPOINT ["java", "-Xmx256m", "-XX:MaxMetaspaceSize=200m", "-XX:+UseSerialGC", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Xmx256m", "-XX:MaxMetaspaceSize=200m", "-XX:+UseSerialGC", "-XX:ReservedCodeCacheSize=64m", "-Xss256k", "-jar", "app.jar"]
