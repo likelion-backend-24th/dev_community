@@ -9,6 +9,10 @@ spring:
     multipart:
       max-file-size: 2MB
       max-request-size: 10MB
+  datasource:
+    hikari:
+      # 기본값(10)은 저트래픽 단일 인스턴스엔 과함 - 커넥션마다 스레드/버퍼 오버헤드가 붙는다.
+      maximum-pool-size: 5
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
@@ -20,6 +24,13 @@ spring:
           auth: true
           starttls:
             enable: true
+
+server:
+  tomcat:
+    threads:
+      # 기본값(200)은 대형 서버 기준 - 스레드 하나당 스택으로 기본 1MB씩 예약되므로
+      # 저트래픽 사이트엔 크게 과하다. e2-micro(1GB RAM) 배포를 염두에 두고 낮춘다.
+      max: 20
 
 app:
   upload:
