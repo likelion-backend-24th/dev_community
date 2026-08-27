@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
@@ -57,6 +58,7 @@ public class PaymentService {
     private static final String SUBSCRIPTION_ORDER_NAME = "프리미엄 구독 정기결제";
     private static final long CANCELLABLE_DAYS = 7; // 결제 취소(환불) 가능 기간
     private static final String PAYMENT_ID_PREFIX = "DEV_";
+    private static final Duration RECONCILE_GRACE_PERIOD = Duration.ofHours(1); // 유예 기간 - 예약 시각 1시간 지났음에도 READY면 웹훅 유실로 보고 재조회 대상으로
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -160,7 +162,7 @@ public class PaymentService {
     private void scheduleNextCharge(User user, PlanType planType, String billingKey, LocalDateTime timeToPay) {
         Order nextOrder = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
         String nextPaymentId = newPaymentId();
-        paymentRepository.save(Payment.create(nextOrder, nextPaymentId));
+        paymentRepository.save(Payment.createScheduled(nextOrder, nextPaymentId, timeToPay));
 
         BillingKeyPaymentScheduleInput scheduleInput = new BillingKeyPaymentScheduleInput(
                 storeId, billingKey, channelKey, SUBSCRIPTION_ORDER_NAME,
@@ -278,6 +280,13 @@ public class PaymentService {
         }
 
         verifyAndMarkPayment(payment, payment.getOrder());
+    }
+
+    // 예약 시각이 지났는데도 웹훅 유실 등으로 상태가 안 바뀐 결제건의 paymentId 조회 (재조회 스케줄러용)
+    @Transactional(readOnly = true)
+    public List<String> findStalePaymentIds() {
+        LocalDateTime cutoff = LocalDateTime.now().minus(RECONCILE_GRACE_PERIOD);
+        return paymentRepository.findPaymentIdsByStatusAndScheduledAtBefore(PaymentStatus.READY, cutoff);
     }
 
     // 웹훅(Transaction.Cancelled) 취소 상태 동기화

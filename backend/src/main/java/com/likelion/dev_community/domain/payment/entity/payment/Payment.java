@@ -37,10 +37,14 @@ public class Payment extends BaseTimeEntity { // 결제 이력 저장 테이블
 
     private String cancelReason;
 
+    // 정기결제 다음 회차 예약 시각, 즉시 결제 건은 null.
+    private LocalDateTime scheduledAt;
+
     @Builder
-    public Payment(Order order, String paymentId) {
+    public Payment(Order order, String paymentId, LocalDateTime scheduledAt) {
         this.order = order;
         this.paymentId = paymentId;
+        this.scheduledAt = scheduledAt;
         this.status = PaymentStatus.READY;
     }
 
@@ -49,6 +53,15 @@ public class Payment extends BaseTimeEntity { // 결제 이력 저장 테이블
         return Payment.builder()
                 .order(order)
                 .paymentId(paymentId)
+                .build();
+    }
+
+    // 정기결제 다음 회차 예약 건 생성 (예약 시각 기록)
+    public static Payment createScheduled(Order order, String paymentId, LocalDateTime scheduledAt) {
+        return Payment.builder()
+                .order(order)
+                .paymentId(paymentId)
+                .scheduledAt(scheduledAt)
                 .build();
     }
 
