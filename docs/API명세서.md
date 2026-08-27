@@ -66,9 +66,9 @@ GET `/api/auth/check-nickname?nickname=테스트유저` )
 409 이미 존재 - `code: "DUPLICATE_RESOURCE"`
 ```
 
-## \*\*로그인
+## 로그인
 
-( POST `/api/auth/login` )\*\*
+( POST `/api/auth/login` )
 
 Request
 
@@ -89,9 +89,9 @@ Response
 - Refresh Token은 응답 body에 없고 **`Set-Cookie: refreshToken=...; HttpOnly`** 로
   - **401**: 아이디/비밀번호 불일치(INVALID_CREDENTIALS) / 탈퇴 계정(WITHDRAWN_ACCOUNT) / 정지 계정(SUSPENDED_ACCOUNT)
 
-## \*\*토큰 재발급/로그아웃
+## 토큰 재발급/로그아웃
 
-( POST `/api/auth/reissue` , POST `/api/auth/logout` )\*\*
+( POST `/api/auth/reissue` , POST `/api/auth/logout` )
 
 - 재발급 요청: 요청 body 없이 **쿠키에 담긴 refreshToken을 서버가 자동으로 읽음**. Redis에 저장된 값과 일치할 때만 발급.
 - 로그아웃: 쿠키 삭제 + Redis에서 Refresh Token 삭제 → **200** (data 없음)
@@ -252,7 +252,7 @@ Response 201
 DELETE `/api/answers/{id}/adopt`)
 
 - 응답은 두 동작 모두 위 답변 등록과 같은 형태의 답변 객체(`data`)를 반환 (`isAdopted`가 `true`/`false`로 바뀜). 질문의 `status`도 채택 시 `RESOLVED`, 취소 시 다시 `OPEN`으로 바뀜
-- **403**: 질문 작성자가 아님 / \***\*409\*\***: 이미 해결된 질문 재채택(QUESTION_ALREADY_RESOLVED), 채택 안 된 답변 취소 시도(ANSWER_NOT_ADOPTED)
+- 403: 질문 작성자가 아님 / 409: 이미 해결된 질문 재채택(QUESTION_ALREADY_RESOLVED), 채택 안 된 답변 취소 시도(ANSWER_NOT_ADOPTED)
 
 ---
 
