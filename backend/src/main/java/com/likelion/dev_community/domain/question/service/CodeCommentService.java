@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.question.service;
 import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.question.dto.CodeCommentRequest;
 import com.likelion.dev_community.domain.question.dto.CodeCommentResponse;
 import com.likelion.dev_community.domain.question.dto.CodeCommentUpdateRequest;
@@ -33,11 +34,11 @@ public class CodeCommentService{
     // 코드 코멘트 작성
     public CodeCommentResponse createComment(Long userId, boolean isAdmin, Long questionId, CodeCommentRequest request) {
 
-        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+        Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
 
         validateCodeReviewQuestion(question, userId, isAdmin);
 
-        User author = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+        User author = userRepository.findById(userId).orElseThrow(NotFound.USER::exception);
 
         CodeComment comment = CodeComment.builder()
                 .question(question)
@@ -56,7 +57,7 @@ public class CodeCommentService{
     public List<CodeCommentResponse> readComments(Long userId, boolean isAdmin, Long questionId) {
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         validateCodeReviewQuestion(question, userId, isAdmin);
 
@@ -68,14 +69,14 @@ public class CodeCommentService{
     // 코드 코멘트 수정
     public CodeCommentResponse updateComment(Long userId, boolean isAdmin, Long questionId, Long commentId, CodeCommentUpdateRequest request) {
 
-        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+        Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
 
         validateCodeReviewQuestion(question, userId, isAdmin);
 
-        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다."));
+        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(NotFound.CODE_COMMENT::exception);
 
         if (!comment.getQuestion().getId().equals(questionId)) {
-            throw new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다.");
+            throw NotFound.CODE_COMMENT.exception();
         }
 
         AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 수정 가능");
@@ -87,14 +88,14 @@ public class CodeCommentService{
 
     // 코드 코멘트 삭제
     public void deleteComment(Long userId, boolean isAdmin, Long questionId, Long commentId){
-        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+        Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
 
         validateCodeReviewQuestion(question, userId, isAdmin);
 
-        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다."));
+        CodeComment comment = codeCommentRepository.findById(commentId).orElseThrow(NotFound.CODE_COMMENT::exception);
 
         if (!comment.getQuestion().getId().equals(questionId)) {
-            throw new CustomException(ErrorCode.NOT_FOUND, "코멘트를 찾을 수 없습니다.");
+            throw NotFound.CODE_COMMENT.exception();
         }
 
         AuthorizationValidator.validateAuthorOrAdmin(comment.getAuthor().getId(), userId, isAdmin, "본인이 작성한 코멘트만 삭제 가능");

@@ -1,7 +1,6 @@
 package com.likelion.dev_community.domain.notification.service;
 
-import com.likelion.dev_community.common.exception.CustomException;
-import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.chat.entity.ChatRoom;
 import com.likelion.dev_community.domain.notification.dto.NotificationPayload;
@@ -30,7 +29,7 @@ public class NotificationService {
     // 벨 드롭다운에 보여줄 최근 알림 5개
     @Transactional(readOnly = true)
     public List<NotificationPayload> getRecentNotifications(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+        User user = userRepository.findById(userId).orElseThrow(NotFound.USER::exception);
 
         return notificationRepository.findTop5ByRecipientOrderByCreatedAtDesc(user).stream()
                 .map(NotificationPayload::from)
@@ -39,7 +38,7 @@ public class NotificationService {
 
     // 벨 드롭다운 열람 시 알림 전부 읽음 처리
     public void markAllAsRead(Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+        User user = userRepository.findById(userId).orElseThrow(NotFound.USER::exception);
 
         notificationRepository.findByRecipientAndIsReadFalse(user)
                 .forEach(Notification::markAsRead);

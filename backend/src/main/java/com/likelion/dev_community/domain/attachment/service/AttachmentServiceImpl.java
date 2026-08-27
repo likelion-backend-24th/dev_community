@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.attachment.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.attachment.dto.AttachmentResponse;
@@ -94,13 +95,13 @@ public class AttachmentServiceImpl implements AttachmentService {
     private void validateOwnership(AttachmentTargetType targetType, Long targetId, Long uploaderId) {
         if (targetType == AttachmentTargetType.QUESTION) {
             Question question = questionRepository.findById(targetId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "요청한 질문을 찾을 수 없습니다."));
+                    .orElseThrow(NotFound.QUESTION::exception);
             if (!question.getAuthor().getId().equals(uploaderId)) {
                 throw new CustomException(ErrorCode.FORBIDDEN);
             }
         } else {
             Answer answer = answerRepository.findById(targetId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "요청한 답변을 찾을 수 없습니다."));
+                    .orElseThrow(NotFound.ANSWER::exception);
             if (!answer.getAuthor().getId().equals(uploaderId)) {
                 throw new CustomException(ErrorCode.FORBIDDEN);
             }
@@ -118,14 +119,14 @@ public class AttachmentServiceImpl implements AttachmentService {
     @Override
     public Attachment getForDownload(Long attachmentId) {
         return attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "요청한 첨부파일을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ATTACHMENT::exception);
     }
 
     @Override
     @Transactional
     public void delete(Long attachmentId, Long userId, boolean isAdmin) {
         Attachment attachment = attachmentRepository.findById(attachmentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "요청한 첨부파일을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ATTACHMENT::exception);
 
         if (!isAdmin && !attachment.getUploaderId().equals(userId)) {
             throw new CustomException(ErrorCode.FORBIDDEN);

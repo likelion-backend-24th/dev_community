@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.payment.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.payment.dto.BillingKeyPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCancelResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCompleteResponse;
@@ -79,7 +80,7 @@ public class PaymentService {
     @Transactional
     public PaymentPrepareResponse preparePayment(Long userId, PlanType planType){
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND,"서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
 
         String paymentId = "DEV_" + UUID.randomUUID();
@@ -99,7 +100,7 @@ public class PaymentService {
     @Transactional
     public BillingKeyPrepareResponse prepareBillingKeyIssue(Long userId) {
         userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
         String issueId = "ISSUE_" + UUID.randomUUID();
 
@@ -110,7 +111,7 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCompleteResponse issueBillingKeyAndCharge(String billingKey, Long userId, PlanType planType) {
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
         // 빌링키 재조회
         BillingKeyInfo billingKeyInfo;
@@ -194,7 +195,7 @@ public class PaymentService {
     public PaymentCompleteResponse completePayment(String paymentId, Long userId) {
         // paymentId로 우리 Payment 조회, 동시 완료 요청이 순서대로 처리되도록 락. (없으면 404)
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         Order order = payment.getOrder();
 
@@ -261,7 +262,7 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public void syncPaymentFromWebhook(String paymentId) {
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         // 이미 완료된 결제면 재검증 x
         if (payment.getStatus() == PaymentStatus.PAID) {
@@ -274,7 +275,7 @@ public class PaymentService {
     // 웹훅(Transaction.Cancelled) 취소 상태 동기화
     @Transactional(noRollbackFor = CustomException.class)
     public void syncCancelFromWebhook(String paymentId) {
-        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId).orElseThrow(NotFound.PAYMENT::exception);
 
         // 이미 취소 반영된 결제면 재처리 x
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
@@ -324,7 +325,7 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCancelResponse cancelPayment(String paymentId, Long userId, String reason) {
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         Order order = payment.getOrder();
 

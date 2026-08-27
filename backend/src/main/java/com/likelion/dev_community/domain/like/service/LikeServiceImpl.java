@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.like.service;
 
 import com.likelion.dev_community.common.exception.ErrorCode;
 import com.likelion.dev_community.common.exception.CustomException;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.like.dto.LikeStatusResponse;
@@ -34,7 +35,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     public boolean toggleLike(Long userId, LikeTargetType targetType, Long targetId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                .orElseThrow(NotFound.USER::exception);
 
         return likeHistoryRepository
                 .findByUserIdAndTargetTypeAndTargetId(userId, targetType, targetId)
@@ -79,23 +80,23 @@ public class LikeServiceImpl implements LikeService {
     private Long resolveAuthorId(LikeTargetType targetType, Long targetId) {
         if (targetType == LikeTargetType.QUESTION) {
             return questionRepository.findById(targetId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND))
+                    .orElseThrow(NotFound.QUESTION::exception)
                     .getAuthor().getId();
         }
         return answerRepository.findById(targetId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND))
+                .orElseThrow(NotFound.ANSWER::exception)
                 .getAuthor().getId();
     }
 
     private void increaseCount(LikeTargetType targetType, Long targetId) {
         if (targetType == LikeTargetType.QUESTION) {
             Question question = questionRepository.findById(targetId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                    .orElseThrow(NotFound.QUESTION::exception);
             question.increaseLikeCount();
             reputationService.apply(question.getAuthor().getId(), ReputationEvent.QUESTION_LIKED);
         } else {
             Answer answer = answerRepository.findById(targetId)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND));
+                    .orElseThrow(NotFound.ANSWER::exception);
             answer.increaseLikeCount();
             reputationService.apply(answer.getAuthor().getId(), ReputationEvent.ANSWER_LIKED);
         }

@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.chat.service;
 import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.chat.dto.*;
 import com.likelion.dev_community.domain.chat.entity.ChatMessage;
 import com.likelion.dev_community.domain.chat.entity.ChatRoom;
@@ -46,10 +47,10 @@ public class ChatService {
         subscriptionService.requireActiveSubscriber(userId, isAdmin);
 
         User answerer = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.USER::exception);
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         if (question.getType() != QuestionType.CAREER_CONSULT) {
             throw new CustomException(ErrorCode.CHAT_NOT_ALLOWED);
@@ -125,7 +126,7 @@ public class ChatService {
         }
 
         User sender = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.USER::exception);
 
         ChatMessage message = chatMessageRepository.save(
                 ChatMessage.builder().chatRoom(chatRoom).sender(sender).content(request.content()).build()
