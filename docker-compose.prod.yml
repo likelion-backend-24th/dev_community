@@ -2,6 +2,11 @@ services:
   redis:
     image: redis:7
     container_name: dev_community_redis
+    # 리프레시 토큰/조회수 중복방지 용도라 실제 사용량은 작다. e2-micro(1GB RAM)에서
+    # redis/app/nginx/certbot이 메모리를 나눠 쓰므로, 상한 없이 두면 한 컨테이너가
+    # 나머지를 굶길 수 있어 상한을 건다.
+    command: redis-server --maxmemory 64mb --maxmemory-policy allkeys-lru
+    mem_limit: 100m
     networks:
       - app-network
 
@@ -12,6 +17,9 @@ services:
     container_name: dev_community_app
     # 호스트에 포트를 열지 않는다 — nginx만 app-network를 통해 8080으로 접근하고,
     # 외부에서는 반드시 nginx의 HTTPS 경유로만 API에 닿아야 한다.
+    # JVM 힙 자체는 Dockerfile의 -Xmx256m으로 제한되지만, 컨테이너 전체(스레드 스택,
+    # 코드캐시 등 힙 밖 영역 포함)는 그보다 더 쓸 수 있어 여유를 두고 상한을 건다.
+    mem_limit: 500m
     volumes:
       - uploads_dev_community:/app/uploads
     environment:
@@ -59,6 +67,7 @@ services:
     # 여기서 서빙하지 않는다(Vercel이 담당). ./nginx/Dockerfile, ./nginx/nginx.conf 참고.
     image: ghcr.io/likelion-backend-24th/dev_community-nginx:latest
     container_name: dev_community_nginx
+    mem_limit: 50m
     ports:
       - "80:80"
       - "443:443"
