@@ -121,19 +121,19 @@ GitHub push(main) → GitHub Actions CI(테스트, MySQL/Redis 서비스 컨테�
 ```
 
 ## 문서
-| 문서          | 위치                                                                                                                                                                                                 | 용도                 |
-|-------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------| 
-| 요구사항 정의서    | [Notion](https://app.notion.com/p/MVP-1-2-3ac73873401a80c98daff3847f87e8f3)                                                                                                                        | 기능 범위와 결정 이력       |
-| 기능명세서       | [Notion](https://app.notion.com/p/MVP-1-2-4b273873401a8381955a014a195f2c9d?source=copy_link)   | 기능별 요구사항과 동작 정의    |
-| API         | [Swagger (local)](http://localhost:8080/swagger-ui/index.html) </br> [Notion](https://app.notion.com/p/API-MVP-1-2-3ae73873401a80049435c6e861b3c7db?source=copy_link)                              | API 계약             |
-| ERD         | [Notion](https://app.notion.com/p/ERD-MVP-1-2-3ae73873401a80dcbd20d6f18e89d0ca?source=copy_link)                                                                                                   | 데이터 모델과 관계         |
-| 시퀀스         | [Notion](https://app.notion.com/p/MVP-1-2-3b173873401a80798ec0ebbb062e11b9?source=copy_link)   | 주요 흐름의 컴포넌트 간 상호작용 |
-| 화면 설계       | [Figma](https://www.figma.com/design/Hzd31NGLH85EqskfcWH43W/%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=ZNK7Br1YKZ7iWAT7-1) | 화면·컴포넌트 설계         |
-| 아키텍쳐        | [Notion](https://app.notion.com/p/3c873873401a80c89c69c2289f330c0d?source=copy_link)                                                                                                               | 시스템 아키텍쳐           |
-| User Flow   | [Notion](https://app.notion.com/p/User-Flow-MVP-1-2-3ad73873401a80c89d0ffe256520065f?source=copy_link)   | 화면 간 이동 경로와 분기 조건  |
-| 권한 매트릭스     | [Notion](https://app.notion.com/p/MVP-1-2-3ae73873401a80b8a1bdd2156104d410?source=copy_link)   | 역할별 기능 접근 권한       |
-| 구현 기능       | [Notion](https://app.notion.com/p/07273873401a83479fcc81e1517e44fe?source=copy_link)   | 명세 대비 구현 완료 현황     |
-| 기능완료 테스트 시트 | [Notion](https://app.notion.com/p/3b873873401a8002ab3ac14ab4aaf518?source=copy_link)   | 기능별 테스트 케이스 및 결과   |
+| 문서        | 위치                                                                                                                                                                                                 | 용도                 |
+|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------| 
+| 요구사항 정의서  | [docs](./docs/요구사항정의서.md)                                                                                                                                                                          | 기능 범위와 결정 이력       |
+| 기능명세서     | [docs](./docs/기능명세서.md)                                                                                                                                                                            | 기능별 요구사항과 동작 정의    |
+| API       | [Swagger (local)](http://localhost:8080/swagger-ui/index.html) </br> [docs](./docs/API 명세서.md)                                                                                                     | API 계약             |
+| ERD       | [docs](./docs/ERD.md)                                                                                                                                                                              | 데이터 모델과 관계         |
+| 시퀀스       | [docs](./docs/시퀀스.md)                                                                                                                                                                              | 주요 흐름의 컴포넌트 간 상호작용 |
+| 화면 설계     | [Figma](https://www.figma.com/design/Hzd31NGLH85EqskfcWH43W/%EA%B0%9C%EB%B0%9C%EC%9E%90%EC%BB%A4%EB%AE%A4%EB%8B%88%ED%8B%B0-%ED%99%94%EB%A9%B4%EC%84%A4%EA%B3%84?node-id=0-1&t=ZNK7Br1YKZ7iWAT7-1) | 화면·컴포넌트 설계         |
+| 아키텍쳐      | [docs](./docs/4조아키텍쳐.png)                                                                                                                                                                          | 시스템 아키텍쳐           |
+| User Flow | [docs](./docs/User Flow.md)                                                                                                                                                                        | 화면 간 이동 경로와 분기 조건  |
+| 권한 매트릭스   | [docs](./docs/권한매트릭스.md)                                                                                                                                                                           | 역할별 기능 접근 권한       |
+| 배포·운영      | [docs](./docs/배포_환경설정.md)                                                                                                                                                                          | 명세 대비 구현 완료 현황     |
+| 기능완료 테스트 시트 | [Notion](https://app.notion.com/p/3b873873401a8002ab3ac14ab4aaf518?source=copy_link)                                                                                                               | 기능별 테스트 케이스 및 결과   |
 
 ## 프로젝트 구조
 
