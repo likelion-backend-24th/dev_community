@@ -56,3 +56,13 @@ jwt:
 cookie:
   secure:
     true
+  # 프론트를 Vercel 등 별도 도메인으로 옮기는 시점에 .env의 COOKIE_SAME_SITE=None으로
+  # 바꾼다(CookieProvider 주석 참고). 지금은 프론트/백엔드가 같은 도메인
+  # (dev-com.duckdns.org)이라 기본값 Strict가 맞다.
+  same-site: ${COOKIE_SAME_SITE:Strict}
+
+# 프론트를 Vercel 등 별도 도메인으로 옮길 때만 .env의 CORS_ADDITIONAL_ORIGINS에
+# 콤마로 구분해 origin을 채운다(CorsConfig 주석 참고). 미설정 시 기존 origin
+# 목록만 적용되어 지금 배포는 그대로 동작한다.
+cors:
+  additional-origins: ${CORS_ADDITIONAL_ORIGINS:}

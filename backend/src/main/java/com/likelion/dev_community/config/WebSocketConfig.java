@@ -15,11 +15,12 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     private final StompAuthChannelInterceptor stompAuthChannelInterceptor;
+    private final CorsConfig corsConfig;
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOrigins(CorsConfig.ALLOWED_ORIGINS.toArray(new String[0]));
+                .setAllowedOrigins(corsConfig.getAllowedOrigins().toArray(new String[0]));
     }
 
     @Override
