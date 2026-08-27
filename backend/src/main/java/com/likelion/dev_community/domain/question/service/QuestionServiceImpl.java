@@ -4,6 +4,7 @@ import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.ai.GeminiClient;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.common.viewcount.ViewCountService;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
@@ -52,13 +53,15 @@ public class QuestionServiceImpl implements QuestionService {
     private final GeminiClient geminiClient;
     private static final int MAX_TAG_COUNT = 5;
     private static final int MAX_TAG_LENGTH = 30;
+    private static final int AI_SUMMARY_MIN_LENGTH = 300;
+    private static final int AI_TAG_SUGGESTION_MIN_LENGTH = 20;
 
     // F-06
     @Override
     public QuestionResponse createQuestion(Long userId, boolean isAdmin, QuestionCreateRequest request) {
 
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 사용자 정보"));
+                .orElseThrow(NotFound.USER::exception);
 
         if (request.isPremium() || request.isAnonymous()) {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
@@ -125,7 +128,7 @@ public class QuestionServiceImpl implements QuestionService {
         if (tag != null && !tag.isBlank()) {
             String normalizedTag = tag.trim().toLowerCase();
             Tag foundTag = tagRepository.findByName(normalizedTag)
-                    .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "존재하지 않는 태그"));
+                    .orElseThrow(NotFound.TAG::exception);
             tagId = foundTag.getId();
         }
 
@@ -190,7 +193,7 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionDetailResponse readDetailQuestion(Long questionId, String viewerKey, Long userId, boolean isAdmin) {
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         if (question.isPremium()) {
             subscriptionService.requireActiveSubscriber(userId, isAdmin);
@@ -222,7 +225,7 @@ public class QuestionServiceImpl implements QuestionService {
     public QuestionResponse updateQuestion(Long questionId, Long userId, boolean isAdmin, QuestionUpdateRequest request) {
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         checkUpdate(question, userId, isAdmin);
 
@@ -252,7 +255,7 @@ public class QuestionServiceImpl implements QuestionService {
     public void deleteQuestion(Long questionId, Long userId, boolean isAdmin) {
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         checkDelete(question, userId, isAdmin);
 
@@ -262,8 +265,6 @@ public class QuestionServiceImpl implements QuestionService {
         question.softDelete();
     }
 
-    private static final int AI_SUMMARY_MIN_LENGTH = 300;
-
     // 질문 글 AI 요약(멤버십 구독자 전용). 최초 요청 시에만 Gemini를 호출하고 이후로는 캐시된 결과를 반환한다.
     @Override
     public String getSummary(Long questionId, Long userId, boolean isAdmin) {
@@ -271,7 +272,7 @@ public class QuestionServiceImpl implements QuestionService {
         subscriptionService.requireActiveSubscriber(userId, isAdmin);
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "찾을 수 없는 질문"));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         if (question.getSummary() != null) {
             return question.getSummary();
@@ -286,8 +287,6 @@ public class QuestionServiceImpl implements QuestionService {
 
         return summary;
     }
-
-    private static final int AI_TAG_SUGGESTION_MIN_LENGTH = 20;
 
     // 질문 작성 중 본문 기준 AI 태그 추천(멤버십 구독자 전용). 작성 중인 임시 내용이라 캐싱하지 않고 매 요청마다 새로 호출한다.
     @Override

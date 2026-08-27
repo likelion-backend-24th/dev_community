@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.user.service;
 import com.likelion.dev_community.common.avatar.AvatarPalette;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
@@ -90,7 +91,7 @@ public class UserService {
 
         refreshTokenRepository.deleteById(userId);
 
-        ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
+        ResponseCookie cookie = cookieProvider.clearCookie(CookieProvider.REFRESH_TOKEN);
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
@@ -110,7 +111,7 @@ public class UserService {
 
         refreshTokenRepository.deleteById(userId);
 
-        ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
+        ResponseCookie cookie = cookieProvider.clearCookie(CookieProvider.REFRESH_TOKEN);
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
@@ -237,7 +238,7 @@ public class UserService {
     }
 
     public User findUserById(Long userId){
-        return userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND, "유저를 찾을 수 없습니다. "+userId));
+        return userRepository.findById(userId).orElseThrow(NotFound.USER::exception);
     }
 
     // 내 질문 목록 조회

@@ -12,6 +12,7 @@ import {
   markChatRoomRead,
 } from "../../api/chatApi";
 import "../../styles/chat.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const STATUS_LABEL = {
   PENDING: "수락 대기",
@@ -219,7 +220,7 @@ function ChatRoomPage() {
               <p className="chat-message__sender">{message.senderNickname}</p>
               <p className="chat-message__content">{message.content}</p>
               <p className="chat-message__time">
-                {new Date(message.createdAt).toLocaleString()}
+                {formatDateTime(message.createdAt)}
               </p>
             </div>
           </li>

@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.report.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.entity.Answer;
 import com.likelion.dev_community.domain.answer.repository.AnswerRepository;
 import com.likelion.dev_community.domain.question.entity.Question;
@@ -37,13 +38,13 @@ public class ReportService {
     // 신고 접수
     @Transactional
     public ReportResponse report(Long userId, ReportRequest reportRequest){
-        User user = userRepository.findById(userId).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND, "유저를 찾을 수 없습니다. "+userId));
+        User user = userRepository.findById(userId).orElseThrow(NotFound.USER::exception);
 
         Long targetUserId;
         String targetUserNickname;
 
         if(reportRequest.getTargetType() == ReportTargetType.QUESTION){
-            Question question = questionRepository.findById(reportRequest.getTargetId()).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+            Question question = questionRepository.findById(reportRequest.getTargetId()).orElseThrow(NotFound.QUESTION::exception);
 
             if(question.getAuthor().getId().equals(user.getId())){
                 throw new CustomException(ErrorCode.SELF_REPORT_NOT_ALLOWED);
@@ -52,7 +53,7 @@ public class ReportService {
             targetUserId = question.getAuthor().getId();
             targetUserNickname = question.getAuthor().getNickname();
         } else {
-            Answer answer = answerRepository.findById(reportRequest.getTargetId()).orElseThrow(()->new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+            Answer answer = answerRepository.findById(reportRequest.getTargetId()).orElseThrow(NotFound.ANSWER::exception);
 
             if(answer.getAuthor().getId().equals(user.getId())){
                 throw new CustomException(ErrorCode.SELF_REPORT_NOT_ALLOWED);
@@ -103,7 +104,7 @@ public class ReportService {
     // 신고 처리
     @Transactional
     public ReportResponse processReport(Long reportId, ReportProcessRequest request){
-        Report report = reportRepository.findById(reportId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "존재하지 않는 신고입니다."));
+        Report report = reportRepository.findById(reportId).orElseThrow(NotFound.REPORT::exception);
 
         ReportStatus newStatus = request.getStatus();
 
@@ -119,7 +120,7 @@ public class ReportService {
             case RESOLVED -> report.resolve();
         }
 
-        User user = userRepository.findById(report.getTargetUserId()).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "유저를 찾을 수 없습니다. " + report.getTargetUserId()));
+        User user = userRepository.findById(report.getTargetUserId()).orElseThrow(NotFound.USER::exception);
 
         return ReportResponse.from(report, user.getNickname());
     }

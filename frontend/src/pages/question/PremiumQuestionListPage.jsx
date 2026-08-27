@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getPremiumQuestions } from "../../api/questionApi";
-import { STATUS_LABEL } from "../../constants/questionStatus";
-import { TYPE_LABEL } from "../../constants/questionType";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
-import ExpertBadge from "../../components/common/ExpertBadge";
+import QuestionSearchBar from "../../components/question/QuestionSearchBar";
+import QuestionFilters from "../../components/question/QuestionFilters";
+import QuestionCard from "../../components/question/QuestionCard";
+import Pagination from "../../components/common/Pagination";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -87,107 +88,31 @@ function PremiumQuestionListPage() {
 
       <QuestionBoardTabs />
 
-      <form className="filter-bar" onSubmit={handleSearchSubmit}>
-        <div className="filter-bar__field filter-bar__field--keyword">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            type="text"
-            className="input"
-            placeholder="검색어를 입력하세요"
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
-          />
-        </div>
-        <div className="filter-bar__field filter-bar__field--tag">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
-            <circle cx="7.5" cy="7.5" r="1.5" />
-          </svg>
-          <input
-            type="text"
-            className="input"
-            placeholder="태그"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          검색
-        </button>
-      </form>
+      <QuestionSearchBar
+        keywordInput={keywordInput}
+        onKeywordChange={setKeywordInput}
+        tagInput={tagInput}
+        onTagChange={setTagInput}
+        onSubmit={handleSearchSubmit}
+      />
 
-      <div className="filter-row">
-        <div className="select-group">
-          <label htmlFor="status">상태</label>
-          <select
-            id="status"
-            className="select"
-            value={status}
-            onChange={(e) => {
-              setPage(0);
-              setStatus(e.target.value);
-            }}
-          >
-            <option value="">전체</option>
-            <option value="UNRESOLVED">미해결</option>
-            <option value="RESOLVED">해결</option>
-          </select>
-        </div>
-
-        <div className="select-group">
-          <label htmlFor="type">유형</label>
-          <select
-            id="type"
-            className="select"
-            value={type}
-            onChange={(e) => {
-              setPage(0);
-              setType(e.target.value);
-            }}
-          >
-            <option value="">전체</option>
-            <option value="GENERAL">일반</option>
-            <option value="CODE_REVIEW">코드리뷰</option>
-            <option value="CAREER_CONSULT">커리어상담</option>
-          </select>
-        </div>
-
-        <div className="select-group">
-          <label htmlFor="sort">정렬</label>
-          <select
-            id="sort"
-            className="select"
-            value={sort}
-            onChange={(e) => {
-              setPage(0);
-              setSort(e.target.value);
-            }}
-          >
-            <option value="">최신순</option>
-            <option value="LIKE">추천순</option>
-            <option value="VIEW">조회순</option>
-          </select>
-        </div>
-      </div>
+      <QuestionFilters
+        status={status}
+        onStatusChange={(value) => {
+          setPage(0);
+          setStatus(value);
+        }}
+        sort={sort}
+        onSortChange={(value) => {
+          setPage(0);
+          setSort(value);
+        }}
+        type={type}
+        onTypeChange={(value) => {
+          setPage(0);
+          setType(value);
+        }}
+      />
 
       {loading && <p className="state-text">불러오는 중...</p>}
       {error && (
@@ -208,83 +133,18 @@ function PremiumQuestionListPage() {
       {!loading && !error && questions.length > 0 && (
         <ul className="question-list">
           {questions.map((q) => (
-            <li key={q.id} className="question-card">
-              <div className="question-card__top">
-                <Link
-                  to={`/questions/${q.id}`}
-                  className="question-card__title"
-                >
-                  {q.title}
-                </Link>
-                <div className="question-card__badges">
-                  <span className={`badge badge-type badge-type--${q.type?.toLowerCase()}`}>
-                    {TYPE_LABEL[q.type] ?? q.type}
-                  </span>
-                  <span
-                    className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
-                  >
-                    {STATUS_LABEL[q.status] ?? q.status}
-                  </span>
-                </div>
-              </div>
-
-              <div className="question-card__tags">
-                {q.tags.length > 0 ? (
-                  q.tags.map((tag) => (
-                    <span key={tag} className="tag-chip">
-                      {tag}
-                    </span>
-                  ))
-                ) : (
-                  <span className="question-card__meta">태그 없음</span>
-                )}
-              </div>
-
-              <div className="question-card__meta">
-                <span className="author-with-badge">
-                  <span
-                    className="avatar-circle"
-                    style={q.authorAvatarColor ? { backgroundColor: q.authorAvatarColor } : undefined}
-                    aria-hidden="true"
-                  >
-                    {q.authorNickname?.[0] ?? "?"}
-                  </span>
-                  {q.authorNickname}
-                  {q.authorIsExpert && <ExpertBadge className="expert-badge--sm" />}
-                </span>
-                <span>조회 {q.viewCount}</span>
-                <span>추천 {q.likeCount}</span>
-                <span>답변 {q.answerCount}</span>
-                <span>{new Date(q.createdAt).toLocaleString()}</span>
-              </div>
+            <li key={q.id}>
+              <QuestionCard question={q} showType />
             </li>
           ))}
         </ul>
       )}
 
-      {meta.totalPages > 0 && (
-        <div className="pagination">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >
-            이전
-          </button>
-          <span className="pagination__info">
-            {page + 1} / {meta.totalPages}
-          </span>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setPage((p) => Math.min(meta.totalPages - 1, p + 1))}
-            disabled={page >= meta.totalPages - 1}
-          >
-            다음
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={meta.totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

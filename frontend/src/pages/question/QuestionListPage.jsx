@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getQuestions } from "../../api/questionApi";
-import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
-import ExpertBadge from "../../components/common/ExpertBadge";
-import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import QuestionSearchBar from "../../components/question/QuestionSearchBar";
+import QuestionFilters from "../../components/question/QuestionFilters";
+import QuestionCard from "../../components/question/QuestionCard";
+import Pagination from "../../components/common/Pagination";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;
@@ -86,113 +87,26 @@ function QuestionListPage() {
 
       <QuestionBoardTabs />
 
-      <form className="filter-bar" onSubmit={handleSearchSubmit}>
-        <div className="filter-bar__field filter-bar__field--keyword">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            type="text"
-            className="input"
-            placeholder="검색어를 입력하세요"
-            value={keywordInput}
-            onChange={(e) => setKeywordInput(e.target.value)}
-          />
-        </div>
-        <div className="filter-bar__field filter-bar__field--tag">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.83 0l4.59-4.59a2 2 0 0 0 0-2.83Z" />
-            <circle cx="7.5" cy="7.5" r="1.5" />
-          </svg>
-          <input
-            type="text"
-            className="input"
-            placeholder="태그"
-            value={tagInput}
-            onChange={(e) => setTagInput(e.target.value)}
-          />
-        </div>
-        <button type="submit" className="btn btn-primary">
-          검색
-        </button>
-      </form>
+      <QuestionSearchBar
+        keywordInput={keywordInput}
+        onKeywordChange={setKeywordInput}
+        tagInput={tagInput}
+        onTagChange={setTagInput}
+        onSubmit={handleSearchSubmit}
+      />
 
-      <div className="filter-row">
-        <div className="select-group">
-          <label htmlFor="status">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
-            상태
-          </label>
-          <select
-            id="status"
-            className="select"
-            value={status}
-            onChange={(e) => {
-              setPage(0);
-              setStatus(e.target.value);
-            }}
-          >
-            <option value="">전체</option>
-            <option value="UNRESOLVED">미해결</option>
-            <option value="RESOLVED">해결</option>
-          </select>
-        </div>
-
-        <div className="select-group">
-          <label htmlFor="sort">
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 6h18M6 12h12M10 18h4" />
-            </svg>
-            정렬
-          </label>
-          <select
-            id="sort"
-            className="select"
-            value={sort}
-            onChange={(e) => {
-              setPage(0);
-              setSort(e.target.value);
-            }}
-          >
-            <option value="">최신순</option>
-            <option value="LIKE">추천순</option>
-            <option value="VIEW">조회순</option>
-          </select>
-        </div>
-      </div>
+      <QuestionFilters
+        status={status}
+        onStatusChange={(value) => {
+          setPage(0);
+          setStatus(value);
+        }}
+        sort={sort}
+        onSortChange={(value) => {
+          setPage(0);
+          setSort(value);
+        }}
+      />
 
       {loading && <p className="state-text">불러오는 중...</p>}
       {error && (
@@ -214,113 +128,17 @@ function QuestionListPage() {
         <ul className="question-list">
           {questions.map((q) => (
             <li key={q.id}>
-              <Link to={`/questions/${q.id}`} className="question-card">
-              <div className="question-card__top">
-                <span className="question-card__title">{q.title}</span>
-                <span
-                  className={`badge ${q.status === "RESOLVED" ? "badge-resolved" : "badge-open"}`}
-                >
-                  {STATUS_LABEL[q.status] ?? q.status}
-                </span>
-              </div>
-
-              <div className="question-card__tags">
-                {q.tags.length > 0 ? (
-                  q.tags.map((tag) => (
-                    <span key={tag} className="tag-chip">
-                      {tag}
-                    </span>
-                  ))
-                ) : (
-                  <span className="question-card__meta"></span>
-                )}
-              </div>
-
-              <div className="question-card__meta">
-                <span className="author-with-badge">
-                  <span
-                    className="avatar-circle"
-                    style={q.authorAvatarColor ? { backgroundColor: q.authorAvatarColor } : undefined}
-                    aria-hidden="true"
-                  >
-                    {q.authorNickname?.[0] ?? "?"}
-                  </span>
-                  {q.authorNickname}
-                  {q.authorIsExpert && (
-                    <ExpertBadge className="expert-badge--sm" />
-                  )}
-                </span>
-                <span className="question-card__stat">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                  {q.viewCount}
-                </span>
-                <span className="question-card__stat">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z" />
-                  </svg>
-                  {q.likeCount}
-                </span>
-                <span className="question-card__stat">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                  </svg>
-                  {q.answerCount}
-                </span>
-                <span className="question-card__time">{formatRelativeTime(q.createdAt)}</span>
-              </div>
-              </Link>
+              <QuestionCard question={q} />
             </li>
           ))}
         </ul>
       )}
 
-      {meta.totalPages > 0 && (
-        <div className="pagination">
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-          >
-            이전
-          </button>
-          <span className="pagination__info">
-            {page + 1} / {meta.totalPages}
-          </span>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => setPage((p) => Math.min(meta.totalPages - 1, p + 1))}
-            disabled={page >= meta.totalPages - 1}
-          >
-            다음
-          </button>
-        </div>
-      )}
+      <Pagination
+        page={page}
+        totalPages={meta.totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 }

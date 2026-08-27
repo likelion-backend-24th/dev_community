@@ -102,16 +102,7 @@ public class AuthService {
 
         loginAttemptService.reset(request.getUsername());
 
-        refreshTokenRepository.deleteById(user.getId());
-
-        String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUsername(), user.getNickname(), List.of(user.getRole().name()));
-        String refreshToken = jwtProvider.createRefreshToken(user.getId());
-
-        refreshTokenRepository.save(new RefreshToken(user.getId(),refreshToken,jwtProvider.getRefreshTokenExpirationMs()));
-
-        ResponseCookie cookie = cookieProvider.createCookie("refreshToken",refreshToken, Duration.ofMillis(jwtProvider.getRefreshTokenExpirationMs()));
-
-        httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        String accessToken = issueTokensAndSetCookie(user, httpServletResponse);
 
         // 화면에는 "이번" 로그인이 아니라 "직전" 로그인 정보를 보여줘야 하므로, 덮어쓰기 전에 먼저 읽어둔다.
         LocalDateTime previousLoginAt = user.getLastLoginAt();
@@ -157,7 +148,7 @@ public class AuthService {
     @Transactional
     public void logout(Long userId, HttpServletResponse httpServletResponse){
 
-        ResponseCookie cookie = cookieProvider.clearCookie("refreshToken");
+        ResponseCookie cookie = cookieProvider.clearCookie(CookieProvider.REFRESH_TOKEN);
 
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
@@ -262,6 +253,12 @@ public class AuthService {
 
     // 로그인 공통 메서드 분리
     private TokenResponse issueToken(User user, HttpServletResponse httpServletResponse) {
+        return TokenResponse.of(issueTokensAndSetCookie(user, httpServletResponse));
+    }
+
+    // 기존 세션을 정리하고 액세스/리프레시 토큰을 새로 발급한다.
+    // 리프레시 토큰은 응답 쿠키로 내려보내고, 액세스 토큰만 반환한다.
+    private String issueTokensAndSetCookie(User user, HttpServletResponse httpServletResponse) {
         refreshTokenRepository.deleteById(user.getId());
 
         String accessToken = jwtProvider.createAccessToken(user.getId(), user.getUsername(), user.getNickname(), List.of(user.getRole().name()));
@@ -269,9 +266,10 @@ public class AuthService {
 
         refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpirationMs()));
 
-        ResponseCookie cookie = cookieProvider.createCookie("refreshToken", refreshToken, Duration.ofMillis(jwtProvider.getRefreshTokenExpirationMs()));
+        ResponseCookie cookie = cookieProvider.createCookie(
+                CookieProvider.REFRESH_TOKEN, refreshToken, Duration.ofMillis(jwtProvider.getRefreshTokenExpirationMs()));
         httpServletResponse.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return TokenResponse.of(accessToken);
+        return accessToken;
     }
 }

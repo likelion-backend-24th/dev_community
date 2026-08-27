@@ -118,7 +118,7 @@ public class OAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
         refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken, jwtProvider.getRefreshTokenExpirationMs()));
 
-        ResponseCookie cookie = cookieProvider.createCookie("refreshToken", refreshToken, Duration.ofMillis(jwtProvider.getRefreshTokenExpirationMs()));
+        ResponseCookie cookie = cookieProvider.createCookie(CookieProvider.REFRESH_TOKEN, refreshToken, Duration.ofMillis(jwtProvider.getRefreshTokenExpirationMs()));
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return accessToken;

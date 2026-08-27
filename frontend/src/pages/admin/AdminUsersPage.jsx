@@ -17,6 +17,7 @@ import { STATUS_LABEL as QUESTION_STATUS_LABEL } from "../../constants/questionS
 import "../../styles/admin.css";
 import "../../styles/dashboard.css";
 import "../../styles/mypage.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const DASHBOARD_FILTERS = {
   questionCount: { label: "작성한 질문", source: "questions", predicate: () => true },
@@ -510,7 +511,7 @@ function UserDashboardModal({ user, onClose, onResolved }) {
                                 {QUESTION_STATUS_LABEL[item.status] ?? item.status}
                               </span>
                               <span className="mypage-list__title">{item.title}</span>
-                              <span className="mypage-list__date">{new Date(item.createdAt).toLocaleString()}</span>
+                              <span className="mypage-list__date">{formatDateTime(item.createdAt)}</span>
                             </Link>
                           </li>
                         ) : (
@@ -523,7 +524,7 @@ function UserDashboardModal({ user, onClose, onResolved }) {
                             >
                               {item.adopted && <span className="badge badge-resolved">채택됨</span>}
                               <span className="mypage-list__title">{item.content}</span>
-                              <span className="mypage-list__date">{new Date(item.createdAt).toLocaleString()}</span>
+                              <span className="mypage-list__date">{formatDateTime(item.createdAt)}</span>
                             </Link>
                           </li>
                         ),
@@ -553,7 +554,7 @@ function UserDashboardModal({ user, onClose, onResolved }) {
                             </span>
                             <span className="mypage-list__title">{item.title}</span>
                             <span className="mypage-list__date">
-                              {new Date(item.createdAt).toLocaleString()}
+                              {formatDateTime(item.createdAt)}
                             </span>
                           </Link>
                         </li>

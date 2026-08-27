@@ -2,6 +2,7 @@ package com.likelion.dev_community.domain.payment.service;
 
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.payment.dto.BillingKeyPrepareResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCancelResponse;
 import com.likelion.dev_community.domain.payment.dto.PaymentCompleteResponse;
@@ -27,7 +28,6 @@ import io.portone.sdk.server.payment.CancelledPayment;
 import io.portone.sdk.server.payment.PaidPayment;
 import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PayWithBillingKeyResponse;
-import io.portone.sdk.server.payment.PaymentCancellation;
 import io.portone.sdk.server.payment.PaymentClient;
 import io.portone.sdk.server.payment.billingkey.BillingKeyClient;
 import io.portone.sdk.server.payment.billingkey.BillingKeyDeleteRequester;
@@ -52,10 +52,11 @@ import java.util.concurrent.CompletionException;
 @RequiredArgsConstructor
 public class PaymentService {
 
-    private final Long PREMIUM_PRICE= 4900L;
+    private static final long PREMIUM_PRICE = 4900L;
     private static final String CURRENCY = "KRW";
     private static final String SUBSCRIPTION_ORDER_NAME = "프리미엄 구독 정기결제";
     private static final long CANCELLABLE_DAYS = 7; // 결제 취소(환불) 가능 기간
+    private static final String PAYMENT_ID_PREFIX = "DEV_";
 
     @Value("${portone.store-id}")
     private String storeId;
@@ -79,27 +80,26 @@ public class PaymentService {
     @Transactional
     public PaymentPrepareResponse preparePayment(Long userId, PlanType planType){
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(()-> new CustomException(ErrorCode.NOT_FOUND,"서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
 
-        String paymentId = "DEV_" + UUID.randomUUID();
-        String currency = "KRW";
+        String paymentId = newPaymentId();
 
-        Order order = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, currency));
+        Order order = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
         paymentRepository.save(Payment.create(order, paymentId));
 
         List<ProductInfo> products = List.of(
                 new ProductInfo(planType.name(), "프리미엄 구독", planType.name(), PREMIUM_PRICE, 1)
         );
 
-        return PaymentPrepareResponse.of(storeId, channelKey, paymentId, "프리미엄 구독", PREMIUM_PRICE, currency, products);
+        return PaymentPrepareResponse.of(storeId, channelKey, paymentId, "프리미엄 구독", PREMIUM_PRICE, CURRENCY, products);
     }
 
     // 빌링키 발급 사전 준비
     @Transactional
     public BillingKeyPrepareResponse prepareBillingKeyIssue(Long userId) {
         userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
         String issueId = "ISSUE_" + UUID.randomUUID();
 
@@ -110,14 +110,14 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCompleteResponse issueBillingKeyAndCharge(String billingKey, Long userId, PlanType planType) {
         User user = userRepository.findByIdAndStatus(userId, UserStatus.ACTIVE)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "서비스 이용 가능 상태가 아닌 사용자입니다."));
+                .orElseThrow(NotFound.ACTIVE_USER::exception);
 
         // 빌링키 재조회
         BillingKeyInfo billingKeyInfo;
         try {
             billingKeyInfo = billingKeyClient.getBillingKeyInfo(billingKey).join();
         } catch (CompletionException e) {
-            log.warn("PortOne 빌링키 조회 실패: billingKey={}, cause={}", billingKey, e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("PortOne 빌링키 조회 실패: billingKey={}, cause={}", billingKey, causeOf(e));
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 빌링키 정보를 확인할 수 없습니다.");
         }
 
@@ -127,7 +127,7 @@ public class PaymentService {
 
         // 1회차 결제
         Order order = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
-        String paymentId = "DEV_" + UUID.randomUUID();
+        String paymentId = newPaymentId();
         Payment payment = paymentRepository.save(Payment.create(order, paymentId));
 
         PayWithBillingKeyResponse response;
@@ -139,7 +139,7 @@ public class PaymentService {
                     null, null, null, null, null, noticeUrls(), null, null, null, null, null, null, null, null
             ).join();
         } catch (CompletionException e) {
-            log.warn("정기결제 첫 결제 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("정기결제 첫 결제 실패: userId={}, cause={}", userId, causeOf(e));
             payment.markFailed();
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "정기결제 첫 결제에 실패했습니다.");
         }
@@ -159,7 +159,7 @@ public class PaymentService {
     // 다음 회차 결제 건 생성 + PortOne 결제 예약 등록
     private void scheduleNextCharge(User user, PlanType planType, String billingKey, LocalDateTime timeToPay) {
         Order nextOrder = orderRepository.save(Order.create(user, planType, PREMIUM_PRICE, CURRENCY));
-        String nextPaymentId = "DEV_" + UUID.randomUUID();
+        String nextPaymentId = newPaymentId();
         paymentRepository.save(Payment.create(nextOrder, nextPaymentId));
 
         BillingKeyPaymentScheduleInput scheduleInput = new BillingKeyPaymentScheduleInput(
@@ -174,7 +174,7 @@ public class PaymentService {
                     nextPaymentId, scheduleInput, timeToPay.atZone(ZoneId.systemDefault()).toInstant()
             ).join();
         } catch (CompletionException e) {
-            log.warn("다음 정기결제 예약 실패: userId={}, cause={}", user.getId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("다음 정기결제 예약 실패: userId={}, cause={}", user.getId(), causeOf(e));
         }
     }
 
@@ -187,6 +187,15 @@ public class PaymentService {
         return webhookNoticeUrl == null || webhookNoticeUrl.isBlank() ? null : List.of(webhookNoticeUrl);
     }
 
+    private String newPaymentId() {
+        return PAYMENT_ID_PREFIX + UUID.randomUUID();
+    }
+
+    // PortOne SDK 호출은 CompletableFuture.join()이라 실제 원인이 CompletionException에 감싸여 온다.
+    private String causeOf(CompletionException e) {
+        return e.getCause() != null ? e.getCause().toString() : e.toString();
+    }
+
 
     // 결제 완료 검증
     @Deprecated
@@ -194,7 +203,7 @@ public class PaymentService {
     public PaymentCompleteResponse completePayment(String paymentId, Long userId) {
         // paymentId로 우리 Payment 조회, 동시 완료 요청이 순서대로 처리되도록 락. (없으면 404)
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         Order order = payment.getOrder();
 
@@ -221,7 +230,7 @@ public class PaymentService {
             portonePayment = paymentClient.getPayment(payment.getPaymentId()).join();
         } catch (CompletionException e) {
             // PortOne 응답 자체를 못 받아 실제 transactionId가 존재하지 않는 케이스
-            log.warn("PortOne 결제 조회 실패: paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("PortOne 결제 조회 실패: paymentId={}, cause={}", payment.getPaymentId(), causeOf(e));
             payment.markFailed();
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 결제 정보를 확인할 수 없습니다.");
         }
@@ -261,7 +270,7 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public void syncPaymentFromWebhook(String paymentId) {
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         // 이미 완료된 결제면 재검증 x
         if (payment.getStatus() == PaymentStatus.PAID) {
@@ -274,7 +283,7 @@ public class PaymentService {
     // 웹훅(Transaction.Cancelled) 취소 상태 동기화
     @Transactional(noRollbackFor = CustomException.class)
     public void syncCancelFromWebhook(String paymentId) {
-        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+        Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId).orElseThrow(NotFound.PAYMENT::exception);
 
         // 이미 취소 반영된 결제면 재처리 x
         if (payment.getStatus() == PaymentStatus.CANCELLED) {
@@ -285,7 +294,7 @@ public class PaymentService {
         try {
             portonePayment = paymentClient.getPayment(payment.getPaymentId()).join();
         } catch (CompletionException e) {
-            log.warn("PortOne 결제 조회 실패(취소 동기화): paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("PortOne 결제 조회 실패(취소 동기화): paymentId={}, cause={}", payment.getPaymentId(), causeOf(e));
             throw new CustomException(ErrorCode.PAYMENT_VERIFICATION_FAILED, "PortOne에서 결제 정보를 확인할 수 없습니다.");
         }
 
@@ -324,7 +333,7 @@ public class PaymentService {
     @Transactional(noRollbackFor = CustomException.class)
     public PaymentCancelResponse cancelPayment(String paymentId, Long userId, String reason) {
         Payment payment = paymentRepository.findByPaymentIdForUpdate(paymentId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "결제 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.PAYMENT::exception);
 
         Order order = payment.getOrder();
 
@@ -347,7 +356,7 @@ public class PaymentService {
                     CancelRequester.Customer.INSTANCE, null, null, null, null, null
             ).join();
         } catch (CompletionException e) {
-            log.warn("PortOne 결제 취소 실패: paymentId={}, cause={}", payment.getPaymentId(), e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("PortOne 결제 취소 실패: paymentId={}, cause={}", payment.getPaymentId(), causeOf(e));
             throw new CustomException(ErrorCode.PAYMENT_CANCEL_FAILED);
         }
 
@@ -387,7 +396,7 @@ public class PaymentService {
                         billingKeyClient.deleteBillingKey(billingKey, "회원 탈퇴", BillingKeyDeleteRequester.Customer.INSTANCE, null)
                                 .join();
                     } catch (CompletionException e) {
-                        log.warn("빌링키 폐기 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+                        log.warn("빌링키 폐기 실패: userId={}, cause={}", userId, causeOf(e));
                     }
 
                     subscription.clearBillingKey();
@@ -406,7 +415,7 @@ public class PaymentService {
         try {
             paymentScheduleClient.revokePaymentSchedules(billingKey, null).join();
         } catch (CompletionException e) {
-            log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", userId, e.getCause() != null ? e.getCause().toString() : e.toString());
+            log.warn("다음 정기결제 예약 취소 실패: userId={}, cause={}", userId, causeOf(e));
         }
 
         paymentRepository.findFirstByOrder_User_IdAndStatusOrderByCreatedAtDesc(userId, PaymentStatus.READY)

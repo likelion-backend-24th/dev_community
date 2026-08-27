@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import "../../styles/admin.css";
 import "../../styles/dashboard.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 // index.css의 디자인 토큰과 맞춘 차트 색상 (SVG 속성엔 var() 대신 고정값 사용)
 const COLOR_BLURPLE = "#5865f2";
@@ -194,7 +195,7 @@ function StaleQuestionsPanel() {
                       {q.title}
                     </span>
                   </td>
-                  <td>{new Date(q.createdAt).toLocaleString()}</td>
+                  <td>{formatDateTime(q.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

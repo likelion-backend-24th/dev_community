@@ -9,6 +9,7 @@ import {
 } from "../../api/notificationApi";
 import ThemeToggle from "./ThemeToggle";
 import { getMyInfo } from "../../api/userApi";
+import { formatDateTime } from "../../utils/formatDate";
 
 function Navbar() {
   const { isAuthenticated, isAdmin, user, logout } = useAuth();
@@ -162,7 +163,7 @@ function Navbar() {
                           {item.message}
                         </span>
                         <span className="navbar__notif-item-time">
-                          {new Date(item.createdAt).toLocaleString()}
+                          {formatDateTime(item.createdAt)}
                         </span>
                       </button>
                     ))}

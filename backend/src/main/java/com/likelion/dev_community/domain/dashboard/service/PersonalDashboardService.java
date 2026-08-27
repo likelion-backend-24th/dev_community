@@ -1,7 +1,6 @@
 package com.likelion.dev_community.domain.dashboard.service;
 
-import com.likelion.dev_community.common.exception.CustomException;
-import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.dashboard.dto.ActivityTimelineItem;
 import com.likelion.dev_community.domain.dashboard.dto.PersonalDashboardSummaryResponse;
 import com.likelion.dev_community.domain.dashboard.repository.PersonalDashboardQueryRepository;
@@ -27,7 +26,7 @@ public class PersonalDashboardService {
 
     public PersonalDashboardSummaryResponse getSummary(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.USER::exception);
 
         long questionCount = personalDashboardQueryRepository.countQuestionsByAuthor(userId);
         long answerCount = personalDashboardQueryRepository.countAnswersByAuthor(userId);

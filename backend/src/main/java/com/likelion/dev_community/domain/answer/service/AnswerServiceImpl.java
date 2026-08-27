@@ -3,6 +3,7 @@ package com.likelion.dev_community.domain.answer.service;
 import com.likelion.dev_community.common.AuthorizationValidator;
 import com.likelion.dev_community.common.exception.CustomException;
 import com.likelion.dev_community.common.exception.ErrorCode;
+import com.likelion.dev_community.common.exception.NotFound;
 import com.likelion.dev_community.domain.answer.dto.AnswerRequest;
 import com.likelion.dev_community.domain.answer.dto.AnswerResponse;
 import com.likelion.dev_community.domain.answer.entity.Answer;
@@ -41,10 +42,10 @@ public class AnswerServiceImpl implements AnswerService {
     public AnswerResponse createAnswer(Long userId, boolean isAdmin, Long questionId, AnswerRequest request) {
 
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."));
+                .orElseThrow(NotFound.USER::exception);
 
         Question question = questionRepository.findById(questionId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.QUESTION::exception);
 
         // 커리어상담 글은 답변 대신 채팅으로 응답
         if (question.getType() == QuestionType.CAREER_CONSULT) {
@@ -83,7 +84,7 @@ public class AnswerServiceImpl implements AnswerService {
     @Transactional(readOnly = true)
     public List<AnswerResponse> readAnswers(Long questionId) {
 
-        Question question = questionRepository.findById(questionId).orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "질문을 찾을 수 없습니다."));
+        Question question = questionRepository.findById(questionId).orElseThrow(NotFound.QUESTION::exception);
 
         // 커리어상담은 답변 목록 대신 채팅 개설 버튼 노출 (프론트)
         if (question.getType() == QuestionType.CAREER_CONSULT) {
@@ -110,7 +111,7 @@ public class AnswerServiceImpl implements AnswerService {
     public AnswerResponse getAnswer(Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ANSWER::exception);
 
         return AnswerResponse.from(answer);
     }
@@ -120,7 +121,7 @@ public class AnswerServiceImpl implements AnswerService {
     public AnswerResponse updateAnswer(Long userId, Long answerId, boolean isAdmin, AnswerRequest request) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ANSWER::exception);
 
         AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 수정할 수 있습니다.");
 
@@ -134,7 +135,7 @@ public class AnswerServiceImpl implements AnswerService {
     public void deleteAnswer(Long userId, Long answerId, boolean isAdmin) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ANSWER::exception);
 
         AuthorizationValidator.validateAuthorOrAdmin(answer.getAuthor().getId(), userId, isAdmin, "본인이 작성한 답변만 삭제할 수 있습니다.");
 
@@ -146,7 +147,7 @@ public class AnswerServiceImpl implements AnswerService {
     public AnswerResponse adoptAnswer(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ANSWER::exception);
 
         Question question = answer.getQuestion();
 
@@ -169,7 +170,7 @@ public class AnswerServiceImpl implements AnswerService {
     public AnswerResponse cancelAdoption(Long userId, Long answerId) {
 
         Answer answer = answerRepository.findById(answerId)
-                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND, "답변을 찾을 수 없습니다."));
+                .orElseThrow(NotFound.ANSWER::exception);
 
         Question question = answer.getQuestion();
 
