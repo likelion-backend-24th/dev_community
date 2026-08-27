@@ -3,7 +3,12 @@ spring:
     activate:
       on-profile: prod
   datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/dev_community?serverTimezone=Asia/Seoul
+    # DB_NAME 기본값 dev_community, DB_SSL_MODE 기본값 PREFERRED는 지금(EC2 자체 호스팅 MySQL)
+    # 동작을 그대로 유지한다. Aiven 등 관리형 DB로 옮길 때는 .env에서
+    # DB_NAME=defaultdb, DB_SSL_MODE=REQUIRED로 바꾼다(Aiven 콘솔의 SSL mode: REQUIRED와 매칭).
+    # PREFERRED는 서버가 TLS를 지원하면 자동으로 암호화하고, 아니면 평문으로 접속을 유지하는
+    # MySQL Connector/J 기본값이라 지금 EC2 MySQL 컨테이너 설정과 무관하게 안전하다.
+    url: jdbc:mysql://${DB_HOST}:${DB_PORT:3306}/${DB_NAME:dev_community}?serverTimezone=Asia/Seoul&sslMode=${DB_SSL_MODE:PREFERRED}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${DB_USER}
     password: ${DB_PASSWORD}
