@@ -32,6 +32,8 @@ jwt:
 cookie:
   secure:
     false
+  same-site:
+    Strict
 
 admin:
   username: ${ADMIN_USERNAME:}

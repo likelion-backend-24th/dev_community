@@ -36,8 +36,13 @@ services:
       - uploads_dev_community:/app/uploads
     environment:
       SPRING_PROFILES_ACTIVE: prod
-      DB_HOST: mysql
-      DB_PORT: 3306
+      # 기본값(mysql/3306/dev_community/PREFERRED)은 이 파일의 mysql 서비스를 그대로 가리킨다.
+      # Aiven 등 외부 DB로 옮길 때만 .env에 실제 값을 채운다(DB_NAME=defaultdb,
+      # DB_SSL_MODE=REQUIRED). 그 전까지는 지금 배포와 동일하게 동작한다.
+      DB_HOST: ${DB_HOST:-mysql}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_NAME: ${DB_NAME:-dev_community}
+      DB_SSL_MODE: ${DB_SSL_MODE:-PREFERRED}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       REDIS_HOST: redis
@@ -61,6 +66,11 @@ services:
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # 프론트를 Vercel 등 별도 도메인으로 옮길 때만 .env에 값을 채운다(콤마 구분 origin,
+      # 예: https://dev-community.vercel.app / SameSite는 None). 미설정 시 기본값이
+      # 적용되어 지금 배포는 그대로 동작한다. 실제 기본값은 application-prod.yml 참고.
+      CORS_ADDITIONAL_ORIGINS: ${CORS_ADDITIONAL_ORIGINS:-}
+      COOKIE_SAME_SITE: ${COOKIE_SAME_SITE:-Strict}
     depends_on:
       mysql:
         condition: service_healthy
