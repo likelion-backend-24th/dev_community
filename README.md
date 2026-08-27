@@ -3,11 +3,13 @@
 > 질문하고, 답변하고, 도움이 됐다면 채택까지 - 개발 학습자를 위한 Q&A 게시판입니다.
 > 멤버십(구독) 게시판, AI 요약/태그 추천, 코드리뷰, 커리어상담 1:1 채팅까지 지원합니다.
 
-**Live**: https://dev-com.duckdns.org
+**Live**: https://dev-community-neon.vercel.app
 
 **Demo**: [시연 영상](https://drive.google.com/file/d/1aDeFzo_2IxoHj9b9WAH6rkJaIcSQTPhL/view?usp=drive_link)
 
 멋쟁이사자처럼 백엔드 24기 기초/응용 4조 팀 프로젝트입니다.
+
+> 이 프로젝트는 이후 배포 방식을 최종적으로 변경했습니다 — 프리티어 크레딧 소진 이후에도 추가 비용 없이 서비스를 지속 운영하기 위한 결정입니다. 배경과 세부 과정은 문서 최하단 [배포](#배포) 문단에 정리했습니다.
 
 ## 프로젝트 개요
 
@@ -324,12 +326,25 @@ npm run test
 
 ## 배포
 
-**Live**: https://dev-com.duckdns.org (AWS EC2, DuckDNS + Let's Encrypt)
+**Live**: https://dev-community-neon.vercel.app
 
 - GitHub Actions CI가 main push/PR마다 테스트를 자동 실행하고, main에 push되면 CD 워크플로우가 이어서 백엔드/프론트 이미지를 GHCR에 푸시합니다.
 - EC2는 `docker compose -f docker-compose.prod.yml pull && up -d`로 이미지만 받아 기동합니다.
 - Nginx가 정적 파일 서빙 + `/api`, `/ws`, `/oauth2`, `/swagger-ui` 프록시를 담당하고, certbot이 12시간마다 인증서 자동 갱신을 시도합니다.
 - 배포 환경의 각종 시크릿 값, 외부 API 키 값, DB 정보 등은 .env와 Github Secrets로 관리합니다.
+
+### EC2 종료와 배포 구조 이전 (2026-08-27)
+
+AWS 프리티어 크레딧 소진 이후에도 추가 비용 없이 서비스를 유지하기 위해, 단일 EC2 인스턴스가 담당하던 DB·백엔드·프론트를 각 역할에 맞는 영구 무료 플랜으로 분리 이전했습니다.
+
+- **DB**: EC2 내 로컬 MySQL → Aiven 관리형 MySQL(Free tier)
+- **프론트**: EC2 Nginx 정적 서빙 → Vercel(GitHub 연동 자동 빌드·배포)
+- **백엔드**: DB·프론트 역할을 덜어낸 뒤, 남은 앱 서버 + Nginx(리버스 프록시)만 GCP Compute Engine e2-micro(Always Free)로 이전
+
+이전 과정에서 실제로 발생한 문제와 해결:
+- e2-micro의 RAM 1GB 한계로 컨테이너가 응답 불능 상태에 빠지는 것을 확인 → 스왑 추가와 JVM 힙/Metaspace, Tomcat 스레드풀, HikariCP 커넥션풀 축소로 해결
+- 이전 직후 Aiven(인도 리전)과 GCP(미국 리전) 간 물리적 거리로 API 응답 지연 발생 → Aiven을 동일 무료 등급 내 북미 리전으로 재배포해 왕복 지연시간을 260ms대에서 40ms대로 개선
+- 실 계정 2개로 질문·답변·채택·WebSocket 실시간 알림까지 end-to-end로 검증한 뒤 기존 EC2 인스턴스를 종료
 
 ## 개선 계획
 
