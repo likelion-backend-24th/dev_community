@@ -6,6 +6,7 @@ import { TYPE_LABEL } from "../../constants/questionType";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/question.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const PAGE_SIZE = 10;
 
@@ -255,7 +256,7 @@ function PremiumQuestionListPage() {
                 <span>조회 {q.viewCount}</span>
                 <span>추천 {q.likeCount}</span>
                 <span>답변 {q.answerCount}</span>
-                <span>{new Date(q.createdAt).toLocaleString()}</span>
+                <span>{formatDateTime(q.createdAt)}</span>
               </div>
             </li>
           ))}

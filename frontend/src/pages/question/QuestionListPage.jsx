@@ -4,7 +4,7 @@ import { getQuestions } from "../../api/questionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import QuestionBoardTabs from "../../components/question/QuestionBoardTabs";
 import ExpertBadge from "../../components/common/ExpertBadge";
-import { formatRelativeTime } from "../../utils/formatRelativeTime";
+import { formatRelativeTime } from "../../utils/formatDate";
 import "../../styles/question.css";
 
 const PAGE_SIZE = 10;

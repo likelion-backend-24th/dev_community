@@ -15,6 +15,7 @@ import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github-dark.css";
 import "../../styles/question.css";
 import "../../styles/markdown.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 function AnswerItem({
   answer,
@@ -151,7 +152,7 @@ function AnswerItem({
           )}
         </span>
         <span>추천 {answer.likeCount}</span>
-        <span>{new Date(answer.createdAt).toLocaleString()}</span>
+        <span>{formatDateTime(answer.createdAt)}</span>
       </div>
 
       {!editing && (

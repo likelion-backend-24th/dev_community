@@ -1,3 +1,11 @@
+// 절대 시각 표기. 질문/답변/알림/채팅/관리자 목록 등 15곳에서 각자
+// new Date(x).toLocaleString()을 직접 호출하고 있던 것을 한 곳으로 모았다.
+// 표기 형식을 바꾸고 싶으면 여기만 고치면 된다.
+export function formatDateTime(dateString) {
+  return new Date(dateString).toLocaleString();
+}
+
+// 상대 시각 표기 ("3분 전", "2일 전").
 export function formatRelativeTime(dateString) {
   const diffSec = Math.floor(
     (Date.now() - new Date(dateString).getTime()) / 1000,

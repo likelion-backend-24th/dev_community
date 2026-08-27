@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getReports, processReport } from "../../api/adminApi";
 import { getAnswer } from "../../api/answerApi";
 import "../../styles/admin.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const STATUS_LABEL = {
   PENDING: "대기중",
@@ -176,7 +177,7 @@ function AdminReportsPage() {
                       {STATUS_LABEL[r.status] ?? r.status}
                     </span>
                   </td>
-                  <td>{new Date(r.createdAt).toLocaleString()}</td>
+                  <td>{formatDateTime(r.createdAt)}</td>
                   <td>
                     {r.status === "PENDING" ? (
                       <div className="table__actions">

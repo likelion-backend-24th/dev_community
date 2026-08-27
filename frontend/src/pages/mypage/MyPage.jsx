@@ -15,6 +15,7 @@ import { getMySubscription } from "../../api/subscriptionApi";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import ExpertBadge from "../../components/common/ExpertBadge";
 import "../../styles/mypage.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 function MyPage() {
   const navigate = useNavigate();
@@ -288,7 +289,7 @@ function MyPage() {
                   </span>
                   <span className="mypage-list__title">{q.title}</span>
                   <span className="mypage-list__date">
-                    {new Date(q.createdAt).toLocaleString()}
+                    {formatDateTime(q.createdAt)}
                   </span>
                 </Link>
               </li>
@@ -312,7 +313,7 @@ function MyPage() {
                 )}
                 <span className="mypage-list__title">{a.content}</span>
                 <span className="mypage-list__date">
-                  {new Date(a.createdAt).toLocaleString()}
+                  {formatDateTime(a.createdAt)}
                 </span>
               </Link>
             </li>

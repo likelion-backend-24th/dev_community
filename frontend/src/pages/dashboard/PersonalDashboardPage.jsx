@@ -10,6 +10,7 @@ import { useAsyncData } from "../../hooks/useAsyncData";
 import { STATUS_LABEL } from "../../constants/questionStatus";
 import "../../styles/dashboard.css";
 import "../../styles/mypage.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const FILTERS = {
   questionCount: { label: "작성한 질문", source: "questions", predicate: () => true },
@@ -139,7 +140,7 @@ function PersonalDashboardPage() {
                         {STATUS_LABEL[item.status] ?? item.status}
                       </span>
                       <span className="mypage-list__title">{item.title}</span>
-                      <span className="mypage-list__date">{new Date(item.createdAt).toLocaleString()}</span>
+                      <span className="mypage-list__date">{formatDateTime(item.createdAt)}</span>
                     </Link>
                   </li>
                 ) : (
@@ -147,7 +148,7 @@ function PersonalDashboardPage() {
                     <Link to={`/questions/${item.questionId}`} className="mypage-list__item">
                       {item.adopted && <span className="badge badge-resolved">채택됨</span>}
                       <span className="mypage-list__title">{item.content}</span>
-                      <span className="mypage-list__date">{new Date(item.createdAt).toLocaleString()}</span>
+                      <span className="mypage-list__date">{formatDateTime(item.createdAt)}</span>
                     </Link>
                   </li>
                 ),
@@ -172,7 +173,7 @@ function PersonalDashboardPage() {
                     </span>
                     <span className="mypage-list__title">{item.title}</span>
                     <span className="mypage-list__date">
-                      {new Date(item.createdAt).toLocaleString()}
+                      {formatDateTime(item.createdAt)}
                     </span>
                   </Link>
                 </li>

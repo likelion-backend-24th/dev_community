@@ -27,6 +27,7 @@ import rehypeHighlight from "rehype-highlight";
 import "../../styles/question.css";
 import "../../styles/markdown.css";
 import "../../styles/error.css";
+import { formatDateTime } from "../../utils/formatDate";
 
 const AI_SUMMARY_MIN_LENGTH = 300;
 
@@ -360,7 +361,7 @@ function QuestionDetailPage() {
           </svg>
           추천 {question.likeCount}
         </span>
-        <span>{new Date(question.createdAt).toLocaleString()}</span>
+        <span>{formatDateTime(question.createdAt)}</span>
       </div>
 
       <div className="question-detail__tags" ref={tagsRef}>
